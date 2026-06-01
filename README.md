@@ -1,6 +1,12 @@
-# BOM Knowledge Graph Agent Skill
+# BOM Knowledge Graph Agent
 
-Explore manufacturing BOMs with an ontology-validated graph, hybrid search (vector + SQL + graph), and optional LLM-assisted analysis. Agent Skills under `skills/` describe the schema and exploration workflows; the Python package `bom_graph/` runs storage, tools, and a small web UI.
+Explore manufacturing BOMs with an ontology-validated graph, hybrid search (vector + SQL + graph), and optional LLM-assisted analysis.
+
+This repository bundles:
+
+- **`bom_graph/`** — Python runtime (stores, tools, FastAPI agent, web UI)
+- **`skills/`** — distributable Agent Skills (schema + exploration workflows)
+- **`docker-compose.yml`** — optional LiteLLM and Langfuse for local demos
 
 ## Try it locally (recommended)
 
