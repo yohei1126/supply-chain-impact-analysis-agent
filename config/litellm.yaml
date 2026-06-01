@@ -1,0 +1,33 @@
+# LiteLLM proxy: OpenAI-compatible gateway for bom_graph/agent
+# Docs: https://docs.litellm.ai/docs/simple_proxy
+# Gemini 3.5 Flash: https://docs.litellm.ai/blog/gemini_3_5_flash
+# Requires litellm>=1.87.0rc1 (uv sync --extra gateway)
+#
+# Start: ./scripts/run_litellm_proxy.sh
+# Client env:
+#   OPENAI_API_BASE=http://127.0.0.1:4000/v1
+#   OPENAI_API_KEY=<LITELLM_MASTER_KEY>
+#   OPENAI_MODEL=bom-gemini-3.5-flash
+#   LLM_GATEWAY=litellm
+
+model_list:
+  - model_name: bom-gemini-3.5-flash
+    litellm_params:
+      model: gemini/gemini-3.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+      reasoning_effort: minimal
+
+  # Back-compat alias (same upstream model)
+  - model_name: bom-gemini-planner
+    litellm_params:
+      model: gemini/gemini-3.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+      reasoning_effort: minimal
+
+  - model_name: bom-openai-planner
+    litellm_params:
+      model: gpt-4o-mini
+      api_key: os.environ/UPSTREAM_OPENAI_API_KEY
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY

@@ -1,0 +1,252 @@
+{
+  "nodes": {
+    "Component": {
+      "properties": {
+        "id": {
+          "description": "Component identifier",
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "description": "Component name",
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "material": {
+          "description": "Material",
+          "minLength": 1,
+          "title": "Material",
+          "type": "string"
+        },
+        "cost": {
+          "description": "Unit cost",
+          "exclusiveMinimum": 0.0,
+          "title": "Cost",
+          "type": "number"
+        },
+        "label": {
+          "const": "Component",
+          "default": "Component",
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "material",
+        "cost"
+      ],
+      "title": "ComponentNode",
+      "type": "object"
+    },
+    "Process": {
+      "properties": {
+        "id": {
+          "description": "Process identifier",
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "description": "Process name",
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "work_center": {
+          "description": "Work center",
+          "minLength": 1,
+          "title": "Work Center",
+          "type": "string"
+        },
+        "cycle_time_min": {
+          "description": "Standard cycle time (minutes)",
+          "exclusiveMinimum": 0.0,
+          "title": "Cycle Time Min",
+          "type": "number"
+        },
+        "label": {
+          "const": "Process",
+          "default": "Process",
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "work_center",
+        "cycle_time_min"
+      ],
+      "title": "ProcessNode",
+      "type": "object"
+    },
+    "Supplier": {
+      "properties": {
+        "id": {
+          "description": "Supplier identifier",
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "company_name": {
+          "description": "Company name",
+          "minLength": 1,
+          "title": "Company Name",
+          "type": "string"
+        },
+        "country": {
+          "description": "ISO 3166-1 alpha-2 country code",
+          "maxLength": 2,
+          "minLength": 2,
+          "title": "Country",
+          "type": "string"
+        },
+        "risk_level": {
+          "default": "Medium",
+          "enum": [
+            "Low",
+            "Medium",
+            "High"
+          ],
+          "title": "Risk Level",
+          "type": "string"
+        },
+        "label": {
+          "const": "Supplier",
+          "default": "Supplier",
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "company_name",
+        "country"
+      ],
+      "title": "SupplierNode",
+      "type": "object"
+    },
+    "Product": {
+      "properties": {
+        "id": {
+          "description": "Product identifier",
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "description": "Product name",
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "description": "Version or revision",
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        },
+        "label": {
+          "const": "Product",
+          "default": "Product",
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "version"
+      ],
+      "title": "ProductNode",
+      "type": "object"
+    }
+  },
+  "edges": {
+    "RelationEdge": {
+      "properties": {
+        "source_label": {
+          "enum": [
+            "Component",
+            "Process",
+            "Supplier",
+            "Product"
+          ],
+          "title": "Source Label",
+          "type": "string"
+        },
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "target_label": {
+          "enum": [
+            "Component",
+            "Process",
+            "Supplier",
+            "Product"
+          ],
+          "title": "Target Label",
+          "type": "string"
+        },
+        "target_id": {
+          "title": "Target Id",
+          "type": "string"
+        },
+        "edge_type": {
+          "enum": [
+            "USED_IN",
+            "PRODUCED_BY",
+            "SUPPLIED_BY",
+            "INPUT_OF"
+          ],
+          "title": "Edge Type",
+          "type": "string"
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": true,
+          "title": "Properties"
+        }
+      },
+      "required": [
+        "source_label",
+        "source_id",
+        "target_label",
+        "target_id",
+        "edge_type"
+      ],
+      "title": "RelationEdge",
+      "type": "object"
+    },
+    "allowed_pairs": {
+      "USED_IN": [
+        "Component",
+        "Product"
+      ],
+      "PRODUCED_BY": [
+        "Product",
+        "Process"
+      ],
+      "SUPPLIED_BY": [
+        "Component",
+        "Supplier"
+      ],
+      "INPUT_OF": [
+        "Component",
+        "Process"
+      ]
+    }
+  },
+  "meta": {
+    "format": "bom-ontology-bundle",
+    "version": 1,
+    "domain": "bom-graph",
+    "source": "bom_graph/schema.py",
+    "note": "Generated file. Do not edit by hand; run scripts/sync_ontology.py"
+  }
+}

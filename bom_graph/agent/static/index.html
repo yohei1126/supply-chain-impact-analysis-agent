@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BOM Supply Impact</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/ui/app.css" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <h1>BOM Supply Impact</h1>
+          <p class="subtitle">See which products and parts are affected by your question</p>
+        </div>
+      </div>
+      <div class="status-group" id="status-group">
+        <span class="pill" id="status-ready">Checking…</span>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="panel rail">
+        <h2>Your question</h2>
+        <label class="sr-only" for="goal">Question</label>
+        <textarea
+          id="goal"
+          rows="3"
+          placeholder="e.g. What happens if supplier SUP-002 has a disruption?"
+        ></textarea>
+
+        <p class="query-examples-label">Try an example</p>
+        <div class="query-examples" role="group" aria-label="Example questions">
+          <button
+            type="button"
+            class="query-example"
+            data-goal="Analyze supplier impact for SUP-002"
+          >
+            <span class="query-example-title">Supplier SUP-002 disruption</span>
+            <span class="query-example-desc">
+              Which parts this supplier provides and which finished products use those parts.
+            </span>
+          </button>
+          <button
+            type="button"
+            class="query-example"
+            data-goal="Find the supply path from COMP-103 to PROD-901"
+          >
+            <span class="query-example-title">Path to motor assembly</span>
+            <span class="query-example-desc">
+              How part COMP-103 connects to product PROD-901 through the bill of materials.
+            </span>
+          </button>
+          <button
+            type="button"
+            class="query-example"
+            data-goal="Find similar brass valve components and show supplier impact"
+          >
+            <span class="query-example-title">Brass valve parts</span>
+            <span class="query-example-desc">
+              Parts similar to “brass valve” and how they tie into products and suppliers.
+            </span>
+          </button>
+        </div>
+
+        <button type="button" id="run-btn" class="primary">Analyze</button>
+        <p id="error" class="error" hidden></p>
+      </aside>
+
+      <section class="panel workspace-main">
+        <div class="results-head">
+          <h2>Results</h2>
+        </div>
+
+        <div class="workspace-grid">
+          <div class="col-narrative">
+            <section class="narrative-block" aria-labelledby="section-summary">
+              <h3 id="section-summary">Summary</h3>
+              <div id="explanation" class="explanation">
+                Ask a question or pick an example, then select Analyze.
+              </div>
+            </section>
+            <section class="narrative-block" aria-labelledby="section-findings">
+              <h3 id="section-findings">Key findings</h3>
+              <ul id="findings-list" class="findings-list">
+                <li class="muted">Important facts from the analysis will appear here.</li>
+              </ul>
+            </section>
+            <section class="narrative-block" aria-labelledby="section-evidence">
+              <h3 id="section-evidence">Evidence</h3>
+              <ul id="evidence-list" class="evidence-list">
+                <li class="muted">Statements grounded in the analysis data will appear here.</li>
+              </ul>
+            </section>
+          </div>
+
+          <div class="col-graph">
+            <section class="narrative-block graph-block" aria-labelledby="section-map">
+              <h3 id="section-map">Supply chain map</h3>
+              <p id="graph-caption" class="graph-caption">
+                Related suppliers, parts, and products (highlighted nodes are the focus of your question).
+              </p>
+              <div id="graph-network" class="graph-network" role="img" aria-label="Supply chain map"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+    <script src="/ui/app.js" type="module"></script>
+  </body>
+</html>
