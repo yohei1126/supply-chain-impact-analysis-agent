@@ -1,7 +1,7 @@
 ---
 name: bom-graph-explorer
 description: Explore manufacturing BOM knowledge graphs with strict ontology constraints on LanceGraph, DuckDB, and LanceDB. Use for supplier impact analysis, shortest-path traversal, or vector-to-graph multi-hop exploration in BOM data.
-compatibility: Requires bom-ontology (skills/bom-ontology). Optional bom_graph Python package for scripts.
+compatibility: Requires bom-ontology (skills/bom-ontology). Optional app Python package for scripts.
 metadata:
   author: bom-knowledge-graph-agent-skill
   version: "1.0"

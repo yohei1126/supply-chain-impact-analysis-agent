@@ -4,10 +4,10 @@ import argparse
 import json
 from pathlib import Path
 
-from bom_graph.exploration import GraphExplorer
-from bom_graph.hybrid_store import UnifiedBomContextStore
-from bom_graph.lance_graph_store import LanceGraphStore
-from bom_graph.sample_bom import seed_complex_bom
+from app.exploration import GraphExplorer
+from app.federation.graph_store import LanceGraphStore
+from app.hybrid_store import UnifiedBomContextStore
+from pipeline.demo.seed import seed_complex_bom
 
 
 def parse_args() -> argparse.Namespace:

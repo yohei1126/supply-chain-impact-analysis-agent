@@ -1,5 +1,5 @@
-from bom_graph.hybrid_store import UnifiedBomContextStore, text_to_embedding
-from bom_graph.lance_graph_store import LanceGraphStore
+from app.hybrid_store import UnifiedBomContextStore, text_to_embedding
+from app.federation.graph_store import LanceGraphStore
 
 
 def test_text_to_embedding_is_deterministic() -> None:

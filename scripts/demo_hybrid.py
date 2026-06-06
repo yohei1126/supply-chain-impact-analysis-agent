@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import os
 
-from bom_graph.hybrid_store import UnifiedBomContextStore
-from bom_graph.lance_graph_store import LanceGraphStore
-from bom_graph.sample_bom import seed_complex_bom
+from app.hybrid_store import UnifiedBomContextStore
+from app.federation.graph_store import LanceGraphStore
+from pipeline.demo.seed import seed_complex_bom
 
 from demo_interactive import explain, prompt, section, show, wait
 

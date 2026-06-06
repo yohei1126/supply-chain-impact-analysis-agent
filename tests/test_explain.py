@@ -1,5 +1,5 @@
-from bom_graph.agent.explain import explain_results_heuristic
-from bom_graph.agent.runner import ToolCall
+from app.agent.explain import explain_results_heuristic
+from app.agent.runner import ToolCall
 
 
 def test_heuristic_supplier_impact_explanation() -> None:

@@ -1,6 +1,6 @@
 import pytest
 
-from bom_graph.lance_graph_store import LanceGraphStore
+from app.federation.graph_store import LanceGraphStore
 
 
 def _seed_graph(store: LanceGraphStore) -> None:

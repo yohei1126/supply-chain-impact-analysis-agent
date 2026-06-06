@@ -1,5 +1,5 @@
-from bom_graph.agent.run_report import build_run_report
-from bom_graph.agent.types import ToolCall
+from app.agent.run_report import build_run_report
+from app.agent.types import ToolCall
 
 
 def test_run_report_supplier_impact() -> None:

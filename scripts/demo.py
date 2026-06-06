@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from bom_graph.exploration import GraphExplorer
-from bom_graph.lance_graph_store import LanceGraphStore
-from bom_graph.sample_bom import seed_complex_bom
-from bom_graph.schema import export_schema_bundle
-from bom_graph.tools import exploration_tool_definitions, run_exploration_tool
+from app.exploration import GraphExplorer
+from app.federation.graph_store import LanceGraphStore
+from pipeline.demo.seed import seed_complex_bom
+from ontology.schema import export_schema_bundle
+from app.tools import exploration_tool_definitions, run_exploration_tool
 
 from demo_interactive import explain, prompt, section, show, wait
 
