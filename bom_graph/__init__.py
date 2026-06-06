@@ -1,6 +1,8 @@
 from bom_graph.agent import BomAgentContext, BomAutonomousAgent
 from bom_graph.exploration import ExplorationResult, GraphExplorer
 from bom_graph.hybrid_store import UnifiedBomContextStore
+from bom_graph.domain_graphs import DOMAIN_GRAPHS
+from bom_graph.domain_lance_store import DomainLanceGraphStore
 from bom_graph.lance_graph_store import LanceGraphStore
 from bom_graph.schema import (
     ALLOWED_EDGES,
@@ -17,6 +19,8 @@ __all__ = [
     "BomAgentContext",
     "BomAutonomousAgent",
     "ComponentNode",
+    "DOMAIN_GRAPHS",
+    "DomainLanceGraphStore",
     "ExplorationResult",
     "GraphExplorer",
     "LanceGraphStore",

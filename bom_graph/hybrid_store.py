@@ -8,7 +8,7 @@ import duckdb
 import lancedb
 import numpy as np
 
-from bom_graph.lance_graph_store import lancedb_table_names
+from bom_graph.lance_util import lancedb_table_names
 from bom_graph.schema import ComponentNode
 
 

@@ -130,6 +130,10 @@ def seed_complex_bom(
     """
     Load a multi-product BOM: 3 suppliers, 3 products, 4 processes, 12 components.
 
+    Writes are split across three domain LanceDB datasets under the graph store base
+    path (``ebom/``, ``routing/``, ``sourcing/``). Components are replicated in each
+    domain that references them; edges are routed by type.
+
     Every write goes through ontology validators in LanceGraphStore / UnifiedBomContextStore.
     Invalid payloads raise pydantic.ValidationError or ValueError (edge constraints).
 
