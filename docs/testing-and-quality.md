@@ -82,12 +82,14 @@ uv run pytest -q \
   tests/test_hybrid_store.py
 ```
 
-After `ontology/schema.py` edits, also run sync + asset drift check:
+After `ontology/schema.py` or `cypher_builder.py` edits, also run sync + asset drift check:
 
 ```bash
 uv run python scripts/sync_ontology.py
-uv run pytest -q tests/test_skill_ontology_asset.py
+uv run pytest -q tests/test_skill_ontology_asset.py tests/test_skill_agent_assets.py
 ```
+
+See [agent-skill-assets.md](agent-skill-assets.md) for catalog locations, ownership, and multi-agent versioning.
 
 ### 2.4 Tests and local `.env`
 

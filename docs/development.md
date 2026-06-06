@@ -2,26 +2,31 @@
 
 Setup, project layout, seeding, CLI demos, tests, and the **implementation roadmap** for three domain graphs with agent-driven logical federation. For the full LiteLLM + Langfuse + web UI flow, see [local-demo-runbook.md](local-demo-runbook.md). For agent/automation conventions, see [AGENTS.md](../AGENTS.md).
 
-**Architecture references:** [project-layout.md](project-layout.md) · [federation-demo-runbook.md](federation-demo-runbook.md) · [testing-and-quality.md](testing-and-quality.md) · [enterprise-graph-design.md](enterprise-graph-design.md) · [graph-context.md](graph-context.md) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) · [ontology-on-lance.md](ontology-on-lance.md)
+**Architecture references:** [project-layout.md](project-layout.md) · [federation-demo-runbook.md](federation-demo-runbook.md) · [testing-and-quality.md](testing-and-quality.md) · [enterprise-graph-design.md](enterprise-graph-design.md) · [graph-context.md](graph-context.md) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) · [ontology-on-lance.md](ontology-on-lance.md) · [agent-skill-assets.md](agent-skill-assets.md)
 
 ## Ontology (single source of truth)
 
+See **[agent-skill-assets.md](agent-skill-assets.md)** for where generated JSON lives, who updates it, multi-agent catalog versioning, and production registry vs Skill bundle trade-offs.
+
 ```
 ontology/schema.py                          ← edit constraints (Pydantic)
+ontology/cypher_builder.py                  ← named query recipes
+domains/export.py                           ← graph-context + engine profile export
         │
         ▼  uv run python scripts/sync_ontology.py
-skills/bom-ontology/assets/ontology.json     ← published artifact for Agent Skills
+skills/bom-ontology/assets/ontology.json
+skills/bom-graph-explorer/assets/*.json     ← published artifacts for Agent Skills
 ```
 
-- **Authoring:** only change `ontology/schema.py`.
-- **Skills:** read generated `ontology.json`; do not hand-edit it.
+- **Authoring:** only change Python SSOT files above.
+- **Skills:** read generated JSON; do not hand-edit it.
 - **Runtime writes:** Pydantic validators on every graph/RDB/vector insert.
 
-After `schema.py` changes:
+After SSOT changes:
 
 ```bash
 uv run python scripts/sync_ontology.py
-uv run pytest -q tests/test_skill_ontology_asset.py
+uv run pytest -q tests/test_skill_ontology_asset.py tests/test_skill_agent_assets.py
 ```
 
 Seeding and validation details: [AGENTS.md](../AGENTS.md) §4.
@@ -35,6 +40,7 @@ LanceDB is schema-light; meaning and integrity live above storage ([ontology-on-
 | Schema + constraints | `ontology/schema.py` |
 | Domain partition | `domains/registry.py`, `domains/*/bundle.py` |
 | Published JSON Schema | `skills/bom-ontology/assets/ontology.json` |
+| Published explorer catalogs | `skills/bom-graph-explorer/assets/*.json` — see [agent-skill-assets.md](agent-skill-assets.md) |
 | Graph context contract | `ontology/contract/graph_context.yaml` — see [graph-context.md](graph-context.md) |
 | Federation facade | `app/federation/graph_store.py` |
 | Semantics glossary (planned) | `skills/bom-ontology/references/semantics.md` |

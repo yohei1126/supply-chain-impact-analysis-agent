@@ -24,6 +24,8 @@ uv run python scripts/sync_ontology.py
 
 Regenerates ontology JSON and bom-graph-explorer assets (`graph-context.json`, `query-catalog.json`, `cypher-engine-profile.json`). Skill markdown stays prose-only (compose protocol); do not duplicate edge tables in `.md` files.
 
+**Production / multi-agent versioning:** [docs/agent-skill-assets.md](../docs/agent-skill-assets.md)
+
 ## Install
 
 ```bash
