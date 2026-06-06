@@ -4,7 +4,7 @@ End-to-end steps to run the BOM supply-impact demo on your machine: Docker stack
 
 **Federation-only demo (no Docker / no LLM):** [federation-demo-runbook.md](federation-demo-runbook.md) — per-domain seed, validate, query, federated mitigations.
 
-**Overview:** [README.md](../README.md). **Development / layout / CLI demos:** [development.md](development.md). **Agents:** [AGENTS.md](../AGENTS.md) §5.4–5.5. **LiteLLM / Langfuse:** [llm-gateway.md](llm-gateway.md), [observability.md](observability.md).
+**Overview:** [README.md](../README.md). **Development / layout / CLI demos:** [development.md](development.md). **Agents:** [AGENTS.md](../AGENTS.md) §5.4–5.5. **LiteLLM / Langfuse:** [llm-gateway.md](llm-gateway.md), [observability.md](observability.md). **Demo verify & evaluate:** [demo-verification-and-evaluation.md](demo-verification-and-evaluation.md).
 
 ## What you will run
 
@@ -183,7 +183,9 @@ Suggested flow:
 
 ### Agent (LLM) tab
 
-Natural-language questions with planner + optional LLM summary (requires LiteLLM when `mode=auto`). UI examples show **Intent** and **Expected exploration** for the operator; only the indirect question text is sent to the agent (no explicit `SUP-xxx` / `COMP-xxx`).
+Natural-language questions with planner + optional LLM summary (requires LiteLLM when `mode=auto`). UI examples use **indirect scenarios** (no explicit `SUP-xxx` / `COMP-xxx`) so you can verify the agent interprets context before calling tools.
+
+**What to check in the UI vs Langfuse:** [demo-verification-and-evaluation.md](demo-verification-and-evaluation.md) — scenario playbooks (§3), evaluation rubric (§4), UI vs Langfuse (§5).
 
 1. Click an example, e.g. **German brass supplier disruption** — read Intent / Expected exploration on the card
 2. Click **Analyze**

@@ -30,6 +30,7 @@ This repository bundles:
 | [docs/development.md](docs/development.md) | Developers | Setup, seeding, CLI demos, roadmap |
 | [docs/llm-gateway.md](docs/llm-gateway.md) | Operators | LiteLLM / Gemini configuration |
 | [docs/observability.md](docs/observability.md) | Operators | Langfuse telemetry |
+| [docs/demo-verification-and-evaluation.md](docs/demo-verification-and-evaluation.md) | Developers / operators | Demo scenarios: how to confirm results and evaluate pass/fail (UI vs Langfuse) |
 | [docs/enterprise-graph-design.md](docs/enterprise-graph-design.md) | Architects | Enterprise graph domains, Lance layout, agent federation |
 | [docs/supply-chain-disruption-response.md](docs/supply-chain-disruption-response.md) | Architects / ops | Disruption playbooks, logical graph federation, mitigations |
 | [docs/ontology-on-lance.md](docs/ontology-on-lance.md) | Data / ontology authors | Schema-light Lance vs application ontology layers |

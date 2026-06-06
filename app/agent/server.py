@@ -66,6 +66,8 @@ class AgentRunResponse(BaseModel):
     findings: list[str] = Field(default_factory=list)
     evidence: list[dict[str, str]] = Field(default_factory=list)
     graph_view: dict[str, Any] = Field(default_factory=dict)
+    cypher_executions: list[dict[str, Any]] = Field(default_factory=list)
+    run_summary: dict[str, Any] = Field(default_factory=dict)
 
 
 GraphId = Literal["sourcing", "ebom", "routing"]
@@ -275,6 +277,8 @@ def run_agent(body: AgentRunRequest) -> AgentRunResponse:
         findings=user["findings"],
         evidence=user["evidence"],
         graph_view=user["graph_view"],
+        cypher_executions=user["cypher_executions"],
+        run_summary=user["run_summary"],
     )
 
 

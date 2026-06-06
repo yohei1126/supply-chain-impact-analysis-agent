@@ -184,7 +184,7 @@ uv run python scripts/demo_hybrid.py
 | 5 | Analyze in UI; inspect traces in Langfuse (`bom-agent-run`) |
 
 - **User UI:** Summary, Key findings, Evidence, Supply chain map only.
-- **Langfuse:** planner, tools, skills context, raw JSON — [docs/observability.md](docs/observability.md).
+- **Langfuse:** planner, tools, skills context, raw JSON — [docs/observability.md](docs/observability.md). **Demo verify & evaluate:** [docs/demo-verification-and-evaluation.md](docs/demo-verification-and-evaluation.md).
 - **LiteLLM / Gemini:** [docs/llm-gateway.md](docs/llm-gateway.md).
 
 Requires `BOM_REPO_ROOT` (defaults to cwd); agent loads `.env` on startup. Re-seed with §4.3 before first UI session if `data/` is empty.

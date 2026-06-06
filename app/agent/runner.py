@@ -38,6 +38,27 @@ def plan_tools_from_goal(goal: str) -> list[ToolCall]:
             )
         ]
 
+    # Indirect demo scenarios (seed data: Euro Brass GmbH DE → SUP-002, Drive Shaft → COMP-103, Servo Motor Drive → PROD-901)
+    if (
+        ("german" in goal_lower or "germany" in goal_lower)
+        and "brass" in goal_lower
+        and any(w in goal_lower for w in ("supplier", "port", "strike", "disruption", "worry"))
+    ):
+        return [ToolCall("bom_supplier_impact", {"supplier_id": "SUP-002"})]
+
+    if ("drive shaft" in goal_lower or "driveshaft" in goal_lower) and (
+        "servo motor" in goal_lower or "motor drive" in goal_lower
+    ):
+        return [
+            ToolCall(
+                "bom_supply_path",
+                {"from_component_id": "COMP-103", "to_product_id": "PROD-901"},
+            )
+        ]
+
+    if "brass" in goal_lower and "valve" in goal_lower:
+        return [ToolCall("bom_hybrid_query", {"query": goal.strip(), "top_k": 3})]
+
     if "steel" in goal_lower or "vector" in goal_lower or "similar" in goal_lower:
         query = goal.strip()
         return [ToolCall("bom_hybrid_query", {"query": query, "top_k": 3})]

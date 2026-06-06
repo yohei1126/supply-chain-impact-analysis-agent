@@ -6,7 +6,7 @@ No Docker, LLM, or Langfuse required. For the full agent UI stack, see [local-de
 
 **Audience:** developers, architects, demo presenters.
 
-**Related:** [project-layout.md](project-layout.md) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) · [graph-context.md](graph-context.md) · [testing-and-quality.md](testing-and-quality.md)
+**Related:** [project-layout.md](project-layout.md) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) · [graph-context.md](graph-context.md) · [testing-and-quality.md](testing-and-quality.md) · [demo-verification-and-evaluation.md](demo-verification-and-evaluation.md) (confirm & evaluate demo output)
 
 ---
 

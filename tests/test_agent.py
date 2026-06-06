@@ -70,6 +70,13 @@ def test_plan_tools_from_goal() -> None:
     assert calls[0].name == "bom_supplier_impact"
     assert calls[0].arguments["supplier_id"] == "SUP-001"
 
+    german = plan_tools_from_goal(
+        "Our German brass supplier might face a port strike next month. "
+        "Which finished products and component parts should we worry about?"
+    )
+    assert german[0].name == "bom_supplier_impact"
+    assert german[0].arguments["supplier_id"] == "SUP-002"
+
 
 def test_autonomous_agent_run(tmp_path) -> None:
     ctx = _seed_context(tmp_path)
@@ -113,6 +120,9 @@ def test_remote_agent_api(tmp_path, monkeypatch) -> None:
     assert body["findings"]
     assert body["evidence"]
     assert body["graph_view"]["node_count"] >= 1
+    assert body.get("cypher_executions")
+    assert body["cypher_executions"][0]["steps"]
+    assert "MATCH" in body["cypher_executions"][0]["steps"][0]["cypher"]
     assert "tool_calls" not in body
     assert "run_report" not in body
 

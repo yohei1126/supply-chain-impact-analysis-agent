@@ -496,6 +496,80 @@ function renderFindings(findings) {
   }
 }
 
+function renderAgentCypherExecutions(executions, runSummary) {
+  const section = $("agent-cypher-section");
+  const container = $("agent-cypher-steps");
+  const meta = $("agent-cypher-meta");
+  container.innerHTML = "";
+  section.hidden = false;
+
+  const planner = runSummary?.planner || "unknown";
+  const tools = runSummary?.tools || [];
+  const plannerLine = `Planner: ${planner}${tools.length ? ` → ${tools.join(", ")}` : " → (no tools)"}`;
+
+  if (!executions?.length) {
+    meta.textContent = plannerLine;
+    const empty = document.createElement("p");
+    empty.className = "muted step-summary";
+    if (!tools.length) {
+      empty.textContent =
+        "No graph tools ran, so no ontology Cypher and no supply chain map for this answer. Enable LiteLLM (mode=auto) for richer indirect goals, use Federation tab for explicit cross-domain Cypher, or include SUP-xxx / COMP-xxx in the question.";
+    } else {
+      empty.textContent =
+        "Tools ran but did not emit domain Cypher (e.g. bom_hybrid_query uses vector + DuckDB first). See hybrid pipeline note below if present.";
+    }
+    container.appendChild(empty);
+    return;
+  }
+
+  const stepCount = executions.reduce((n, ex) => n + (ex.steps?.length || 0), 0);
+  meta.textContent = `${plannerLine} · ${stepCount} Cypher step(s)`;
+
+  for (const exec of executions) {
+    const card = document.createElement("article");
+    card.className = "step-card";
+    const stepsHtml = (exec.steps || [])
+      .map((step, index) => {
+        const graphId = step.graph_id || "federated";
+        const domainMeta = DOMAIN_META[graphId] || {};
+        const domainClass = domainMeta.className || "";
+        return `
+          <div class="agent-cypher-step ${domainClass}">
+            <header class="step-card-head">
+              <span class="step-num">Step ${index + 1}</span>
+              ${
+                step.graph_id
+                  ? `<span class="domain-badge ${domainClass}">${step.graph_id}</span>`
+                  : ""
+              }
+              <code class="step-query-name">${step.query_name || "query"}</code>
+            </header>
+            <details class="step-cypher-block" open>
+              <summary>Cypher</summary>
+              <pre class="step-cypher">${escapeHtml(step.cypher || "")}</pre>
+            </details>
+          </div>
+        `;
+      })
+      .join("");
+
+    card.innerHTML = `
+      <header class="step-card-head">
+        <code class="step-tool-name">${exec.tool}</code>
+        <span class="step-edge">${exec.operation || ""}</span>
+      </header>
+      ${exec.summary ? `<p class="step-summary">${exec.summary}</p>` : ""}
+      ${
+        exec.ontology_source
+          ? `<p class="step-meta">Source: <code>${exec.ontology_source}</code></p>`
+          : ""
+      }
+      ${stepsHtml}
+    `;
+    container.appendChild(card);
+  }
+}
+
 async function runAnalysis() {
   const goal = $("goal").value.trim();
   if (!goal) {
@@ -517,6 +591,7 @@ async function runAnalysis() {
     $("explanation").textContent = body.explanation || "No summary available.";
     renderFindings(body.findings);
     renderEvidence(body.evidence);
+    renderAgentCypherExecutions(body.cypher_executions, body.run_summary);
     renderGraphView(body.graph_view, "graph-network", "graph-caption", "agent");
   } catch (err) {
     showError("error", err.message);
