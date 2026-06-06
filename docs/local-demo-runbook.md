@@ -67,10 +67,23 @@ Wait until:
 
 Quick checks:
 
+LiteLLM is configured with `LITELLM_MASTER_KEY` in [`config/litellm.yaml`](../config/litellm.yaml). **Unauthenticated** requests to `/health` return **401** — that still means the proxy is listening. Use the same key as in `.env` (`sk-litellm-local` by default):
+
 ```bash
-curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:4000/health   # expect 200
-curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:3000/          # expect 200
+# LiteLLM — expect 200 (use your LITELLM_MASTER_KEY / OPENAI_API_KEY value)
+curl -s -o /dev/null -w "%{http_code}\n" \
+  -H "Authorization: Bearer sk-litellm-local" \
+  http://127.0.0.1:4000/health
+
+# Optional: list model aliases exposed to the agent
+curl -s http://127.0.0.1:4000/v1/models \
+  -H "Authorization: Bearer sk-litellm-local"
+
+# Langfuse UI — expect 200 (no auth header)
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:3000/
 ```
+
+Expect models such as `bom-gemini-3.5-flash`, `bom-gemini-planner`, and `bom-openai-planner` in the `/v1/models` response.
 
 Stop later:
 
@@ -96,7 +109,16 @@ Verify connectivity (optional):
 uv run --extra observability python scripts/verify_langfuse_telemetry.py
 ```
 
-Expect `auth_check: OK`.
+Expect at least:
+
+```
+Langfuse telemetry check
+  LANGFUSE_HOST: http://localhost:3000
+  keys set: True
+  auth_check: OK
+```
+
+Before any agent run, trace list may be empty — that is fine if `auth_check: OK`.
 
 ## 4. Terminal B — BOM agent
 
@@ -128,36 +150,50 @@ Health check:
 curl -s http://127.0.0.1:8080/health
 ```
 
-## 5. Browser — user UI
+## 5. Browser — federation UI
 
 Open **http://localhost:8080/ui/**
 
-Top-right pill should show **Ready**.
+Top-right pill should show **Ready**. The UI has three tabs — **Domain query**, **Federation**, and **Agent (LLM)**.
 
-### Layout
+### Domain query tab
 
-| Area | Purpose |
-|------|---------|
-| **Your question** (left) | Free-text goal + example buttons |
-| **Summary** | Narrative answer (LLM when gateway is up; heuristic otherwise) |
-| **Key findings** | Bullet facts from the analysis |
-| **Evidence** | Grounded claims (no tool names or JSON paths) |
-| **Supply chain map** | Graph of suppliers, parts, products (seed nodes highlighted) |
+Query **one** Lance graph at a time (Python scans `graph_nodes` / `graph_edges` — not Cypher).
 
-### Suggested UI flow
+| Domain | Example | What you see |
+|--------|---------|--------------|
+| **sourcing** | `SUP-002` | Components with `SUPPLIED_BY` to that supplier |
+| **ebom** | `COMP-103` | Products linked via `USED_IN` |
+| **routing** | `COMP-103` | Processes linked via `INPUT_OF` |
+
+After **Run domain query**, check **Traversal semantics** for the Python function, parameters, and an illustrative graph pattern.
+
+Suggested flow:
+
+1. Run sourcing for `SUP-002` — note component IDs returned.
+2. Switch to **ebom**, paste those component IDs, run again — same IDs, different graph.
+3. Switch to **Federation** tab to see all three joined on `Component.id`.
+
+### Federation tab
+
+1. Enter disrupted supplier (e.g. `SUP-002`) or pick an example.
+2. Click **Run federation**.
+3. Review the pipeline: sourcing → ebom → routing on `Component.id`.
+4. Read **Problems**, **Mitigations**, **Joined impact rows**, and the federated supply chain map.
+
+### Agent (LLM) tab
+
+Natural-language questions with planner + optional LLM summary (requires LiteLLM when `mode=auto`).
 
 1. Click an example, e.g. **Supplier SUP-002 disruption**
 2. Click **Analyze**
-3. Read **Summary** and **Key findings**
-4. Scan **Evidence** for specific claims
-5. Explore **Supply chain map** (hover nodes for detail)
+3. Read **Summary**, **Key findings**, **Evidence**, and the supply chain map
 
-Other examples:
+Other examples: **Path to motor assembly** (`COMP-103` → `PROD-901`), **Brass valve parts** (hybrid vector + RDB + graph).
 
-- **Path to motor assembly** — `COMP-103` → `PROD-901`
-- **Brass valve parts** — hybrid vector + RDB + graph
+Use this tab for Langfuse **`bom-agent-run`** traces from the browser.
 
-### API alternative (no browser)
+### REST API (no browser)
 
 ```bash
 curl -s -X POST http://127.0.0.1:8080/v1/agent/run \
@@ -165,9 +201,21 @@ curl -s -X POST http://127.0.0.1:8080/v1/agent/run \
   -d '{"goal":"Analyze supplier impact for SUP-002","mode":"auto"}' | python3 -m json.tool
 ```
 
+Federation endpoints:
+
+```bash
+curl -s -X POST http://127.0.0.1:8080/v1/federation/domain-query \
+  -H 'Content-Type: application/json' \
+  -d '{"graph_id":"sourcing","supplier_id":"SUP-002"}' | python3 -m json.tool
+
+curl -s -X POST http://127.0.0.1:8080/v1/federation/analyze \
+  -H 'Content-Type: application/json' \
+  -d '{"supplier_id":"SUP-002"}' | python3 -m json.tool
+```
+
 ## 6. Langfuse — confirm telemetry
 
-After at least one UI or API run:
+After at least one **Agent (LLM)** tab run or agent API call (see §5):
 
 1. Open **http://localhost:3000** → **Traces**
 2. Find trace name **`bom-agent-run`**
@@ -179,13 +227,32 @@ CLI check:
 uv run --extra observability python scripts/verify_langfuse_telemetry.py
 ```
 
+After at least one analysis, expect something like:
+
+```
+Langfuse telemetry check
+  LANGFUSE_HOST: http://localhost:3000
+  keys set: True
+  auth_check: OK
+
+Recent traces (up to 10): 6
+  - bom-agent-run id=0d3c92dcb4ef6d27580d323bbe8ade81
+  - bom-agent-run id=a350907567f28afe9d52f26d27497337
+  ...
+
+OK: found 6 bom-agent-run trace(s). Open Langfuse UI -> Traces.
+```
+
+Trace IDs differ per run; what matters is `auth_check: OK` and one or more **`bom-agent-run`** entries.
+
 ## Troubleshooting
 
 | Symptom | Fix |
 |---------|-----|
 | `Cannot connect to the Docker daemon` | `colima start` or start Docker Desktop |
 | Langfuse never becomes Ready | `docker compose --profile langfuse logs -f langfuse-web` |
-| LiteLLM 401 / model errors | Set `GEMINI_API_KEY` in `.env`; restart stack |
+| LiteLLM `/health` returns **401** without `Authorization` | Expected when `master_key` is set — retry with `Bearer` + `LITELLM_MASTER_KEY` (see step 2) |
+| LiteLLM **401** on `/v1/chat/completions` or model errors | Set `GEMINI_API_KEY` in `.env`; ensure `OPENAI_API_KEY` matches `LITELLM_MASTER_KEY`; restart stack |
 | `langfuse_configured: false` on agent | Add keys to `.env`; restart agent with `--extra observability` |
 | Empty map / no findings | `uv run python scripts/seed_complex_bom.py --reset`; restart agent |
 | Port 4000 already in use | Stop `./scripts/run_litellm_proxy.sh` if running, or change `LITELLM_PORT` |
