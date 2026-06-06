@@ -2,6 +2,8 @@
 
 End-to-end steps to run the BOM supply-impact demo on your machine: Docker stack → BOM data → agent server → web UI → Langfuse traces.
 
+**Federation-only demo (no Docker / no LLM):** [federation-demo-runbook.md](federation-demo-runbook.md) — per-domain seed, validate, query, federated mitigations.
+
 **Overview:** [README.md](../README.md). **Development / layout / CLI demos:** [development.md](development.md). **Agents:** [AGENTS.md](../AGENTS.md) §5.4–5.5. **LiteLLM / Langfuse:** [llm-gateway.md](llm-gateway.md), [observability.md](observability.md).
 
 ## What you will run

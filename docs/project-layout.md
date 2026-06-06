@@ -9,6 +9,7 @@ Why the repository is structured the way it is: **organization boundaries** (who
 * [enterprise-graph-design.md](enterprise-graph-design.md) (three logical graphs) 
 * [graph-context.md](graph-context.md) (federation contract) 
 * [ontology-on-lance.md](ontology-on-lance.md) (schema-light storage)
+* [federation-demo-runbook.md](federation-demo-runbook.md) (E2E domain federation demo)
 * [testing-and-quality.md](testing-and-quality.md) (tests, lint, mypy)
 * [development.md](development.md) (setup and roadmap) 
 * [AGENTS.md](../AGENTS.md) (change workflow)
@@ -269,6 +270,7 @@ There are **no empty legacy directories** left from these moves. Placeholder fil
 | Graph context / federation contract | [graph-context.md](graph-context.md) |
 | Disruption playbooks | [supply-chain-disruption-response.md](supply-chain-disruption-response.md) |
 | Local demo | [local-demo-runbook.md](local-demo-runbook.md) |
+| Federated domain demo (E2E) | [federation-demo-runbook.md](federation-demo-runbook.md) |
 | Developer setup & roadmap | [development.md](development.md) |
 | Tests, lint, static analysis | [testing-and-quality.md](testing-and-quality.md) |
 | Agent / SSOT workflow | [AGENTS.md](../AGENTS.md) |
