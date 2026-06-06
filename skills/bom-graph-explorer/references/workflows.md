@@ -1,30 +1,50 @@
-# Exploration workflows
+# Scenario → catalog mapping
 
-## Supplier impact
+Maps user intents to **query-catalog.json** recipes. Schema details live in **bom-ontology** assets only.
 
-**Question:** Which components and products are affected if supplier `S` is disrupted?
+## Supplier disruption
 
-1. Start from `Supplier` node `S`.
-2. Traverse incoming `SUPPLIED_BY` edges to `Component` nodes.
-3. For each component, follow `USED_IN` to `Product` nodes.
-4. Return component/product pairs with cost and lead-time context when available.
+**User intent:** Which parts and finished goods are exposed if a supplier fails?
 
-Tool: `bom_supplier_impact` with `supplier_id`.
+**Catalog path:** `federation_recipes.supplier_disruption_impact`
 
-## Shortest supply path
+| Step | Query | Domain |
+|------|-------|--------|
+| 1 | `components_by_supplier` | sourcing |
+| 2 | `impact_products_by_components` | ebom |
 
-**Question:** How does component `C` connect to product `P`?
+**Bridge:** `component_id` from step 1 → filter step 2.
 
-Traverse only: `USED_IN`, `INPUT_OF`, `PRODUCED_BY`.
+**Tool shortcut:** `bom_supplier_impact` (runtime applies the same recipe chain).
 
-Tool: `bom_supply_path` with `from_component_id`, `to_product_id`.
+## Supply path
 
-## Hybrid vector -> rdb -> graph
+**User intent:** How does a component relate to a finished product through the BOM?
 
-**Question:** Find parts similar to a natural-language query, then explain supply impact.
+**Catalog path:**
 
-1. **Vector (LanceDB):** similarity search over component embeddings.
-2. **RDB (DuckDB):** fetch authoritative attributes (name, material, cost).
-3. **Graph (LanceGraph):** run supplier impact or path analysis on resolved component IDs.
+1. Try `direct_component_product_link` on **ebom** (single-hop `USED_IN`).
+2. If multi-hop (component → process → product), plan separate domain queries or use `bom_supply_path`.
 
-Implementation: `UnifiedBomContextStore.find_supplier_impact_for_query()`.
+Allowed edge types for multi-hop: `USED_IN`, `INPUT_OF`, `PRODUCED_BY` (see `graph-context.json` domains).
+
+## Manufacturing exposure
+
+**User intent:** Which work centers / processes consume affected components?
+
+**Catalog path:** `federation_recipes.supplier_disruption_with_routing` (adds `processes_by_components` on **routing**).
+
+## Hybrid similarity
+
+**User intent:** Find catalog parts like a description, then trace suppliers.
+
+**Flow:**
+
+1. `bom_hybrid_query` — vector + RDB resolution (not in query catalog).
+2. For each resolved `component_id`, use sourcing/ebom catalog queries or `bom_supplier_impact` on inferred suppliers.
+
+## Indirect questions
+
+Examples omit `SUP-xxx` / `COMP-xxx` on purpose. Resolve supplier or part names from `ontology.json` node fields, then select the catalog recipe above.
+
+See [cypher-compose.md](cypher-compose.md) for the full composition checklist.

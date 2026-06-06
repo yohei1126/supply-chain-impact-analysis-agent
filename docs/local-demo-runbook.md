@@ -183,25 +183,25 @@ Suggested flow:
 
 ### Agent (LLM) tab
 
-Natural-language questions with planner + optional LLM summary (requires LiteLLM when `mode=auto`).
+Natural-language questions with planner + optional LLM summary (requires LiteLLM when `mode=auto`). UI examples show **Intent** and **Expected exploration** for the operator; only the indirect question text is sent to the agent (no explicit `SUP-xxx` / `COMP-xxx`).
 
-1. Click an example, e.g. **Supplier SUP-002 disruption**
+1. Click an example, e.g. **German brass supplier disruption** — read Intent / Expected exploration on the card
 2. Click **Analyze**
-3. Read **Summary**, **Key findings**, **Evidence**, and the supply chain map
+3. Compare agent tool choices and results against the expected exploration; read **Summary**, **Key findings**, **Evidence**, and the supply chain map
 
-Other examples: **Path to motor assembly** (`COMP-103` → `PROD-901`), **Brass valve parts** (hybrid vector + RDB + graph).
+Other examples: **Servo motor drive shaft trace** (part/product names → supply path), **Brass valve shortage** (hybrid vector + RDB + graph).
 
 Use this tab for Langfuse **`bom-agent-run`** traces from the browser.
 
-### REST API (no browser)
+For deterministic API checks (explicit IDs), use curl with a direct goal:
 
 ```bash
 curl -s -X POST http://127.0.0.1:8080/v1/agent/run \
   -H 'Content-Type: application/json' \
-  -d '{"goal":"Analyze supplier impact for SUP-002","mode":"auto"}' | python3 -m json.tool
+  -d '{"goal":"Analyze supplier impact for SUP-002","mode":"tools"}' | python3 -m json.tool
 ```
 
-Federation endpoints:
+Browser UI examples omit IDs on purpose. Federation endpoints still accept explicit IDs:
 
 ```bash
 curl -s -X POST http://127.0.0.1:8080/v1/federation/domain-query \

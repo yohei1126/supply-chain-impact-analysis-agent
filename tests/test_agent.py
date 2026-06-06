@@ -54,9 +54,15 @@ def test_load_agent_skills() -> None:
     assert "bom-ontology" in pkg.skill_md
     assert "ontology.json" in pkg.assets
 
+    explorer = load_skill_package(REPO_ROOT, "bom-graph-explorer")
+    assert "query-catalog.json" in explorer.assets
+    assert "graph-context.json" in explorer.assets
+
     prompt = build_system_prompt(REPO_ROOT)
     assert "bom-graph-explorer" in prompt
-    assert "USED_IN" in prompt
+    assert "query-catalog.json" in prompt
+    assert "components_by_supplier" in prompt
+    assert "cypher-compose.md" in prompt or "Cypher composition protocol" in prompt
 
 
 def test_plan_tools_from_goal() -> None:

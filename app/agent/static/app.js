@@ -42,6 +42,36 @@ const DOMAIN_EXAMPLES = {
   ],
 };
 
+const AGENT_EXAMPLES = [
+  {
+    title: "German brass supplier disruption",
+    goal:
+      "Our German brass supplier might face a port strike next month. Which finished products and component parts should we worry about?",
+    intent:
+      "Test whether the agent can identify a supplier from country and material alone, then quantify BOM exposure when that supply line fails.",
+    exploration:
+      "Resolve clues (Germany + brass → Euro Brass GmbH) → bom_supplier_impact → sourcing SUPPLIED_BY rows joined to ebom USED_IN for affected components and finished goods.",
+  },
+  {
+    title: "Servo motor drive shaft trace",
+    goal:
+      "The servo motor drive product relies on a drive shaft part. Can you trace how that component connects through the bill of materials to the finished assembly?",
+    intent:
+      "Test whether the agent maps everyday part and product names to graph entities without explicit COMP-xxx / PROD-xxx IDs.",
+    exploration:
+      "Infer drive shaft and Servo Motor Drive from the question → bom_supply_path → traverse ebom/routing edges (USED_IN, INPUT_OF, PRODUCED_BY) between the two nodes.",
+  },
+  {
+    title: "Brass valve shortage",
+    goal:
+      "We're short on brass valve-related parts. Find similar components in our catalog and show which suppliers feed them.",
+    intent:
+      "Test multi-hop reasoning: semantic similarity first, then upstream supplier linkage — not a single pre-known part ID.",
+    exploration:
+      "bom_hybrid_query (vector + RDB over material/name) to surface brass valve-like components → bom_supplier_impact or graph impact rows for suppliers on the matched parts.",
+  },
+];
+
 async function api(path, options = {}) {
   const res = await fetch(path, {
     headers: { "Content-Type": "application/json", ...options.headers },
@@ -120,8 +150,23 @@ function bindModeTabs() {
         p.classList.toggle("is-active", active);
         p.hidden = !active;
       });
+      if (panelId === "panel-federation") {
+        refitGraphNetwork(federationGraphNetwork, "federation-graph-network");
+      } else if (panelId === "panel-agent") {
+        refitGraphNetwork(graphNetwork, "graph-network");
+      }
       window.dispatchEvent(new Event("resize"));
     });
+  });
+}
+
+function refitGraphNetwork(network, containerId) {
+  if (!network) return;
+  const container = $(containerId);
+  if (!container) return;
+  requestAnimationFrame(() => {
+    network.redraw();
+    network.fit({ animation: false });
   });
 }
 
@@ -131,6 +176,35 @@ function syncDomainParams() {
   $("domain-param-supplier").hidden = !isSourcing;
   $("domain-param-components").hidden = isSourcing;
   renderDomainExamples(graphId);
+}
+
+function renderAgentExamples() {
+  const container = $("agent-examples");
+  container.innerHTML = "";
+  for (const ex of AGENT_EXAMPLES) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "query-example agent-example";
+    btn.dataset.goal = ex.goal;
+    btn.innerHTML = `
+      <span class="query-example-title">${ex.title}</span>
+      <span class="query-example-meta query-example-intent">
+        <span class="meta-label">Intent</span>
+        ${ex.intent}
+      </span>
+      <span class="query-example-meta query-example-explore">
+        <span class="meta-label">Expected exploration</span>
+        ${ex.exploration}
+      </span>
+    `;
+    btn.addEventListener("click", () => {
+      $("goal").value = ex.goal;
+      document.querySelectorAll(".agent-example").forEach((el) => el.classList.remove("is-selected"));
+      btn.classList.add("is-selected");
+      $("goal").focus();
+    });
+    container.appendChild(btn);
+  }
 }
 
 function renderDomainExamples(graphId) {
@@ -316,7 +390,10 @@ function renderFederationSteps(domainQueries, joinPlan) {
         match
           ? `<p class="step-summary">${match.summary}</p>
              <p class="step-meta">${match.row_count} row(s) · <code>${match.query_name}</code></p>
-             <pre class="step-cypher">${escapeHtml(match.cypher || "")}</pre>`
+             <details class="step-cypher-block">
+               <summary>Cypher query</summary>
+               <pre class="step-cypher">${escapeHtml(match.cypher || "")}</pre>
+             </details>`
           : `<p class="step-summary muted">No data</p>`
       }
     `;
@@ -507,7 +584,14 @@ function renderGraphView(graphView, containerId, captionId, mode) {
 
   if (networkRef) networkRef.destroy();
 
-  container.style.height = "100%";
+  if (isFederation) {
+    container.style.minHeight = "280px";
+    container.style.height = "280px";
+  } else {
+    container.style.minHeight = "180px";
+    container.style.height = "100%";
+  }
+
   const network = new vis.Network(
     container,
     { nodes: visNodes, edges: visEdges },
@@ -521,18 +605,11 @@ function renderGraphView(graphView, containerId, captionId, mode) {
 
   if (isFederation) federationGraphNetwork = network;
   else graphNetwork = network;
+
+  refitGraphNetwork(network, containerId);
 }
 
 function bindExamples() {
-  document.querySelectorAll(".agent-example").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      $("goal").value = btn.dataset.goal ?? "";
-      document.querySelectorAll(".agent-example").forEach((el) => el.classList.remove("is-selected"));
-      btn.classList.add("is-selected");
-      $("goal").focus();
-    });
-  });
-
   document.querySelectorAll(".federation-example").forEach((btn) => {
     btn.addEventListener("click", () => {
       $("federation-supplier-id").value = btn.dataset.supplier ?? "";
@@ -548,6 +625,7 @@ $("federation-run-btn").addEventListener("click", runFederation);
 $("run-btn").addEventListener("click", runAnalysis);
 
 bindModeTabs();
+renderAgentExamples();
 bindExamples();
 syncDomainParams();
 refreshStatus();

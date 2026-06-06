@@ -354,18 +354,27 @@ h1 {
 }
 
 .federation-main {
-  overflow: auto;
+  overflow: hidden;
+}
+
+.federation-results {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .federation-grid {
+  flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: minmax(240px, 0.9fr) minmax(300px, 1.1fr);
   gap: 0.65rem;
-  min-height: 0;
 }
 
 .col-steps {
   min-height: 0;
+  overflow: auto;
 }
 
 .col-fed-graph {
@@ -374,10 +383,43 @@ h1 {
   flex-direction: column;
 }
 
+.col-fed-graph .graph-block {
+  flex: 1 1 280px;
+  min-height: 280px;
+}
+
+.col-fed-graph .graph-network {
+  min-height: 280px;
+  height: 280px;
+}
+
 .federation-steps {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  max-height: min(46vh, 440px);
+  overflow-y: auto;
+  padding-right: 0.15rem;
+}
+
+.step-cypher-block {
+  margin-top: 0.35rem;
+}
+
+.step-cypher-block summary {
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+  user-select: none;
+}
+
+.step-cypher-block summary:hover {
+  color: var(--text);
+}
+
+.step-cypher-block[open] summary {
+  margin-bottom: 0.25rem;
 }
 
 .step-card {
@@ -413,6 +455,13 @@ h1 {
   color: var(--muted);
 }
 
+.steps-count {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+
 .step-edge {
   font-family: var(--mono);
   font-size: 0.62rem;
@@ -420,7 +469,7 @@ h1 {
 }
 
 .step-cypher {
-  margin: 0.35rem 0 0;
+  margin: 0;
   padding: 0.45rem 0.55rem;
   border-radius: 6px;
   border: 1px solid var(--border);
@@ -430,6 +479,8 @@ h1 {
   line-height: 1.45;
   white-space: pre-wrap;
   overflow-x: auto;
+  max-height: 160px;
+  overflow-y: auto;
 }
 
 .step-desc,
@@ -616,6 +667,13 @@ textarea:focus {
   color: var(--muted);
 }
 
+.query-examples-hint {
+  margin: 0.15rem 0 0.35rem;
+  font-size: 0.68rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
 .query-examples {
   display: flex;
   flex-direction: column;
@@ -623,6 +681,10 @@ textarea:focus {
   max-height: min(42vh, 22rem);
   overflow-y: auto;
   padding-right: 0.15rem;
+}
+
+.agent-examples-list {
+  max-height: min(54vh, 30rem);
 }
 
 .query-example {
@@ -658,6 +720,16 @@ textarea:focus {
   font-size: 0.7rem;
   line-height: 1.45;
   color: var(--muted);
+}
+
+.query-example-meta .meta-label {
+  display: block;
+  margin-bottom: 0.12rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: color-mix(in srgb, var(--muted) 85%, var(--text));
 }
 
 .primary {

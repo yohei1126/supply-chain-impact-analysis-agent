@@ -44,11 +44,11 @@ def build_system_prompt(repo_root: Path) -> str:
     ontology = load_skill_package(repo_root, "bom-ontology")
     explorer = load_skill_package(repo_root, "bom-graph-explorer")
 
-    ontology_json = ""
-    ontology_path = ontology.assets.get("ontology.json")
-    if ontology_path and ontology_path.exists():
-        bundle = json.loads(ontology_path.read_text(encoding="utf-8"))
-        ontology_json = json.dumps(bundle, ensure_ascii=False, indent=2)
+    def _load_json_asset(pkg: SkillPackage, filename: str) -> str:
+        path = pkg.assets.get(filename)
+        if path and path.exists():
+            return json.dumps(json.loads(path.read_text(encoding="utf-8")), ensure_ascii=False, indent=2)
+        return ""
 
     parts = [
         "# System context (Agent Skills)",
@@ -59,8 +59,19 @@ def build_system_prompt(repo_root: Path) -> str:
         "## bom-graph-explorer",
         explorer.skill_md,
     ]
+
+    ontology_json = _load_json_asset(ontology, "ontology.json")
     if ontology_json:
-        parts.extend(["", "## ontology.json (SSOT)", ontology_json])
+        parts.extend(["", "## ontology.json (generated from schema.py)", ontology_json])
+
+    for asset_name, heading in (
+        ("graph-context.json", "graph-context.json (domains + federation)"),
+        ("query-catalog.json", "query-catalog.json (named Cypher recipes)"),
+        ("cypher-engine-profile.json", "cypher-engine-profile.json (lance-graph dialect)"),
+    ):
+        body = _load_json_asset(explorer, asset_name)
+        if body:
+            parts.extend(["", f"## {heading}", body])
 
     for name, body in explorer.references.items():
         parts.extend(["", f"## reference: {name}", body])

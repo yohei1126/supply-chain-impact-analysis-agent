@@ -1,34 +1,49 @@
 ---
 name: bom-graph-explorer
-description: Explore manufacturing BOM knowledge graphs with strict ontology constraints on LanceGraph, DuckDB, and LanceDB. Use for supplier impact analysis, shortest-path traversal, or vector-to-graph multi-hop exploration in BOM data.
-compatibility: Requires bom-ontology (skills/bom-ontology). Optional app Python package for scripts.
+description: Compose and validate BOM graph Cypher using bom-ontology assets and generated query catalogs. Use for supplier impact, supply-path, or hybrid exploration when the agent must interpret context and build domain-scoped queries.
+compatibility: Requires bom-ontology (skills/bom-ontology). Read generated assets under assets/; do not duplicate schema tables in prompts.
 metadata:
   author: bom-knowledge-graph-agent-skill
-  version: "1.0"
+  version: "1.1"
 ---
 
 # BOM Graph Explorer (Agent Skill)
 
-Exploration workflows only. Schema: **skills/bom-ontology/assets/ontology.json**.
+Ontology-driven **Cypher composition** for federated BOM graphs. Execution lives in the app layer; this skill teaches how to read generated assets and compose valid queries.
 
 ## Prerequisites
 
 ```bash
 npx skils add <source> --path skills/bom-ontology
+npx skils add <source> --path skills/bom-graph-explorer
 ```
 
-## Workflow
+## Read order (generated assets — do not hand-edit)
 
-1. Load **bom-ontology** → `assets/ontology.json`.
-2. Read [references/workflows.md](references/workflows.md).
-3. Use tools when Python runtime is available: `bom_supplier_impact`, `bom_supply_path`.
+1. **bom-ontology** → `assets/ontology.json` — node shapes and `allowed_pairs`.
+2. **This skill** → `assets/graph-context.json` — domain graphs and federation bridges.
+3. **This skill** → `assets/query-catalog.json` — named query recipes and federation steps.
+4. **This skill** → `assets/cypher-engine-profile.json` — lance-graph dialect limits.
+5. **references/cypher-compose.md** — composition checklist (prose only).
+
+Regenerate all JSON after schema or query changes:
 
 ```bash
-uv sync
-uv run python skills/bom-graph-explorer/scripts/explore_graph.py --seed --mode supplier-impact --supplier-id SUP-001
+uv run python scripts/sync_ontology.py
 ```
+
+## Agent tools (invoke — do not reimplement in Cypher prose)
+
+| Tool | When |
+|------|------|
+| `bom_supplier_impact` | Supplier disruption → components and products |
+| `bom_supply_path` | Path from component to product |
+| `bom_hybrid_query` | Natural-language similarity → RDB → graph impact |
+
+Tool names are stable; internal execution may use catalog queries and federation joins.
 
 ## Additional resources
 
-- [references/ontology.md](references/ontology.md)
-- [references/workflows.md](references/workflows.md)
+- [references/cypher-compose.md](references/cypher-compose.md) — how to compose Cypher from assets
+- [references/workflows.md](references/workflows.md) — scenario → catalog recipe mapping
+- [references/ontology.md](references/ontology.md) — where schema lives (pointer only)

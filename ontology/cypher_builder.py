@@ -242,3 +242,49 @@ def build_query_by_name(
         source_id=source_id,
         target_id=target_id,
     )
+
+
+def yields_for_spec(spec: CypherQuerySpec) -> list[str]:
+    """Column names returned by this query spec (for agent catalog export)."""
+    if spec.aggregate and spec.edge_type == "SUPPLIED_BY":
+        return ["component_id", "supplier_count"]
+    if spec.query_name == "impact_products_by_components":
+        return [
+            "component_id",
+            "component_name",
+            "component_cost",
+            "product_id",
+            "product_name",
+        ]
+    if spec.query_name == "direct_component_product_link":
+        return ["from_component_id", "to_product_id", "edge_type"]
+
+    source_label, target_label = edge_endpoints(spec.edge_type)
+    columns: list[str] = []
+    if source_label == "Component":
+        columns.extend(_NODE_FIELD_ALIASES["Component"].values())
+    if target_label == "Supplier":
+        columns.extend(_NODE_FIELD_ALIASES["Supplier"].values())
+    if target_label == "Product":
+        columns.extend(_NODE_FIELD_ALIASES["Product"].values())
+    if target_label == "Process":
+        columns.extend(_NODE_FIELD_ALIASES["Process"].values())
+    columns.extend(_EDGE_PROPERTY_ALIASES.get(spec.edge_type, {}).values())
+    return columns
+
+
+def export_query_spec_entry(spec: CypherQuerySpec) -> dict[str, object]:
+    source_label, target_label = edge_endpoints(spec.edge_type)
+    entry: dict[str, object] = {
+        "edge_type": spec.edge_type,
+        "direction": f"{source_label}->{target_label}",
+        "filter_mode": spec.filter_mode,
+        "yields": yields_for_spec(spec),
+    }
+    if spec.anchor_label:
+        entry["anchor"] = {"label": spec.anchor_label, "param": spec.anchor_param}
+    if spec.order_by:
+        entry["order_by"] = list(spec.order_by)
+    if spec.aggregate:
+        entry["aggregate"] = True
+    return entry

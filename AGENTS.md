@@ -9,7 +9,7 @@ High-level guide for agents working in this repository.
 - **Published ontology SSOT:** `skills/bom-ontology/assets/ontology.json` (single generated file).
 - **Graph context contract:** `ontology/contract/graph_context.yaml` (cross-domain federation rules).
 - **All Agent Skills** live under `skills/` (`bom-ontology`, `bom-graph-explorer`).
-- Regenerate ontology: `uv run python scripts/sync_ontology.py`.
+- Regenerate ontology and explorer assets: `uv run python scripts/sync_ontology.py`.
 - Workflow skills must not embed a second copy of `ontology.json`.
 - No tool-specific install copies under `.cursor/skills/`.
 
@@ -23,7 +23,7 @@ High-level guide for agents working in this repository.
 | Pipeline | `pipeline/demo/` | Cross-domain demo fixtures and seed orchestration |
 | Application | `app/` | Storage, federation facade, hybrid store, cross-domain tools, agent |
 | Ontology skill | `skills/bom-ontology/` | Distributable schema for agents (`skills/bom-ontology/assets/ontology.json`) |
-| Exploration skill | `skills/bom-graph-explorer/` | How to traverse/query; depends on bom-ontology |
+| Exploration skill | `skills/bom-graph-explorer/` | Cypher compose protocol + generated `graph-context.json`, `query-catalog.json`, `cypher-engine-profile.json` |
 
 ## 3. Ontology vs validation vs exploration
 

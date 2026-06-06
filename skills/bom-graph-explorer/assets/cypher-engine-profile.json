@@ -1,0 +1,21 @@
+{
+  "engine": "lance-graph",
+  "dialect_notes": [
+    "Cypher subset only — not full Neo4j.",
+    "No shortestPath(); use direct edge match or multi-hop outside Cypher.",
+    "List parameters such as IN $ids may be unsupported; embed component id literals when required.",
+    "One domain graph per execute call (sourcing, ebom, or routing)."
+  ],
+  "composition_rules": [
+    "Every MATCH edge type must appear in ontology.json edges.allowed_pairs with correct direction.",
+    "Restrict edges to the target graph_id listed in graph-context.json domains.",
+    "Join federated steps in application logic on identity.bridges (Component.id).",
+    "Prefer named queries from query-catalog.json before inventing ad-hoc patterns."
+  ],
+  "meta": {
+    "format": "bom-cypher-engine-profile",
+    "version": 1,
+    "source": "domains/export.py",
+    "note": "Engine dialect constraints for LLM Cypher composition; update domains/export.py"
+  }
+}

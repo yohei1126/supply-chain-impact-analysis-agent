@@ -1,0 +1,103 @@
+{
+  "identity": {
+    "master_entity": "Component",
+    "master_key": "id",
+    "bridges": [
+      {
+        "entity": "Component",
+        "key": "id",
+        "graphs": [
+          "ebom",
+          "routing",
+          "sourcing"
+        ],
+        "rule": "same_id_same_real_world_part"
+      },
+      {
+        "entity": "Product",
+        "key": "id",
+        "graphs": [
+          "ebom",
+          "routing"
+        ],
+        "rule": "same_id_same_finished_good"
+      }
+    ]
+  },
+  "domains": {
+    "ebom": {
+      "graph_id": "ebom",
+      "nodes": [
+        "Component",
+        "Product"
+      ],
+      "edges": {
+        "USED_IN": {
+          "from": "Component",
+          "to": "Product"
+        }
+      }
+    },
+    "routing": {
+      "graph_id": "routing",
+      "nodes": [
+        "Component",
+        "Process",
+        "Product"
+      ],
+      "edges": {
+        "INPUT_OF": {
+          "from": "Component",
+          "to": "Process"
+        },
+        "PRODUCED_BY": {
+          "from": "Product",
+          "to": "Process"
+        }
+      }
+    },
+    "sourcing": {
+      "graph_id": "sourcing",
+      "nodes": [
+        "Component",
+        "Supplier"
+      ],
+      "edges": {
+        "SUPPLIED_BY": {
+          "from": "Component",
+          "to": "Supplier"
+        }
+      }
+    }
+  },
+  "federation": {
+    "joins": [
+      {
+        "name": "supplier_disruption_impact",
+        "description": "Components supplied by a disrupted supplier to affected finished goods.",
+        "steps": [
+          "components_by_supplier",
+          "impact_products_by_components"
+        ],
+        "bridge": "component_id"
+      },
+      {
+        "name": "supplier_disruption_with_routing",
+        "description": "Supplier impact extended with manufacturing processes consuming affected components.",
+        "steps": [
+          "components_by_supplier",
+          "impact_products_by_components",
+          "processes_by_components"
+        ],
+        "bridge": "component_id"
+      }
+    ]
+  },
+  "meta": {
+    "format": "bom-graph-context-bundle",
+    "version": 1,
+    "source": "domains/registry.py + ontology/schema.py",
+    "contract": "ontology/contract/graph_context.yaml",
+    "note": "Generated file. Do not edit by hand; run scripts/sync_ontology.py"
+  }
+}
