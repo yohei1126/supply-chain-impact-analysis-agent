@@ -84,14 +84,13 @@
           </div>
           <p id="domain-summary" class="result-summary muted">Pick a domain and run a query. Results come from one graph only.</p>
           <section class="narrative-block query-block" id="domain-query-block" hidden aria-labelledby="section-domain-query">
-            <h3 id="section-domain-query">Traversal semantics</h3>
+            <h3 id="section-domain-query">Cypher query</h3>
             <p class="query-disclaimer">
-              Illustrates what the Python function does on the ontology — not Cypher, Gremlin, or SQL sent to LanceDB.
-              The runtime scans <code>graph_nodes</code> / <code>graph_edges</code> tables in-process.
+              Generated from <code>ontology/schema.py</code> (<code>ALLOWED_EDGES</code>, node fields)
+              and executed by <code>lance-graph</code> on this domain&apos;s Lance tables.
             </p>
             <dl class="query-spec" id="domain-query-spec"></dl>
-            <p class="field-label">Graph pattern (illustrative)</p>
-            <pre class="query-expression" id="domain-query-expression" aria-label="Illustrative graph pattern"></pre>
+            <pre class="query-expression" id="domain-query-expression" aria-label="Cypher query"></pre>
           </section>
           <div id="domain-table-wrap" class="table-wrap" hidden>
             <table class="data-table" id="domain-table">
@@ -154,7 +153,7 @@
             <div class="federation-grid">
               <div class="col-steps">
                 <section class="narrative-block" aria-labelledby="section-steps">
-                  <h3 id="section-steps">Domain steps</h3>
+                  <h3 id="section-steps">Domain steps <span class="steps-count">(3 domains)</span></h3>
                   <div id="federation-steps" class="federation-steps"></div>
                 </section>
                 <section class="narrative-block" aria-labelledby="section-problems">
@@ -191,29 +190,21 @@
       <section class="mode-panel" id="panel-agent" role="tabpanel" aria-labelledby="tab-agent" hidden>
         <aside class="panel rail">
           <h2>Agent question</h2>
-          <p class="rail-intro">Natural-language goal; planner picks tools and may call multiple domain graphs via the agent.</p>
+          <p class="rail-intro">
+            Describe a scenario in plain language — examples deliberately omit supplier IDs and part numbers so the planner must interpret context and pick tools.
+          </p>
           <label class="sr-only" for="goal">Question</label>
           <textarea
             id="goal"
             rows="3"
-            placeholder="e.g. What happens if supplier SUP-002 has a disruption?"
+            placeholder="e.g. Our German brass supplier might face a disruption — which finished products are exposed?"
           ></textarea>
 
           <p class="query-examples-label">Try an example</p>
-          <div class="query-examples" role="group" aria-label="Example questions">
-            <button type="button" class="query-example agent-example" data-goal="Analyze supplier impact for SUP-002">
-              <span class="query-example-title">Supplier SUP-002 disruption</span>
-              <span class="query-example-desc">Which parts and finished products are affected.</span>
-            </button>
-            <button type="button" class="query-example agent-example" data-goal="Find the supply path from COMP-103 to PROD-901">
-              <span class="query-example-title">Path to motor assembly</span>
-              <span class="query-example-desc">COMP-103 → PROD-901 through the bill of materials.</span>
-            </button>
-            <button type="button" class="query-example agent-example" data-goal="Find similar brass valve components and show supplier impact">
-              <span class="query-example-title">Brass valve parts</span>
-              <span class="query-example-desc">Hybrid vector + RDB + graph search.</span>
-            </button>
-          </div>
+          <p class="query-examples-hint">
+            Cards describe intent and expected exploration for you. Only the indirect question is sent to the agent.
+          </p>
+          <div id="agent-examples" class="query-examples agent-examples-list" role="group" aria-label="Example questions"></div>
 
           <button type="button" id="run-btn" class="primary">Analyze</button>
           <p id="error" class="error" hidden></p>
@@ -243,6 +234,19 @@
               </section>
             </div>
             <div class="col-graph">
+              <section
+                class="narrative-block agent-cypher-block"
+                id="agent-cypher-section"
+                aria-labelledby="section-agent-cypher"
+              >
+                <h3 id="section-agent-cypher">Cypher executed</h3>
+                <p id="agent-cypher-meta" class="graph-caption muted">
+                  Ontology-generated queries from agent tools appear here after Analyze.
+                </p>
+                <div id="agent-cypher-steps" class="federation-steps agent-cypher-steps">
+                  <p class="muted step-summary">Run Analyze to see Cypher from graph tools.</p>
+                </div>
+              </section>
               <section class="narrative-block graph-block" aria-labelledby="section-map">
                 <h3 id="section-map">Supply chain map</h3>
                 <p id="graph-caption" class="graph-caption">

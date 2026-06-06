@@ -28,7 +28,7 @@ def build_user_explanation(result: AgentRunResult) -> str:
     if not report.get("executions"):
         return (
             "We could not analyze that question. "
-            "Try one of the examples on the left, such as supplier impact for SUP-002."
+            "Try one of the indirect examples on the left, such as a supplier disruption described by country and material."
         )
 
     explanation = (result.explanation or "").strip()
@@ -58,6 +58,66 @@ def build_user_evidence(result: AgentRunResult) -> list[dict[str, str]]:
     return items
 
 
+def build_user_cypher_executions(result: AgentRunResult) -> list[dict[str, Any]]:
+    """Cypher steps run by agent tools (user-visible; mirrors federation domain steps)."""
+    executions: list[dict[str, Any]] = []
+    for call, payload in zip(result.tool_calls, result.results):
+        steps = list(payload.get("cypher_queries") or [])
+        if not steps:
+            primary = (payload.get("cypher") or "").strip()
+            if primary:
+                steps = [
+                    {
+                        "graph_id": "",
+                        "query_name": payload.get("operation", call.name),
+                        "cypher": primary,
+                    }
+                ]
+        if not steps:
+            if call.name == "bom_hybrid_query":
+                executions.append(
+                    {
+                        "tool": call.name,
+                        "operation": payload.get("operation", call.name),
+                        "summary": payload.get("summary", ""),
+                        "ontology_source": "hybrid: LanceDB vector + DuckDB (graph step uses Cypher internally)",
+                        "steps": [
+                            {
+                                "graph_id": "",
+                                "query_name": "hybrid_pipeline",
+                                "cypher": (
+                                    "/* Hybrid pipeline — no single user-facing Cypher string.\n"
+                                    "   1) LanceDB vector search\n"
+                                    "   2) DuckDB component attributes\n"
+                                    "   3) Graph impact rows (ontology Cypher on sourcing/ebom) */"
+                                ),
+                            }
+                        ],
+                    }
+                )
+            continue
+        executions.append(
+            {
+                "tool": call.name,
+                "operation": payload.get("operation", call.name),
+                "summary": payload.get("summary", ""),
+                "ontology_source": payload.get("ontology_source", ""),
+                "steps": steps,
+            }
+        )
+    return executions
+
+
+def build_user_run_summary(result: AgentRunResult) -> dict[str, Any]:
+    report = result.run_report or {}
+    planning = report.get("planning", {})
+    return {
+        "planner": planning.get("planner") or result.llm_notes or "unknown",
+        "tools": [call.name for call in result.tool_calls],
+        "tool_count": len(result.tool_calls),
+    }
+
+
 def build_user_response(result: AgentRunResult) -> dict[str, Any]:
     report = result.run_report or {}
     return {
@@ -66,4 +126,6 @@ def build_user_response(result: AgentRunResult) -> dict[str, Any]:
         "findings": build_user_findings(report),
         "evidence": build_user_evidence(result),
         "graph_view": result.graph_view,
+        "cypher_executions": build_user_cypher_executions(result),
+        "run_summary": build_user_run_summary(result),
     }

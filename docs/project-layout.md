@@ -274,3 +274,5 @@ There are **no empty legacy directories** left from these moves. Placeholder fil
 | Developer setup & roadmap | [development.md](development.md) |
 | Tests, lint, static analysis | [testing-and-quality.md](testing-and-quality.md) |
 | Agent / SSOT workflow | [AGENTS.md](../AGENTS.md) |
+| Agent skill JSON catalogs & versioning | [agent-skill-assets.md](agent-skill-assets.md) |
+| Demo verify & evaluate (UI vs Langfuse) | [demo-verification-and-evaluation.md](demo-verification-and-evaluation.md) |

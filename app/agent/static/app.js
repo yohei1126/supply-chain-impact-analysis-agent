@@ -42,6 +42,36 @@ const DOMAIN_EXAMPLES = {
   ],
 };
 
+const AGENT_EXAMPLES = [
+  {
+    title: "German brass supplier disruption",
+    goal:
+      "Our German brass supplier might face a port strike next month. Which finished products and component parts should we worry about?",
+    intent:
+      "Test whether the agent can identify a supplier from country and material alone, then quantify BOM exposure when that supply line fails.",
+    exploration:
+      "Resolve clues (Germany + brass → Euro Brass GmbH) → bom_supplier_impact → sourcing SUPPLIED_BY rows joined to ebom USED_IN for affected components and finished goods.",
+  },
+  {
+    title: "Servo motor drive shaft trace",
+    goal:
+      "The servo motor drive product relies on a drive shaft part. Can you trace how that component connects through the bill of materials to the finished assembly?",
+    intent:
+      "Test whether the agent maps everyday part and product names to graph entities without explicit COMP-xxx / PROD-xxx IDs.",
+    exploration:
+      "Infer drive shaft and Servo Motor Drive from the question → bom_supply_path → traverse ebom/routing edges (USED_IN, INPUT_OF, PRODUCED_BY) between the two nodes.",
+  },
+  {
+    title: "Brass valve shortage",
+    goal:
+      "We're short on brass valve-related parts. Find similar components in our catalog and show which suppliers feed them.",
+    intent:
+      "Test multi-hop reasoning: semantic similarity first, then upstream supplier linkage — not a single pre-known part ID.",
+    exploration:
+      "bom_hybrid_query (vector + RDB over material/name) to surface brass valve-like components → bom_supplier_impact or graph impact rows for suppliers on the matched parts.",
+  },
+];
+
 async function api(path, options = {}) {
   const res = await fetch(path, {
     headers: { "Content-Type": "application/json", ...options.headers },
@@ -120,8 +150,23 @@ function bindModeTabs() {
         p.classList.toggle("is-active", active);
         p.hidden = !active;
       });
+      if (panelId === "panel-federation") {
+        refitGraphNetwork(federationGraphNetwork, "federation-graph-network");
+      } else if (panelId === "panel-agent") {
+        refitGraphNetwork(graphNetwork, "graph-network");
+      }
       window.dispatchEvent(new Event("resize"));
     });
+  });
+}
+
+function refitGraphNetwork(network, containerId) {
+  if (!network) return;
+  const container = $(containerId);
+  if (!container) return;
+  requestAnimationFrame(() => {
+    network.redraw();
+    network.fit({ animation: false });
   });
 }
 
@@ -131,6 +176,35 @@ function syncDomainParams() {
   $("domain-param-supplier").hidden = !isSourcing;
   $("domain-param-components").hidden = isSourcing;
   renderDomainExamples(graphId);
+}
+
+function renderAgentExamples() {
+  const container = $("agent-examples");
+  container.innerHTML = "";
+  for (const ex of AGENT_EXAMPLES) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "query-example agent-example";
+    btn.dataset.goal = ex.goal;
+    btn.innerHTML = `
+      <span class="query-example-title">${ex.title}</span>
+      <span class="query-example-meta query-example-intent">
+        <span class="meta-label">Intent</span>
+        ${ex.intent}
+      </span>
+      <span class="query-example-meta query-example-explore">
+        <span class="meta-label">Expected exploration</span>
+        ${ex.exploration}
+      </span>
+    `;
+    btn.addEventListener("click", () => {
+      $("goal").value = ex.goal;
+      document.querySelectorAll(".agent-example").forEach((el) => el.classList.remove("is-selected"));
+      btn.classList.add("is-selected");
+      $("goal").focus();
+    });
+    container.appendChild(btn);
+  }
 }
 
 function renderDomainExamples(graphId) {
@@ -207,9 +281,10 @@ function renderDomainQuerySpec(query) {
   const rows = [
     ["Graph", query.graph_id],
     ["Owner team", query.owner_team],
-    ["Query", query.query_name],
-    ["Edge", query.edge],
-    ["Function", query.function],
+    ["Query spec", query.query_spec],
+    ["Ontology", query.ontology_source],
+    ["Engine", query.engine],
+    ["Language", query.language],
     ["Scope", query.scope],
   ];
 
@@ -233,11 +308,7 @@ function renderDomainQuerySpec(query) {
   dl.appendChild(dt);
   dl.appendChild(params);
 
-  expr.textContent = [
-    `# ${query.graph_id} graph (domain-local)`,
-    query.edge_pattern,
-    `WHERE ${query.filter}`,
-  ].join("\n");
+  expr.textContent = query.cypher || "";
 
   block.hidden = false;
 }
@@ -291,6 +362,13 @@ function severityClass(severity) {
   return "severity-low";
 }
 
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 function renderFederationSteps(domainQueries, joinPlan) {
   const container = $("federation-steps");
   container.innerHTML = "";
@@ -311,7 +389,11 @@ function renderFederationSteps(domainQueries, joinPlan) {
       ${
         match
           ? `<p class="step-summary">${match.summary}</p>
-             <p class="step-meta">${match.row_count} row(s) · query <code>${match.query_name}</code></p>`
+             <p class="step-meta">${match.row_count} row(s) · <code>${match.query_name}</code></p>
+             <details class="step-cypher-block">
+               <summary>Cypher query</summary>
+               <pre class="step-cypher">${escapeHtml(match.cypher || "")}</pre>
+             </details>`
           : `<p class="step-summary muted">No data</p>`
       }
     `;
@@ -414,6 +496,80 @@ function renderFindings(findings) {
   }
 }
 
+function renderAgentCypherExecutions(executions, runSummary) {
+  const section = $("agent-cypher-section");
+  const container = $("agent-cypher-steps");
+  const meta = $("agent-cypher-meta");
+  container.innerHTML = "";
+  section.hidden = false;
+
+  const planner = runSummary?.planner || "unknown";
+  const tools = runSummary?.tools || [];
+  const plannerLine = `Planner: ${planner}${tools.length ? ` → ${tools.join(", ")}` : " → (no tools)"}`;
+
+  if (!executions?.length) {
+    meta.textContent = plannerLine;
+    const empty = document.createElement("p");
+    empty.className = "muted step-summary";
+    if (!tools.length) {
+      empty.textContent =
+        "No graph tools ran, so no ontology Cypher and no supply chain map for this answer. Enable LiteLLM (mode=auto) for richer indirect goals, use Federation tab for explicit cross-domain Cypher, or include SUP-xxx / COMP-xxx in the question.";
+    } else {
+      empty.textContent =
+        "Tools ran but did not emit domain Cypher (e.g. bom_hybrid_query uses vector + DuckDB first). See hybrid pipeline note below if present.";
+    }
+    container.appendChild(empty);
+    return;
+  }
+
+  const stepCount = executions.reduce((n, ex) => n + (ex.steps?.length || 0), 0);
+  meta.textContent = `${plannerLine} · ${stepCount} Cypher step(s)`;
+
+  for (const exec of executions) {
+    const card = document.createElement("article");
+    card.className = "step-card";
+    const stepsHtml = (exec.steps || [])
+      .map((step, index) => {
+        const graphId = step.graph_id || "federated";
+        const domainMeta = DOMAIN_META[graphId] || {};
+        const domainClass = domainMeta.className || "";
+        return `
+          <div class="agent-cypher-step ${domainClass}">
+            <header class="step-card-head">
+              <span class="step-num">Step ${index + 1}</span>
+              ${
+                step.graph_id
+                  ? `<span class="domain-badge ${domainClass}">${step.graph_id}</span>`
+                  : ""
+              }
+              <code class="step-query-name">${step.query_name || "query"}</code>
+            </header>
+            <details class="step-cypher-block" open>
+              <summary>Cypher</summary>
+              <pre class="step-cypher">${escapeHtml(step.cypher || "")}</pre>
+            </details>
+          </div>
+        `;
+      })
+      .join("");
+
+    card.innerHTML = `
+      <header class="step-card-head">
+        <code class="step-tool-name">${exec.tool}</code>
+        <span class="step-edge">${exec.operation || ""}</span>
+      </header>
+      ${exec.summary ? `<p class="step-summary">${exec.summary}</p>` : ""}
+      ${
+        exec.ontology_source
+          ? `<p class="step-meta">Source: <code>${exec.ontology_source}</code></p>`
+          : ""
+      }
+      ${stepsHtml}
+    `;
+    container.appendChild(card);
+  }
+}
+
 async function runAnalysis() {
   const goal = $("goal").value.trim();
   if (!goal) {
@@ -435,6 +591,7 @@ async function runAnalysis() {
     $("explanation").textContent = body.explanation || "No summary available.";
     renderFindings(body.findings);
     renderEvidence(body.evidence);
+    renderAgentCypherExecutions(body.cypher_executions, body.run_summary);
     renderGraphView(body.graph_view, "graph-network", "graph-caption", "agent");
   } catch (err) {
     showError("error", err.message);
@@ -502,7 +659,14 @@ function renderGraphView(graphView, containerId, captionId, mode) {
 
   if (networkRef) networkRef.destroy();
 
-  container.style.height = "100%";
+  if (isFederation) {
+    container.style.minHeight = "280px";
+    container.style.height = "280px";
+  } else {
+    container.style.minHeight = "180px";
+    container.style.height = "100%";
+  }
+
   const network = new vis.Network(
     container,
     { nodes: visNodes, edges: visEdges },
@@ -516,18 +680,11 @@ function renderGraphView(graphView, containerId, captionId, mode) {
 
   if (isFederation) federationGraphNetwork = network;
   else graphNetwork = network;
+
+  refitGraphNetwork(network, containerId);
 }
 
 function bindExamples() {
-  document.querySelectorAll(".agent-example").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      $("goal").value = btn.dataset.goal ?? "";
-      document.querySelectorAll(".agent-example").forEach((el) => el.classList.remove("is-selected"));
-      btn.classList.add("is-selected");
-      $("goal").focus();
-    });
-  });
-
   document.querySelectorAll(".federation-example").forEach((btn) => {
     btn.addEventListener("click", () => {
       $("federation-supplier-id").value = btn.dataset.supplier ?? "";
@@ -543,6 +700,7 @@ $("federation-run-btn").addEventListener("click", runFederation);
 $("run-btn").addEventListener("click", runAnalysis);
 
 bindModeTabs();
+renderAgentExamples();
 bindExamples();
 syncDomainParams();
 refreshStatus();

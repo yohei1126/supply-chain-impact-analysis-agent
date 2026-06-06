@@ -10,6 +10,20 @@ def test_user_response_omits_technical_fields() -> None:
         {
             "operation": "supplier_impact",
             "summary": "Downstream impact for supplier SUP-001",
+            "ontology_source": "ontology/schema.py + ontology/cypher_builder.py",
+            "cypher": "MATCH (c:Component)-[:SUPPLIED_BY]->(s:Supplier {id: $supplier_id})",
+            "cypher_queries": [
+                {
+                    "graph_id": "sourcing",
+                    "query_name": "components_by_supplier",
+                    "cypher": "MATCH (c:Component)-[:SUPPLIED_BY]->(s:Supplier {id: $supplier_id})",
+                },
+                {
+                    "graph_id": "ebom",
+                    "query_name": "impact_products_by_components",
+                    "cypher": "MATCH (c:Component)-[:USED_IN]->(p:Product)",
+                },
+            ],
             "data": [
                 {
                     "supplier_id": "SUP-001",
@@ -43,3 +57,7 @@ def test_user_response_omits_technical_fields() -> None:
     assert user["evidence"][0]["claim"]
     assert "tool_calls" not in user
     assert "pointer" not in str(user["evidence"])
+    assert user["cypher_executions"]
+    assert user["cypher_executions"][0]["tool"] == "bom_supplier_impact"
+    assert len(user["cypher_executions"][0]["steps"]) == 2
+    assert user["cypher_executions"][0]["steps"][0]["graph_id"] == "sourcing"

@@ -5,19 +5,26 @@ All distributable Agent Skills for this project live under `skills/`.
 | Skill | Directory | Purpose |
 |-------|-----------|---------|
 | `bom-ontology` | [bom-ontology/](bom-ontology/) | Domain schema (`assets/ontology.json`) |
-| `bom-graph-explorer` | [bom-graph-explorer/](bom-graph-explorer/) | Exploration workflows (requires bom-ontology) |
+| `bom-graph-explorer` | [bom-graph-explorer/](bom-graph-explorer/) | Cypher composition + query catalog (requires bom-ontology) |
 
 ## SSOT
 
 | Layer | Location |
 |-------|----------|
 | Layout (org vs technical boundaries) | [docs/project-layout.md](../docs/project-layout.md) |
-| Authoring | `ontology/schema.py` |
-| Published JSON (one file) | `skills/bom-ontology/assets/ontology.json` |
+| Schema authoring | `ontology/schema.py` |
+| Query recipe authoring | `ontology/cypher_builder.py` |
+| Domain / federation export | `domains/export.py` |
+| Published schema JSON | `skills/bom-ontology/assets/ontology.json` |
+| Published explorer JSON | `skills/bom-graph-explorer/assets/*.json` |
 
 ```bash
 uv run python scripts/sync_ontology.py
 ```
+
+Regenerates ontology JSON and bom-graph-explorer assets (`graph-context.json`, `query-catalog.json`, `cypher-engine-profile.json`). Skill markdown stays prose-only (compose protocol); do not duplicate edge tables in `.md` files.
+
+**Production / multi-agent versioning:** [docs/agent-skill-assets.md](../docs/agent-skill-assets.md)
 
 ## Install
 

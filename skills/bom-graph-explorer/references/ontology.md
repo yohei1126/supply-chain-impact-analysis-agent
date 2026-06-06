@@ -1,25 +1,19 @@
-# Ontology for BOM graph exploration
+# Ontology pointers (no schema copy)
 
-Schema is not in this skill. Install **bom-ontology**:
+Full node and edge definitions are **not** in this skill.
 
-**`skills/bom-ontology/assets/ontology.json`**
+| Need | Source |
+|------|--------|
+| Node fields, `allowed_pairs` | `bom-ontology` → `assets/ontology.json` |
+| Domain graphs, federation bridges | `bom-graph-explorer` → `assets/graph-context.json` |
+| Named Cypher recipes | `bom-graph-explorer` → `assets/query-catalog.json` |
+| Engine dialect limits | `bom-graph-explorer` → `assets/cypher-engine-profile.json` |
+| Authoring / validation (Python) | `ontology/schema.py` |
+
+Install bom-ontology first, then load this skill's generated assets. Regenerate with:
 
 ```bash
-npx skils add <source> --path skills/bom-ontology
+uv run python scripts/sync_ontology.py
 ```
 
-| Context | Schema source |
-|---------|----------------|
-| Agent host | bom-ontology → `assets/ontology.json` |
-| Python pipeline | `ontology/schema.py` (generates the JSON above) |
-
-## Allowed edges (summary)
-
-| Edge | From | To |
-|------|------|-----|
-| `USED_IN` | Component | Product |
-| `PRODUCED_BY` | Product | Process |
-| `SUPPLIED_BY` | Component | Supplier |
-| `INPUT_OF` | Component | Process |
-
-Full definitions: `assets/ontology.json` only.
+Do **not** duplicate edge tables in skill markdown — drift tests enforce JSON sync with `schema.py`.

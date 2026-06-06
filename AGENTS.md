@@ -9,7 +9,7 @@ High-level guide for agents working in this repository.
 - **Published ontology SSOT:** `skills/bom-ontology/assets/ontology.json` (single generated file).
 - **Graph context contract:** `ontology/contract/graph_context.yaml` (cross-domain federation rules).
 - **All Agent Skills** live under `skills/` (`bom-ontology`, `bom-graph-explorer`).
-- Regenerate ontology: `uv run python scripts/sync_ontology.py`.
+- Regenerate ontology and explorer assets: `uv run python scripts/sync_ontology.py`.
 - Workflow skills must not embed a second copy of `ontology.json`.
 - No tool-specific install copies under `.cursor/skills/`.
 
@@ -23,7 +23,7 @@ High-level guide for agents working in this repository.
 | Pipeline | `pipeline/demo/` | Cross-domain demo fixtures and seed orchestration |
 | Application | `app/` | Storage, federation facade, hybrid store, cross-domain tools, agent |
 | Ontology skill | `skills/bom-ontology/` | Distributable schema for agents (`skills/bom-ontology/assets/ontology.json`) |
-| Exploration skill | `skills/bom-graph-explorer/` | How to traverse/query; depends on bom-ontology |
+| Exploration skill | `skills/bom-graph-explorer/` | Cypher compose protocol + generated `graph-context.json`, `query-catalog.json`, `cypher-engine-profile.json` |
 
 ## 3. Ontology vs validation vs exploration
 
@@ -184,7 +184,7 @@ uv run python scripts/demo_hybrid.py
 | 5 | Analyze in UI; inspect traces in Langfuse (`bom-agent-run`) |
 
 - **User UI:** Summary, Key findings, Evidence, Supply chain map only.
-- **Langfuse:** planner, tools, skills context, raw JSON — [docs/observability.md](docs/observability.md).
+- **Langfuse:** planner, tools, skills context, raw JSON — [docs/observability.md](docs/observability.md). **Demo verify & evaluate:** [docs/demo-verification-and-evaluation.md](docs/demo-verification-and-evaluation.md).
 - **LiteLLM / Gemini:** [docs/llm-gateway.md](docs/llm-gateway.md).
 
 Requires `BOM_REPO_ROOT` (defaults to cwd); agent loads `.env` on startup. Re-seed with §4.3 before first UI session if `data/` is empty.

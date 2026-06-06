@@ -1,0 +1,131 @@
+{
+  "queries": {
+    "components_by_supplier": {
+      "edge_type": "SUPPLIED_BY",
+      "direction": "Component->Supplier",
+      "filter_mode": "anchor_property",
+      "yields": [
+        "component_id",
+        "component_name",
+        "material",
+        "cost",
+        "supplier_id",
+        "supplier_name",
+        "country",
+        "risk_level",
+        "lead_time_days"
+      ],
+      "anchor": {
+        "label": "Supplier",
+        "param": "supplier_id"
+      },
+      "order_by": [
+        "c.cost DESC"
+      ],
+      "graph_id": "sourcing"
+    },
+    "products_by_components": {
+      "edge_type": "USED_IN",
+      "direction": "Component->Product",
+      "filter_mode": "source_id_in",
+      "yields": [
+        "component_id",
+        "component_name",
+        "material",
+        "cost",
+        "product_id",
+        "product_name",
+        "product_version"
+      ],
+      "order_by": [
+        "p.id",
+        "c.id"
+      ],
+      "graph_id": "ebom"
+    },
+    "processes_by_components": {
+      "edge_type": "INPUT_OF",
+      "direction": "Component->Process",
+      "filter_mode": "source_id_in",
+      "yields": [
+        "component_id",
+        "component_name",
+        "material",
+        "cost",
+        "process_id",
+        "process_name",
+        "work_center",
+        "cycle_time_min"
+      ],
+      "order_by": [
+        "pr.work_center",
+        "c.id"
+      ],
+      "graph_id": "routing"
+    },
+    "supplier_counts_by_components": {
+      "edge_type": "SUPPLIED_BY",
+      "direction": "Component->Supplier",
+      "filter_mode": "source_id_in",
+      "yields": [
+        "component_id",
+        "supplier_count"
+      ],
+      "aggregate": true,
+      "graph_id": "sourcing"
+    },
+    "impact_products_by_components": {
+      "edge_type": "USED_IN",
+      "direction": "Component->Product",
+      "filter_mode": "source_id_in",
+      "yields": [
+        "component_id",
+        "component_name",
+        "component_cost",
+        "product_id",
+        "product_name"
+      ],
+      "order_by": [
+        "c.cost DESC",
+        "p.id"
+      ],
+      "graph_id": "ebom"
+    },
+    "direct_component_product_link": {
+      "edge_type": "USED_IN",
+      "direction": "Component->Product",
+      "filter_mode": "endpoint_pair",
+      "yields": [
+        "from_component_id",
+        "to_product_id",
+        "edge_type"
+      ],
+      "graph_id": "ebom"
+    }
+  },
+  "federation_recipes": {
+    "supplier_disruption_impact": {
+      "description": "Components supplied by a disrupted supplier to affected finished goods.",
+      "steps": [
+        "components_by_supplier",
+        "impact_products_by_components"
+      ],
+      "bridge": "component_id"
+    },
+    "supplier_disruption_with_routing": {
+      "description": "Supplier impact extended with manufacturing processes consuming affected components.",
+      "steps": [
+        "components_by_supplier",
+        "impact_products_by_components",
+        "processes_by_components"
+      ],
+      "bridge": "component_id"
+    }
+  },
+  "meta": {
+    "format": "bom-query-catalog",
+    "version": 1,
+    "source": "ontology/cypher_builder.py + domains/registry.py",
+    "note": "Generated file. Do not edit by hand; run scripts/sync_ontology.py"
+  }
+}

@@ -2,6 +2,8 @@
 
 The web UI is **user-facing** (summary, key findings, evidence, supply chain map). Developer details — Agent Skills, planner mode, tool arguments, store names, raw JSON, and evidence pointers — are sent to **Langfuse** when configured.
 
+**What to check where (UI vs Langfuse vs Domain/Federation tabs):** [demo-verification-and-evaluation.md](demo-verification-and-evaluation.md) — includes demo scenario playbooks and evaluation rubric.
+
 **Docs index:** [development.md](development.md). **Full stack (Docker + agent + UI):** [local-demo-runbook.md](local-demo-runbook.md).
 
 ## Local self-host (Docker Compose)
@@ -136,6 +138,6 @@ If keys are unset (or `langfuse` is not installed), telemetry is a no-op; the UI
 
 ## API surface
 
-- **`POST /v1/agent/run`** — returns only `goal`, `explanation`, `findings`, `graph_view`.
+- **`POST /v1/agent/run`** — user-facing fields: `goal`, `explanation`, `findings`, `evidence`, `graph_view`. Operator detail (planner, tools, Cypher, raw JSON): Langfuse metadata — see [demo-verification-and-evaluation.md](demo-verification-and-evaluation.md).
 - Integrations: `GET /v1/tools`, `POST /v1/tools/invoke`, `GET /v1/skills/system-prompt`.
 - Full internal `AgentRunResult` in Python: `BomAutonomousAgent.run()`.

@@ -4,7 +4,7 @@ End-to-end steps to run the BOM supply-impact demo on your machine: Docker stack
 
 **Federation-only demo (no Docker / no LLM):** [federation-demo-runbook.md](federation-demo-runbook.md) — per-domain seed, validate, query, federated mitigations.
 
-**Overview:** [README.md](../README.md). **Development / layout / CLI demos:** [development.md](development.md). **Agents:** [AGENTS.md](../AGENTS.md) §5.4–5.5. **LiteLLM / Langfuse:** [llm-gateway.md](llm-gateway.md), [observability.md](observability.md).
+**Overview:** [README.md](../README.md). **Development / layout / CLI demos:** [development.md](development.md). **Agents:** [AGENTS.md](../AGENTS.md) §5.4–5.5. **LiteLLM / Langfuse:** [llm-gateway.md](llm-gateway.md), [observability.md](observability.md). **Demo verify & evaluate:** [demo-verification-and-evaluation.md](demo-verification-and-evaluation.md).
 
 ## What you will run
 
@@ -158,7 +158,7 @@ Top-right pill should show **Ready**. The UI has three tabs — **Domain query**
 
 ### Domain query tab
 
-Query **one** Lance graph at a time (Python scans `graph_nodes` / `graph_edges` — not Cypher).
+Query **one** Lance graph at a time using **Cypher** (`lance-graph` over Lance `graph_nodes` / `graph_edges`).
 
 | Domain | Example | What you see |
 |--------|---------|--------------|
@@ -166,7 +166,7 @@ Query **one** Lance graph at a time (Python scans `graph_nodes` / `graph_edges` 
 | **ebom** | `COMP-103` | Products linked via `USED_IN` |
 | **routing** | `COMP-103` | Processes linked via `INPUT_OF` |
 
-After **Run domain query**, check **Traversal semantics** for the Python function, parameters, and an illustrative graph pattern.
+After **Run domain query**, check **Cypher query** for the executed statement and parameters.
 
 Suggested flow:
 
@@ -183,25 +183,27 @@ Suggested flow:
 
 ### Agent (LLM) tab
 
-Natural-language questions with planner + optional LLM summary (requires LiteLLM when `mode=auto`).
+Natural-language questions with planner + optional LLM summary (requires LiteLLM when `mode=auto`). UI examples use **indirect scenarios** (no explicit `SUP-xxx` / `COMP-xxx`) so you can verify the agent interprets context before calling tools.
 
-1. Click an example, e.g. **Supplier SUP-002 disruption**
+**What to check in the UI vs Langfuse:** [demo-verification-and-evaluation.md](demo-verification-and-evaluation.md) — scenario playbooks (§3), evaluation rubric (§4), UI vs Langfuse (§5).
+
+1. Click an example, e.g. **German brass supplier disruption** — read Intent / Expected exploration on the card
 2. Click **Analyze**
-3. Read **Summary**, **Key findings**, **Evidence**, and the supply chain map
+3. Compare agent tool choices and results against the expected exploration; read **Summary**, **Key findings**, **Evidence**, and the supply chain map
 
-Other examples: **Path to motor assembly** (`COMP-103` → `PROD-901`), **Brass valve parts** (hybrid vector + RDB + graph).
+Other examples: **Servo motor drive shaft trace** (part/product names → supply path), **Brass valve shortage** (hybrid vector + RDB + graph).
 
 Use this tab for Langfuse **`bom-agent-run`** traces from the browser.
 
-### REST API (no browser)
+For deterministic API checks (explicit IDs), use curl with a direct goal:
 
 ```bash
 curl -s -X POST http://127.0.0.1:8080/v1/agent/run \
   -H 'Content-Type: application/json' \
-  -d '{"goal":"Analyze supplier impact for SUP-002","mode":"auto"}' | python3 -m json.tool
+  -d '{"goal":"Analyze supplier impact for SUP-002","mode":"tools"}' | python3 -m json.tool
 ```
 
-Federation endpoints:
+Browser UI examples omit IDs on purpose. Federation endpoints still accept explicit IDs:
 
 ```bash
 curl -s -X POST http://127.0.0.1:8080/v1/federation/domain-query \

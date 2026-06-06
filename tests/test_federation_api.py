@@ -60,9 +60,10 @@ def test_domain_query_sourcing(federation_client) -> None:
     query = body["query"]
     assert query["graph_id"] == "sourcing"
     assert query["query_name"] == "components_by_supplier"
+    assert query["language"] == "Cypher"
     assert query["parameters"]["supplier_id"] == "SUP-001"
-    assert "SUP-001" in query["filter"]
-    assert query["function"] == "query_sourcing_for_supplier"
+    assert "MATCH" in query["cypher"]
+    assert "SUPPLIED_BY" in query["cypher"]
 
 
 def test_domain_query_ebom_requires_component_ids(federation_client) -> None:

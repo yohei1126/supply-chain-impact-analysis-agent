@@ -47,3 +47,6 @@ def test_run_exploration_tool_supplier_impact(tmp_path) -> None:
     assert payload["operation"] == "supplier_impact"
     assert payload["data"]
     assert payload["data"][0]["component_id"] == "COMP-100"
+    assert "cypher" in payload
+    assert "MATCH" in payload["cypher"]
+    assert payload["cypher_queries"]

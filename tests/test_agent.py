@@ -54,15 +54,28 @@ def test_load_agent_skills() -> None:
     assert "bom-ontology" in pkg.skill_md
     assert "ontology.json" in pkg.assets
 
+    explorer = load_skill_package(REPO_ROOT, "bom-graph-explorer")
+    assert "query-catalog.json" in explorer.assets
+    assert "graph-context.json" in explorer.assets
+
     prompt = build_system_prompt(REPO_ROOT)
     assert "bom-graph-explorer" in prompt
-    assert "USED_IN" in prompt
+    assert "query-catalog.json" in prompt
+    assert "components_by_supplier" in prompt
+    assert "cypher-compose.md" in prompt or "Cypher composition protocol" in prompt
 
 
 def test_plan_tools_from_goal() -> None:
     calls = plan_tools_from_goal("supplier impact SUP-001")
     assert calls[0].name == "bom_supplier_impact"
     assert calls[0].arguments["supplier_id"] == "SUP-001"
+
+    german = plan_tools_from_goal(
+        "Our German brass supplier might face a port strike next month. "
+        "Which finished products and component parts should we worry about?"
+    )
+    assert german[0].name == "bom_supplier_impact"
+    assert german[0].arguments["supplier_id"] == "SUP-002"
 
 
 def test_autonomous_agent_run(tmp_path) -> None:
@@ -107,6 +120,9 @@ def test_remote_agent_api(tmp_path, monkeypatch) -> None:
     assert body["findings"]
     assert body["evidence"]
     assert body["graph_view"]["node_count"] >= 1
+    assert body.get("cypher_executions")
+    assert body["cypher_executions"][0]["steps"]
+    assert "MATCH" in body["cypher_executions"][0]["steps"][0]["cypher"]
     assert "tool_calls" not in body
     assert "run_report" not in body
 

@@ -66,6 +66,8 @@ class AgentRunResponse(BaseModel):
     findings: list[str] = Field(default_factory=list)
     evidence: list[dict[str, str]] = Field(default_factory=list)
     graph_view: dict[str, Any] = Field(default_factory=dict)
+    cypher_executions: list[dict[str, Any]] = Field(default_factory=list)
+    run_summary: dict[str, Any] = Field(default_factory=dict)
 
 
 GraphId = Literal["sourcing", "ebom", "routing"]
@@ -219,10 +221,9 @@ def run_domain_query(body: DomainQueryRequest) -> dict[str, Any]:
         "mode": "domain",
         "bridge_key": "Component.id",
         "query": build_domain_query_spec(
-            body.graph_id,
+            result,
             supplier_id=body.supplier_id.strip() if body.supplier_id else None,
             component_ids=body.component_ids,
-            query_name=result.query_name,
         ),
         "result": domain_query_to_dict(result),
     }
@@ -276,6 +277,8 @@ def run_agent(body: AgentRunRequest) -> AgentRunResponse:
         findings=user["findings"],
         evidence=user["evidence"],
         graph_view=user["graph_view"],
+        cypher_executions=user["cypher_executions"],
+        run_summary=user["run_summary"],
     )
 
 
