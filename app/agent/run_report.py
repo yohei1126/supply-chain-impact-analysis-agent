@@ -20,15 +20,15 @@ def _describe_query(tool_name: str, arguments: dict[str, Any]) -> str:
     if tool_name == "bom_supplier_impact":
         supplier_id = arguments.get("supplier_id", "?")
         return (
-            f"Graph traversal on LanceGraph: find components with SUPPLIED_BY → "
-            f"Supplier {supplier_id}, then products with USED_IN from each component."
+            f"Cypher via ontology: sourcing SUPPLIED_BY → Supplier {supplier_id}, "
+            f"then ebom USED_IN to products (lance-graph)."
         )
     if tool_name == "bom_supply_path":
         comp = arguments.get("from_component_id", "?")
         prod = arguments.get("to_product_id", "?")
         return (
-            f"Graph BFS on LanceGraph: shortest path Component {comp} → Product {prod} "
-            f"using USED_IN, INPUT_OF, and PRODUCED_BY edges only."
+            f"Cypher via ontology: ebom USED_IN direct link Component {comp} → Product {prod}; "
+            f"multi-hop falls back to Python BFS across ebom+routing."
         )
     if tool_name == "bom_hybrid_query":
         query = arguments.get("query", "")
@@ -36,16 +36,16 @@ def _describe_query(tool_name: str, arguments: dict[str, Any]) -> str:
         return (
             f"Hybrid pipeline: (1) LanceDB vector search top-{top_k} for text {query!r}, "
             f"(2) DuckDB SELECT on components by id, "
-            f"(3) LanceGraph supplier-impact rows filtered by component id."
+            f"(3) ontology Cypher supplier-impact on matching components."
         )
     return f"Invoke {tool_name} with {arguments}"
 
 
 def _stores_for_tool(tool_name: str) -> list[str]:
     if tool_name == "bom_supplier_impact":
-        return ["LanceGraph (graph_nodes, graph_edges)"]
+        return ["LanceGraph / lance-graph Cypher (sourcing, ebom)"]
     if tool_name == "bom_supply_path":
-        return ["LanceGraph (graph_nodes, graph_edges)"]
+        return ["LanceGraph / lance-graph Cypher (ebom); BFS fallback (ebom+routing)"]
     if tool_name == "bom_hybrid_query":
         return [
             "LanceDB (component_vectors)",

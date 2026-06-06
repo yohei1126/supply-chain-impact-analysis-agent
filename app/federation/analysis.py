@@ -1,10 +1,19 @@
-"""Domain-scoped queries, federated disruption analysis, and mitigations."""
+"""Domain-scoped Cypher queries, federated disruption analysis, and mitigations."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
+from app.federation.cypher_executor import execute_domain_cypher
+from app.federation.cypher_queries import (
+    ONTOLOGY_SOURCE,
+    cypher_components_by_supplier,
+    cypher_impact_by_components,
+    cypher_processes_by_components,
+    cypher_products_by_components,
+    cypher_supplier_counts,
+)
 from app.federation.graph_store import LanceGraphStore
 
 GraphId = Literal["sourcing", "ebom", "routing"]
@@ -14,6 +23,7 @@ GraphId = Literal["sourcing", "ebom", "routing"]
 class DomainQueryResult:
     graph_id: GraphId
     query_name: str
+    cypher: str
     summary: str
     rows: list[dict[str, Any]]
 
@@ -46,64 +56,40 @@ class FederatedAnalysis:
 
 
 def query_sourcing_for_supplier(store: LanceGraphStore, supplier_id: str) -> DomainQueryResult:
-    sourcing = store.domain("sourcing")
-    suppliers = [n for n in sourcing.all_nodes() if n["label"] == "Supplier" and n["id"] == supplier_id]
-    supplier = suppliers[0]["properties"] if suppliers else {}
-    components: list[dict[str, Any]] = []
-    for edge in sourcing.all_edges():
-        if (
-            edge["edge_type"] == "SUPPLIED_BY"
-            and edge["target_id"] == supplier_id
-            and edge["target_label"] == "Supplier"
-        ):
-            comp_id = edge["source_id"]
-            comp_nodes = [n for n in sourcing.all_nodes() if n["label"] == "Component" and n["id"] == comp_id]
-            comp = comp_nodes[0]["properties"] if comp_nodes else {}
-            components.append(
-                {
-                    "component_id": comp_id,
-                    "component_name": comp.get("name"),
-                    "material": comp.get("material"),
-                    "cost": comp.get("cost"),
-                    "lead_time_days": edge["properties"].get("lead_time_days"),
-                    "supplier_id": supplier_id,
-                    "supplier_name": supplier.get("company_name"),
-                    "country": supplier.get("country"),
-                    "risk_level": supplier.get("risk_level"),
-                }
-            )
-    components.sort(key=lambda r: r.get("cost") or 0, reverse=True)
+    supplier_id = supplier_id.strip()
+    cypher = cypher_components_by_supplier()
+    rows = execute_domain_cypher(
+        store.domain("sourcing"),
+        "sourcing",
+        cypher,
+        parameters={"supplier_id": supplier_id},
+    )
     return DomainQueryResult(
         graph_id="sourcing",
         query_name="components_by_supplier",
-        summary=f"Sourcing graph: {len(components)} components supplied by {supplier_id}",
-        rows=components,
+        cypher=cypher,
+        summary=f"Sourcing graph: {len(rows)} components supplied by {supplier_id}",
+        rows=rows,
     )
 
 
 def query_ebom_for_components(
     store: LanceGraphStore, component_ids: set[str]
 ) -> DomainQueryResult:
-    ebom = store.domain("ebom")
-    rows: list[dict[str, Any]] = []
-    for edge in ebom.all_edges():
-        if edge["edge_type"] == "USED_IN" and edge["source_id"] in component_ids:
-            product_nodes = [
-                n for n in ebom.all_nodes() if n["label"] == "Product" and n["id"] == edge["target_id"]
-            ]
-            product = product_nodes[0]["properties"] if product_nodes else {}
-            rows.append(
-                {
-                    "component_id": edge["source_id"],
-                    "product_id": edge["target_id"],
-                    "product_name": product.get("name"),
-                    "product_version": product.get("version"),
-                }
-            )
-    rows.sort(key=lambda r: (r["product_id"], r["component_id"]))
+    if not component_ids:
+        return DomainQueryResult(
+            graph_id="ebom",
+            query_name="products_by_components",
+            cypher="/* skipped: no component_ids */",
+            summary="EBOM graph: 0 component-to-product links",
+            rows=[],
+        )
+    cypher = cypher_products_by_components(component_ids)
+    rows = execute_domain_cypher(store.domain("ebom"), "ebom", cypher)
     return DomainQueryResult(
         graph_id="ebom",
         query_name="products_by_components",
+        cypher=cypher,
         summary=f"EBOM graph: {len(rows)} component-to-product links",
         rows=rows,
     )
@@ -112,38 +98,31 @@ def query_ebom_for_components(
 def query_routing_for_components(
     store: LanceGraphStore, component_ids: set[str]
 ) -> DomainQueryResult:
-    routing = store.domain("routing")
-    rows: list[dict[str, Any]] = []
-    for edge in routing.all_edges():
-        if edge["edge_type"] == "INPUT_OF" and edge["source_id"] in component_ids:
-            process_nodes = [
-                n for n in routing.all_nodes() if n["label"] == "Process" and n["id"] == edge["target_id"]
-            ]
-            process = process_nodes[0]["properties"] if process_nodes else {}
-            rows.append(
-                {
-                    "component_id": edge["source_id"],
-                    "process_id": edge["target_id"],
-                    "process_name": process.get("name"),
-                    "work_center": process.get("work_center"),
-                    "cycle_time_min": process.get("cycle_time_min"),
-                }
-            )
-    rows.sort(key=lambda r: (r.get("work_center") or "", r["component_id"]))
+    if not component_ids:
+        return DomainQueryResult(
+            graph_id="routing",
+            query_name="processes_by_components",
+            cypher="/* skipped: no component_ids */",
+            summary="Routing graph: 0 component-to-process links",
+            rows=[],
+        )
+    cypher = cypher_processes_by_components(component_ids)
+    rows = execute_domain_cypher(store.domain("routing"), "routing", cypher)
     return DomainQueryResult(
         graph_id="routing",
         query_name="processes_by_components",
+        cypher=cypher,
         summary=f"Routing graph: {len(rows)} component-to-process links",
         rows=rows,
     )
 
 
 def _single_source_components(store: LanceGraphStore, component_ids: set[str]) -> set[str]:
-    supplier_count: dict[str, int] = {}
-    for edge in store.domain("sourcing").all_edges():
-        if edge["edge_type"] == "SUPPLIED_BY" and edge["source_id"] in component_ids:
-            supplier_count[edge["source_id"]] = supplier_count.get(edge["source_id"], 0) + 1
-    return {cid for cid, count in supplier_count.items() if count == 1}
+    if not component_ids:
+        return set()
+    cypher = cypher_supplier_counts(component_ids)
+    rows = execute_domain_cypher(store.domain("sourcing"), "sourcing", cypher)
+    return {row["component_id"] for row in rows if (row.get("supplier_count") or 0) == 1}
 
 
 def _build_problems(
@@ -311,9 +290,37 @@ def _impact_score(
     )
 
 
+def federated_impact_rows(store: LanceGraphStore, supplier_id: str) -> list[dict[str, Any]]:
+    """Join sourcing + ebom on Component.id using two Cypher queries."""
+    sourcing = query_sourcing_for_supplier(store, supplier_id)
+    component_ids = {row["component_id"] for row in sourcing.rows}
+    if not component_ids:
+        return []
+
+    cypher = cypher_impact_by_components(component_ids)
+    ebom_rows = execute_domain_cypher(store.domain("ebom"), "ebom", cypher)
+    sourcing_by_component = {row["component_id"]: row for row in sourcing.rows}
+
+    output: list[dict[str, Any]] = []
+    for row in ebom_rows:
+        source = sourcing_by_component.get(row["component_id"], {})
+        output.append(
+            {
+                "supplier_id": supplier_id,
+                "component_id": row["component_id"],
+                "component_name": row.get("component_name") or source.get("component_name"),
+                "product_id": row["product_id"],
+                "product_name": row.get("product_name"),
+                "component_cost": row.get("component_cost") or source.get("cost"),
+            }
+        )
+    return output
+
+
 def analyze_supplier_disruption(store: LanceGraphStore, supplier_id: str) -> FederatedAnalysis:
     """
     Federate sourcing → ebom → routing on Component.id for a supplier disruption scenario.
+    Each domain step runs Cypher via lance-graph; federation joins results in Python.
     """
     sourcing = query_sourcing_for_supplier(store, supplier_id)
     component_ids = {r["component_id"] for r in sourcing.rows}
@@ -321,7 +328,7 @@ def analyze_supplier_disruption(store: LanceGraphStore, supplier_id: str) -> Fed
     routing = query_routing_for_components(store, component_ids)
     single_source = _single_source_components(store, component_ids)
 
-    federated_rows = store.impacted_products_by_supplier(supplier_id)
+    federated_rows = federated_impact_rows(store, supplier_id)
     problems = _build_problems(sourcing, ebom, routing, single_source, supplier_id)
     mitigations = _build_mitigations(sourcing, ebom, routing, single_source, supplier_id)
     score = _impact_score(sourcing, ebom, single_source)

@@ -207,9 +207,10 @@ function renderDomainQuerySpec(query) {
   const rows = [
     ["Graph", query.graph_id],
     ["Owner team", query.owner_team],
-    ["Query", query.query_name],
-    ["Edge", query.edge],
-    ["Function", query.function],
+    ["Query spec", query.query_spec],
+    ["Ontology", query.ontology_source],
+    ["Engine", query.engine],
+    ["Language", query.language],
     ["Scope", query.scope],
   ];
 
@@ -233,11 +234,7 @@ function renderDomainQuerySpec(query) {
   dl.appendChild(dt);
   dl.appendChild(params);
 
-  expr.textContent = [
-    `# ${query.graph_id} graph (domain-local)`,
-    query.edge_pattern,
-    `WHERE ${query.filter}`,
-  ].join("\n");
+  expr.textContent = query.cypher || "";
 
   block.hidden = false;
 }
@@ -291,6 +288,13 @@ function severityClass(severity) {
   return "severity-low";
 }
 
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 function renderFederationSteps(domainQueries, joinPlan) {
   const container = $("federation-steps");
   container.innerHTML = "";
@@ -311,7 +315,8 @@ function renderFederationSteps(domainQueries, joinPlan) {
       ${
         match
           ? `<p class="step-summary">${match.summary}</p>
-             <p class="step-meta">${match.row_count} row(s) · query <code>${match.query_name}</code></p>`
+             <p class="step-meta">${match.row_count} row(s) · <code>${match.query_name}</code></p>
+             <pre class="step-cypher">${escapeHtml(match.cypher || "")}</pre>`
           : `<p class="step-summary muted">No data</p>`
       }
     `;

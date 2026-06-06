@@ -84,14 +84,13 @@
           </div>
           <p id="domain-summary" class="result-summary muted">Pick a domain and run a query. Results come from one graph only.</p>
           <section class="narrative-block query-block" id="domain-query-block" hidden aria-labelledby="section-domain-query">
-            <h3 id="section-domain-query">Traversal semantics</h3>
+            <h3 id="section-domain-query">Cypher query</h3>
             <p class="query-disclaimer">
-              Illustrates what the Python function does on the ontology — not Cypher, Gremlin, or SQL sent to LanceDB.
-              The runtime scans <code>graph_nodes</code> / <code>graph_edges</code> tables in-process.
+              Generated from <code>ontology/schema.py</code> (<code>ALLOWED_EDGES</code>, node fields)
+              and executed by <code>lance-graph</code> on this domain&apos;s Lance tables.
             </p>
             <dl class="query-spec" id="domain-query-spec"></dl>
-            <p class="field-label">Graph pattern (illustrative)</p>
-            <pre class="query-expression" id="domain-query-expression" aria-label="Illustrative graph pattern"></pre>
+            <pre class="query-expression" id="domain-query-expression" aria-label="Cypher query"></pre>
           </section>
           <div id="domain-table-wrap" class="table-wrap" hidden>
             <table class="data-table" id="domain-table">

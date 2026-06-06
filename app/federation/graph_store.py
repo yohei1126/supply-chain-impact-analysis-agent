@@ -71,44 +71,9 @@ class LanceGraphStore:
         return edges
 
     def impacted_products_by_supplier(self, supplier_id: str) -> list[dict[str, Any]]:
-        sourcing_edges = self.domains["sourcing"].all_edges()
-        ebom_edges = self.domains["ebom"].all_edges()
-        node_map = self._node_map(("ebom", "sourcing"))
+        from app.federation.analysis import federated_impact_rows
 
-        supplied_edges = [
-            edge
-            for edge in sourcing_edges
-            if edge["edge_type"] == "SUPPLIED_BY"
-            and edge["target_label"] == "Supplier"
-            and edge["target_id"] == supplier_id
-        ]
-
-        output: list[dict[str, Any]] = []
-        for supplied in supplied_edges:
-            component_id = supplied["source_id"]
-            component = node_map.get(("Component", component_id), {})
-
-            used_in = [
-                edge
-                for edge in ebom_edges
-                if edge["edge_type"] == "USED_IN"
-                and edge["source_label"] == "Component"
-                and edge["source_id"] == component_id
-                and edge["target_label"] == "Product"
-            ]
-            for used in used_in:
-                product = node_map.get(("Product", used["target_id"]), {})
-                output.append(
-                    {
-                        "supplier_id": supplier_id,
-                        "component_id": component_id,
-                        "component_name": component.get("name"),
-                        "product_id": used["target_id"],
-                        "product_name": product.get("name"),
-                        "component_cost": component.get("cost"),
-                    }
-                )
-        return sorted(output, key=lambda item: item.get("component_cost") or 0, reverse=True)
+        return federated_impact_rows(self, supplier_id)
 
     def shortest_supply_path(self, from_component_id: str, to_product_id: str) -> list[dict[str, Any]]:
         path_edge_types = {"USED_IN", "INPUT_OF", "PRODUCED_BY"}

@@ -11,64 +11,41 @@ def domain_query_to_dict(result: DomainQueryResult) -> dict[str, Any]:
     return {
         "graph_id": result.graph_id,
         "query_name": result.query_name,
+        "cypher": result.cypher,
         "summary": result.summary,
         "row_count": len(result.rows),
         "rows": result.rows,
     }
 
 
-_DOMAIN_QUERY_META: dict[str, dict[str, str]] = {
-    "sourcing": {
-        "owner_team": "procurement",
-        "edge": "SUPPLIED_BY",
-        "edge_pattern": "Component —SUPPLIED_BY→ Supplier",
-        "filter": "Supplier.id = {supplier_id}",
-        "function": "query_sourcing_for_supplier",
-    },
-    "ebom": {
-        "owner_team": "engineering",
-        "edge": "USED_IN",
-        "edge_pattern": "Component —USED_IN→ Product",
-        "filter": "Component.id IN ({component_ids})",
-        "function": "query_ebom_for_components",
-    },
-    "routing": {
-        "owner_team": "manufacturing",
-        "edge": "INPUT_OF",
-        "edge_pattern": "Component —INPUT_OF→ Process",
-        "filter": "Component.id IN ({component_ids})",
-        "function": "query_routing_for_components",
-    },
-}
-
-
 def build_domain_query_spec(
-    graph_id: str,
+    result: DomainQueryResult,
     *,
     supplier_id: str | None = None,
     component_ids: list[str] | None = None,
-    query_name: str | None = None,
 ) -> dict[str, Any]:
-    meta = _DOMAIN_QUERY_META[graph_id]
+    owner_teams = {
+        "sourcing": "procurement",
+        "ebom": "engineering",
+        "routing": "manufacturing",
+    }
     params: dict[str, Any] = {}
-    if graph_id == "sourcing":
+    if result.graph_id == "sourcing":
         params["supplier_id"] = supplier_id
-        filter_text = meta["filter"].format(supplier_id=supplier_id)
     else:
-        ids = component_ids or []
-        params["component_ids"] = ids
-        filter_text = meta["filter"].format(component_ids=", ".join(ids))
+        params["component_ids"] = component_ids or []
 
     return {
-        "graph_id": graph_id,
-        "query_name": query_name,
-        "owner_team": meta["owner_team"],
-        "edge": meta["edge"],
-        "edge_pattern": meta["edge_pattern"],
-        "filter": filter_text,
-        "function": meta["function"],
+        "graph_id": result.graph_id,
+        "query_name": result.query_name,
+        "owner_team": owner_teams[result.graph_id],
+        "engine": "lance-graph",
+        "language": "Cypher",
+        "ontology_source": "ontology/schema.py",
+        "query_spec": result.query_name,
         "parameters": params,
-        "scope": "single domain graph — Python scan of LanceDB tables, no Cypher",
+        "scope": "single domain Lance graph",
+        "cypher": result.cypher,
     }
 
 
@@ -120,4 +97,8 @@ def federated_analysis_to_dict(analysis: FederatedAnalysis) -> dict[str, Any]:
                 "description": "Manufacturing processes consuming those components",
             },
         ],
+        "federation_note": (
+            "Each step runs Cypher on its domain Lance graph via lance-graph; "
+            "results are joined in Python on Component.id."
+        ),
     }

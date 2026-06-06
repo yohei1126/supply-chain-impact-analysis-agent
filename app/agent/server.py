@@ -219,10 +219,9 @@ def run_domain_query(body: DomainQueryRequest) -> dict[str, Any]:
         "mode": "domain",
         "bridge_key": "Component.id",
         "query": build_domain_query_spec(
-            body.graph_id,
+            result,
             supplier_id=body.supplier_id.strip() if body.supplier_id else None,
             component_ids=body.component_ids,
-            query_name=result.query_name,
         ),
         "result": domain_query_to_dict(result),
     }

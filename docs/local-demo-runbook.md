@@ -158,7 +158,7 @@ Top-right pill should show **Ready**. The UI has three tabs — **Domain query**
 
 ### Domain query tab
 
-Query **one** Lance graph at a time (Python scans `graph_nodes` / `graph_edges` — not Cypher).
+Query **one** Lance graph at a time using **Cypher** (`lance-graph` over Lance `graph_nodes` / `graph_edges`).
 
 | Domain | Example | What you see |
 |--------|---------|--------------|
@@ -166,7 +166,7 @@ Query **one** Lance graph at a time (Python scans `graph_nodes` / `graph_edges` 
 | **ebom** | `COMP-103` | Products linked via `USED_IN` |
 | **routing** | `COMP-103` | Processes linked via `INPUT_OF` |
 
-After **Run domain query**, check **Traversal semantics** for the Python function, parameters, and an illustrative graph pattern.
+After **Run domain query**, check **Cypher query** for the executed statement and parameters.
 
 Suggested flow:
 

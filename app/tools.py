@@ -47,4 +47,10 @@ def run_exploration_tool(explorer: GraphExplorer, tool_name: str, **kwargs: Any)
         "operation": result.operation,
         "summary": result.summary,
         "data": result.data,
+        "ontology_source": result.ontology_source,
+        "cypher": result.cypher,
+        "cypher_queries": [
+            {"graph_id": step.graph_id, "query_name": step.query_name, "cypher": step.cypher}
+            for step in result.cypher_queries
+        ],
     }
