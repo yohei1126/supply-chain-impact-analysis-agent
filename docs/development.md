@@ -2,7 +2,7 @@
 
 Setup, project layout, seeding, CLI demos, tests, and the **implementation roadmap** for three domain graphs with agent-driven logical federation. For the full LiteLLM + Langfuse + web UI flow, see [local-demo-runbook.md](local-demo-runbook.md). For agent/automation conventions, see [AGENTS.md](../AGENTS.md).
 
-**Architecture references:** [project-layout.md](project-layout.md) · [testing-and-quality.md](testing-and-quality.md) · [enterprise-graph-design.md](enterprise-graph-design.md) · [graph-context.md](graph-context.md) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) · [ontology-on-lance.md](ontology-on-lance.md)
+**Architecture references:** [project-layout.md](project-layout.md) · [federation-demo-runbook.md](federation-demo-runbook.md) · [testing-and-quality.md](testing-and-quality.md) · [enterprise-graph-design.md](enterprise-graph-design.md) · [graph-context.md](graph-context.md) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) · [ontology-on-lance.md](ontology-on-lance.md)
 
 ## Ontology (single source of truth)
 
@@ -291,6 +291,12 @@ Install **bom-ontology** first. See [skills/README.md](../skills/README.md).
 
 Interactive scripts with step explanations (`Enter` to continue). Non-interactive: `DEMO_NONINTERACTIVE=1`.
 
+**Federated domain demo (recommended first):** per-domain generate → validate → load → query → federate → mitigations — [federation-demo-runbook.md](federation-demo-runbook.md).
+
+```bash
+uv run python scripts/demo_federation.py --reset
+```
+
 ```bash
 uv run python scripts/demo.py           # graph + exploration tools
 uv run python scripts/demo_hybrid.py    # vector → RDB → graph
@@ -390,4 +396,5 @@ Run the full suite after every phase merge; see [AGENTS.md](../AGENTS.md) done c
 | LiteLLM / Gemini | [llm-gateway.md](llm-gateway.md) |
 | Langfuse traces | [observability.md](observability.md) |
 | Tests, lint, type check | [testing-and-quality.md](testing-and-quality.md) |
+| Federated domain demo (E2E) | [federation-demo-runbook.md](federation-demo-runbook.md) |
 | Agent contributors | [AGENTS.md](../AGENTS.md) |

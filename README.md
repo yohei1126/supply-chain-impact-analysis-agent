@@ -24,6 +24,7 @@ This repository bundles:
 | Doc | Audience | Contents |
 |-----|----------|----------|
 | [docs/project-layout.md](docs/project-layout.md) | Developers / architects | Directory structure, org vs technical boundaries |
+| [docs/federation-demo-runbook.md](docs/federation-demo-runbook.md) | Developers / architects | Per-domain seed → validate → federate → mitigations (no Docker) |
 | [docs/local-demo-runbook.md](docs/local-demo-runbook.md) | Anyone running the demo | LiteLLM + Langfuse + agent + UI end-to-end |
 | [docs/testing-and-quality.md](docs/testing-and-quality.md) | Developers | Unit tests, ruff, mypy, quality gates |
 | [docs/development.md](docs/development.md) | Developers | Setup, seeding, CLI demos, roadmap |

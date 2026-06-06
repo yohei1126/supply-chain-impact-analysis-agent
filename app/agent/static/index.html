@@ -19,7 +19,7 @@
         <span class="brand-mark" aria-hidden="true"></span>
         <div>
           <h1>BOM Supply Impact</h1>
-          <p class="subtitle">See which products and parts are affected by your question</p>
+          <p class="subtitle">Domain graphs (sourcing · ebom · routing) and cross-domain federation on Component.id</p>
         </div>
       </div>
       <div class="status-group" id="status-group">
@@ -27,91 +27,232 @@
       </div>
     </header>
 
+    <nav class="mode-tabs" role="tablist" aria-label="Query mode">
+      <button type="button" class="mode-tab is-active" role="tab" id="tab-domain" aria-selected="true" aria-controls="panel-domain">
+        Domain query
+      </button>
+      <button type="button" class="mode-tab" role="tab" id="tab-federation" aria-selected="false" aria-controls="panel-federation">
+        Federation
+      </button>
+      <button type="button" class="mode-tab" role="tab" id="tab-agent" aria-selected="false" aria-controls="panel-agent">
+        Agent (LLM)
+      </button>
+    </nav>
+
     <main class="workspace">
-      <aside class="panel rail">
-        <h2>Your question</h2>
-        <label class="sr-only" for="goal">Question</label>
-        <textarea
-          id="goal"
-          rows="3"
-          placeholder="e.g. What happens if supplier SUP-002 has a disruption?"
-        ></textarea>
+      <!-- Domain query mode -->
+      <section class="mode-panel is-active" id="panel-domain" role="tabpanel" aria-labelledby="tab-domain">
+        <aside class="panel rail">
+          <h2>Single-domain query</h2>
+          <p class="rail-intro">Each team owns one Lance graph. Queries stay inside that graph — no cross-domain join yet.</p>
 
-        <p class="query-examples-label">Try an example</p>
-        <div class="query-examples" role="group" aria-label="Example questions">
-          <button
-            type="button"
-            class="query-example"
-            data-goal="Analyze supplier impact for SUP-002"
-          >
-            <span class="query-example-title">Supplier SUP-002 disruption</span>
-            <span class="query-example-desc">
-              Which parts this supplier provides and which finished products use those parts.
-            </span>
-          </button>
-          <button
-            type="button"
-            class="query-example"
-            data-goal="Find the supply path from COMP-103 to PROD-901"
-          >
-            <span class="query-example-title">Path to motor assembly</span>
-            <span class="query-example-desc">
-              How part COMP-103 connects to product PROD-901 through the bill of materials.
-            </span>
-          </button>
-          <button
-            type="button"
-            class="query-example"
-            data-goal="Find similar brass valve components and show supplier impact"
-          >
-            <span class="query-example-title">Brass valve parts</span>
-            <span class="query-example-desc">
-              Parts similar to “brass valve” and how they tie into products and suppliers.
-            </span>
-          </button>
-        </div>
+          <label class="field-label" for="domain-graph">Domain graph</label>
+          <select id="domain-graph" class="select-input">
+            <option value="sourcing">sourcing — procurement (SUPPLIED_BY)</option>
+            <option value="ebom">ebom — engineering (USED_IN)</option>
+            <option value="routing">routing — manufacturing (INPUT_OF)</option>
+          </select>
 
-        <button type="button" id="run-btn" class="primary">Analyze</button>
-        <p id="error" class="error" hidden></p>
-      </aside>
+          <div id="domain-param-supplier" class="param-block">
+            <label class="field-label" for="domain-supplier-id">Supplier ID</label>
+            <input id="domain-supplier-id" class="text-input" type="text" value="SUP-002" placeholder="SUP-002" />
+          </div>
 
-      <section class="panel workspace-main">
-        <div class="results-head">
-          <h2>Results</h2>
-        </div>
+          <div id="domain-param-components" class="param-block" hidden>
+            <label class="field-label" for="domain-component-ids">Component IDs</label>
+            <input
+              id="domain-component-ids"
+              class="text-input"
+              type="text"
+              value="COMP-103, COMP-100"
+              placeholder="COMP-103, COMP-100"
+            />
+            <p class="field-hint">Comma-separated. Join key is <code>Component.id</code> when federating.</p>
+          </div>
 
-        <div class="workspace-grid">
-          <div class="col-narrative">
-            <section class="narrative-block" aria-labelledby="section-summary">
-              <h3 id="section-summary">Summary</h3>
-              <div id="explanation" class="explanation">
-                Ask a question or pick an example, then select Analyze.
+          <p class="query-examples-label">Examples</p>
+          <div class="query-examples" id="domain-examples" role="group" aria-label="Domain query examples"></div>
+
+          <button type="button" id="domain-run-btn" class="primary">Run domain query</button>
+          <p id="domain-error" class="error" hidden></p>
+        </aside>
+
+        <section class="panel workspace-main">
+          <div class="results-head">
+            <h2>Domain result</h2>
+            <span class="domain-badge" id="domain-result-badge" hidden></span>
+          </div>
+          <p id="domain-summary" class="result-summary muted">Pick a domain and run a query. Results come from one graph only.</p>
+          <section class="narrative-block query-block" id="domain-query-block" hidden aria-labelledby="section-domain-query">
+            <h3 id="section-domain-query">Traversal semantics</h3>
+            <p class="query-disclaimer">
+              Illustrates what the Python function does on the ontology — not Cypher, Gremlin, or SQL sent to LanceDB.
+              The runtime scans <code>graph_nodes</code> / <code>graph_edges</code> tables in-process.
+            </p>
+            <dl class="query-spec" id="domain-query-spec"></dl>
+            <p class="field-label">Graph pattern (illustrative)</p>
+            <pre class="query-expression" id="domain-query-expression" aria-label="Illustrative graph pattern"></pre>
+          </section>
+          <div id="domain-table-wrap" class="table-wrap" hidden>
+            <table class="data-table" id="domain-table">
+              <thead id="domain-table-head"></thead>
+              <tbody id="domain-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <!-- Federation mode -->
+      <section class="mode-panel" id="panel-federation" role="tabpanel" aria-labelledby="tab-federation" hidden>
+        <aside class="panel rail">
+          <h2>Federated query</h2>
+          <p class="rail-intro">
+            Join three domain graphs at query time on <strong>Component.id</strong> — sourcing → ebom → routing.
+          </p>
+
+          <label class="field-label" for="federation-supplier-id">Disrupted supplier</label>
+          <input id="federation-supplier-id" class="text-input" type="text" value="SUP-002" placeholder="SUP-002" />
+
+          <p class="query-examples-label">Examples</p>
+          <div class="query-examples" role="group" aria-label="Federation examples">
+            <button type="button" class="query-example federation-example" data-supplier="SUP-001">
+              <span class="query-example-title">SUP-001 — Nihon Steel</span>
+              <span class="query-example-desc">High-risk supplier; multiple components and products.</span>
+            </button>
+            <button type="button" class="query-example federation-example" data-supplier="SUP-002">
+              <span class="query-example-title">SUP-002 — disruption scenario</span>
+              <span class="query-example-desc">Federate sourcing → ebom → routing; problems and mitigations.</span>
+            </button>
+          </div>
+
+          <button type="button" id="federation-run-btn" class="primary">Run federation</button>
+          <p id="federation-error" class="error" hidden></p>
+        </aside>
+
+        <section class="panel workspace-main federation-main">
+          <div class="results-head">
+            <h2>Federation pipeline</h2>
+            <span class="impact-pill" id="impact-score" hidden></span>
+          </div>
+
+          <div class="join-banner">
+            <span class="join-label">Bridge key</span>
+            <code>Component.id</code>
+            <span class="join-arrow">→</span>
+            <span class="join-step domain-sourcing">sourcing</span>
+            <span class="join-arrow">→</span>
+            <span class="join-step domain-ebom">ebom</span>
+            <span class="join-arrow">→</span>
+            <span class="join-step domain-routing">routing</span>
+          </div>
+
+          <div id="federation-placeholder" class="federation-placeholder muted">
+            Run a federation to see each domain step, joined impact rows, problems, and mitigations.
+          </div>
+
+          <div id="federation-results" class="federation-results" hidden>
+            <div class="federation-grid">
+              <div class="col-steps">
+                <section class="narrative-block" aria-labelledby="section-steps">
+                  <h3 id="section-steps">Domain steps</h3>
+                  <div id="federation-steps" class="federation-steps"></div>
+                </section>
+                <section class="narrative-block" aria-labelledby="section-problems">
+                  <h3 id="section-problems">Problems</h3>
+                  <ul id="problems-list" class="findings-list"></ul>
+                </section>
+                <section class="narrative-block" aria-labelledby="section-mitigations">
+                  <h3 id="section-mitigations">Mitigations</h3>
+                  <ul id="mitigations-list" class="findings-list"></ul>
+                </section>
               </div>
-            </section>
-            <section class="narrative-block" aria-labelledby="section-findings">
-              <h3 id="section-findings">Key findings</h3>
-              <ul id="findings-list" class="findings-list">
-                <li class="muted">Important facts from the analysis will appear here.</li>
-              </ul>
-            </section>
-            <section class="narrative-block" aria-labelledby="section-evidence">
-              <h3 id="section-evidence">Evidence</h3>
-              <ul id="evidence-list" class="evidence-list">
-                <li class="muted">Statements grounded in the analysis data will appear here.</li>
-              </ul>
-            </section>
+              <div class="col-fed-graph">
+                <section class="narrative-block graph-block" aria-labelledby="section-fed-map">
+                  <h3 id="section-fed-map">Federated supply chain map</h3>
+                  <p id="federation-graph-caption" class="graph-caption">Cross-domain view after join.</p>
+                  <div id="federation-graph-network" class="graph-network" role="img" aria-label="Federated supply chain map"></div>
+                </section>
+                <section class="narrative-block" aria-labelledby="section-fed-rows">
+                  <h3 id="section-fed-rows">Joined impact rows</h3>
+                  <div id="federated-table-wrap" class="table-wrap table-wrap-compact">
+                    <table class="data-table" id="federated-table">
+                      <thead id="federated-table-head"></thead>
+                      <tbody id="federated-table-body"></tbody>
+                    </table>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- Agent mode -->
+      <section class="mode-panel" id="panel-agent" role="tabpanel" aria-labelledby="tab-agent" hidden>
+        <aside class="panel rail">
+          <h2>Agent question</h2>
+          <p class="rail-intro">Natural-language goal; planner picks tools and may call multiple domain graphs via the agent.</p>
+          <label class="sr-only" for="goal">Question</label>
+          <textarea
+            id="goal"
+            rows="3"
+            placeholder="e.g. What happens if supplier SUP-002 has a disruption?"
+          ></textarea>
+
+          <p class="query-examples-label">Try an example</p>
+          <div class="query-examples" role="group" aria-label="Example questions">
+            <button type="button" class="query-example agent-example" data-goal="Analyze supplier impact for SUP-002">
+              <span class="query-example-title">Supplier SUP-002 disruption</span>
+              <span class="query-example-desc">Which parts and finished products are affected.</span>
+            </button>
+            <button type="button" class="query-example agent-example" data-goal="Find the supply path from COMP-103 to PROD-901">
+              <span class="query-example-title">Path to motor assembly</span>
+              <span class="query-example-desc">COMP-103 → PROD-901 through the bill of materials.</span>
+            </button>
+            <button type="button" class="query-example agent-example" data-goal="Find similar brass valve components and show supplier impact">
+              <span class="query-example-title">Brass valve parts</span>
+              <span class="query-example-desc">Hybrid vector + RDB + graph search.</span>
+            </button>
           </div>
 
-          <div class="col-graph">
-            <section class="narrative-block graph-block" aria-labelledby="section-map">
-              <h3 id="section-map">Supply chain map</h3>
-              <p id="graph-caption" class="graph-caption">
-                Related suppliers, parts, and products (highlighted nodes are the focus of your question).
-              </p>
-              <div id="graph-network" class="graph-network" role="img" aria-label="Supply chain map"></div>
-            </section>
+          <button type="button" id="run-btn" class="primary">Analyze</button>
+          <p id="error" class="error" hidden></p>
+        </aside>
+
+        <section class="panel workspace-main">
+          <div class="results-head">
+            <h2>Agent results</h2>
           </div>
-        </div>
+          <div class="workspace-grid">
+            <div class="col-narrative">
+              <section class="narrative-block" aria-labelledby="section-summary">
+                <h3 id="section-summary">Summary</h3>
+                <div id="explanation" class="explanation">Ask a question or pick an example, then select Analyze.</div>
+              </section>
+              <section class="narrative-block" aria-labelledby="section-findings">
+                <h3 id="section-findings">Key findings</h3>
+                <ul id="findings-list" class="findings-list">
+                  <li class="muted">Important facts from the analysis will appear here.</li>
+                </ul>
+              </section>
+              <section class="narrative-block" aria-labelledby="section-evidence">
+                <h3 id="section-evidence">Evidence</h3>
+                <ul id="evidence-list" class="evidence-list">
+                  <li class="muted">Statements grounded in the analysis data will appear here.</li>
+                </ul>
+              </section>
+            </div>
+            <div class="col-graph">
+              <section class="narrative-block graph-block" aria-labelledby="section-map">
+                <h3 id="section-map">Supply chain map</h3>
+                <p id="graph-caption" class="graph-caption">
+                  Related suppliers, parts, and products (highlighted nodes are the focus of your question).
+                </p>
+                <div id="graph-network" class="graph-network" role="img" aria-label="Supply chain map"></div>
+              </section>
+            </div>
+          </div>
+        </section>
       </section>
     </main>
 

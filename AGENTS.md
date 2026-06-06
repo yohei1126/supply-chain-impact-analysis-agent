@@ -157,6 +157,7 @@ This repository does not commit tool-specific copies under `.cursor/skills/`.
 | Graph + tools | `uv run python scripts/demo.py` | Interactive graph exploration |
 | Hybrid | `uv run python scripts/demo_hybrid.py` | Vector → RDB → graph (`LANCEDB_PATH` optional) |
 | Agent (local) | `uv run python scripts/demo_agent.py` | Agent Skills + tool run |
+| Federation demo | `uv run python scripts/demo_federation.py --reset` | Per-domain seed, validate, query, federated mitigations — [docs/federation-demo-runbook.md](docs/federation-demo-runbook.md) |
 | Skill CLI | `uv run python skills/bom-graph-explorer/scripts/explore_graph.py --seed --mode supplier-impact --supplier-id SUP-001` | Exploration without HTTP server |
 
 Non-interactive: `DEMO_NONINTERACTIVE=1 uv run python scripts/demo.py`
