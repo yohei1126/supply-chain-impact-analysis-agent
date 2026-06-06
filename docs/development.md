@@ -2,18 +2,18 @@
 
 Setup, project layout, seeding, CLI demos, tests, and the **implementation roadmap** for three domain graphs with agent-driven logical federation. For the full LiteLLM + Langfuse + web UI flow, see [local-demo-runbook.md](local-demo-runbook.md). For agent/automation conventions, see [AGENTS.md](../AGENTS.md).
 
-**Architecture references:** [enterprise-graph-design.md](enterprise-graph-design.md) · [graph-context.md](graph-context.md) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) · [ontology-on-lance.md](ontology-on-lance.md)
+**Architecture references:** [project-layout.md](project-layout.md) · [testing-and-quality.md](testing-and-quality.md) · [enterprise-graph-design.md](enterprise-graph-design.md) · [graph-context.md](graph-context.md) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) · [ontology-on-lance.md](ontology-on-lance.md)
 
 ## Ontology (single source of truth)
 
 ```
-bom_graph/schema.py                          ← edit constraints (Pydantic)
+ontology/schema.py                          ← edit constraints (Pydantic)
         │
         ▼  uv run python scripts/sync_ontology.py
 skills/bom-ontology/assets/ontology.json     ← published artifact for Agent Skills
 ```
 
-- **Authoring:** only change `bom_graph/schema.py`.
+- **Authoring:** only change `ontology/schema.py`.
 - **Skills:** read generated `ontology.json`; do not hand-edit it.
 - **Runtime writes:** Pydantic validators on every graph/RDB/vector insert.
 
@@ -32,11 +32,11 @@ LanceDB is schema-light; meaning and integrity live above storage ([ontology-on-
 
 | Layer | Location (today → target) |
 |-------|---------------------------|
-| Schema + constraints | `bom_graph/schema.py` → add `DOMAIN_GRAPHS` / domain bundles |
+| Schema + constraints | `ontology/schema.py` |
+| Domain partition | `domains/registry.py`, `domains/*/bundle.py` |
 | Published JSON Schema | `skills/bom-ontology/assets/ontology.json` |
-| Domain bundles (planned) | `skills/bom-ontology/assets/domain-bundles.json` |
-| Graph context contract (planned) | `skills/bom-ontology/assets/graph-context.yaml` — see [graph-context.md](graph-context.md) |
-| Federation composer (planned) | `bom_graph/federation/` |
+| Graph context contract | `ontology/contract/graph_context.yaml` — see [graph-context.md](graph-context.md) |
+| Federation facade | `app/federation/graph_store.py` |
 | Semantics glossary (planned) | `skills/bom-ontology/references/semantics.md` |
 
 ## Current state (P0)
@@ -45,13 +45,13 @@ What ships today:
 
 | Area | Status | Notes |
 |------|--------|-------|
-| Single Lance graph | Done | All domains in `data/lancedb` (`graph_nodes`, `graph_edges`) |
+| Three domain Lance graphs | Done | `data/lancedb/{ebom,routing,sourcing}/` via `LanceGraphStore` facade |
 | Component master + vector | Done | `data/bom.duckdb`, `component_vectors` |
 | Tools | Done | `bom_supplier_impact`, `bom_supply_path`, `bom_hybrid_query` |
 | Agent + UI | Done | `POST /v1/agent/run` with `goal`; heuristic + optional LLM planner |
 | Disruption from news | Partial | Unstructured `goal` works with LLM mode; no `interpret_disruption` yet |
-| Three physical graphs | Not started | No `graph_id` column; no per-domain Lance paths |
-| Federation store | Not started | Cross-domain hops live inside single-store methods |
+| Three physical graphs | Done | `data/lancedb/{ebom,routing,sourcing}/` |
+| Federation store | Partial | Cross-domain hops via `LanceGraphStore` facade |
 | Routing impact tools | Not started | `Process` data seeded; no `work_center_impact` tool |
 
 Primary disruption input is **natural-language `goal`** (e.g. news headline), not graph-native IDs — see [supply-chain-disruption-response.md](supply-chain-disruption-response.md) §4.2.
@@ -74,12 +74,12 @@ done   interpret  sourcing  domain    federation  connectors
 
 | Deliverable | Location |
 |-------------|----------|
-| Ontology SSOT + sync | `bom_graph/schema.py`, `scripts/sync_ontology.py` |
-| Graph store | `bom_graph/lance_graph_store.py` |
-| Hybrid pipeline | `bom_graph/hybrid_store.py` |
-| Exploration tools | `bom_graph/tools.py`, `bom_graph/exploration.py` |
-| Agent server + UI | `bom_graph/agent/` |
-| Seed data | `bom_graph/sample_bom.py`, `scripts/seed_complex_bom.py` |
+| Ontology SSOT + sync | `ontology/schema.py`, `scripts/sync_ontology.py` |
+| Graph store | `app/federation/graph_store.py`, `app/storage/domain_store.py` |
+| Hybrid pipeline | `app/hybrid_store.py` |
+| Exploration tools | `app/tools.py`, `app/exploration.py` |
+| Agent server + UI | `app/agent/` |
+| Seed data | `pipeline/demo/`, `scripts/seed_complex_bom.py` |
 | Skills | `skills/bom-ontology/`, `skills/bom-graph-explorer/` |
 
 **Tests:** `tests/test_schema.py`, `test_lance_graph_store.py`, `test_hybrid_store.py`, `test_agent.py`
@@ -94,11 +94,11 @@ done   interpret  sourcing  domain    federation  connectors
 
 | Deliverable | Proposed location | Notes |
 |-------------|-------------------|-------|
-| Interpretation schema | `bom_graph/agent/disruption.py` | Pydantic `DisruptionHypothesis` (class, geo, materials, confidence) |
-| Interpret step | `bom_graph/agent/llm_client.py` or dedicated `interpret_disruption` | Logged to Langfuse |
+| Interpretation schema | `app/agent/disruption.py` | Pydantic `DisruptionHypothesis` (class, geo, materials, confidence) |
+| Interpret step | `app/agent/llm_client.py` or dedicated `interpret_disruption` | Logged to Langfuse |
 | Geo gazetteer | `skills/bom-disruption-response/references/gazetteer.md` | Hormuz → country codes; Skill-only, no duplicate ontology |
-| Planner wiring | `bom_graph/agent/runner.py` | `disruption_class` → playbook template |
-| Playbook registry | `bom_graph/federation/playbooks.py` | Maps class → ordered tool names |
+| Planner wiring | `app/agent/runner.py` | `disruption_class` → playbook template |
+| Playbook registry | `app/federation/playbooks.yaml` | Maps class → ordered tool names |
 | Skill package | `skills/bom-disruption-response/` | Workflows + gazetteer |
 
 **Tests to add:**
@@ -119,14 +119,14 @@ done   interpret  sourcing  domain    federation  connectors
 
 | Deliverable | Proposed location | Notes |
 |-------------|-------------------|-------|
-| `suppliers_by_countries` | `bom_graph/exploration.py` + tool def | Filter `Supplier.country` |
+| `suppliers_by_countries` | `app/exploration.py` + tool def | Filter `Supplier.country` |
 | `suppliers_by_risk` | same | Filter `risk_level` |
 | `components_by_suppliers` | same | `SUPPLIED_BY` reverse traverse |
 | `supply_status` | same | Lead time + single-source flags |
 | Lane metadata (optional) | `schema.py` edge props + seed | `shipping_lane`, `primary_port` on `SUPPLIED_BY` |
 | Domain bundle export | `domain-bundles.json` via sync script | Sourcing-only edge allow-list |
 
-**Seed / demo:** Extend `sample_bom.py` with at least one Gulf-region supplier **or** document demo widen path to `risk_level=High` ([supply-chain-disruption-response.md](supply-chain-disruption-response.md) §8.1).
+**Seed / demo:** Extend `pipeline/demo/sample_data.py` with at least one Gulf-region supplier **or** document demo widen path to `risk_level=High` ([supply-chain-disruption-response.md](supply-chain-disruption-response.md) §8.1).
 
 **Tests to add:**
 
@@ -147,9 +147,9 @@ done   interpret  sourcing  domain    federation  connectors
 
 | Deliverable | Proposed location | Notes |
 |-------------|-------------------|-------|
-| Domain graph definitions | `bom_graph/domain_graphs.py` | **Done** |
-| Per-domain Lance store | `bom_graph/domain_lance_store.py` | **Done** |
-| Federated facade | `bom_graph/lance_graph_store.py` | **Done** — external API unchanged |
+| Domain graph definitions | `domains/registry.py`, `domains/*/bundle.py` | **Done** |
+| Per-domain Lance store | `app/storage/domain_store.py` | **Done** |
+| Federated facade | `app/federation/graph_store.py` | **Done** — external API unchanged |
 | `graph_id` on Lance rows | domain store rows | **Done** (`graph_id` column) |
 | Migration script | `scripts/migrate_graph_domains.py` | Not needed when using `--reset` seed |
 | Domain-scoped traversal | domain stores | **Done** — edge type enforced per domain |
@@ -175,12 +175,12 @@ done   interpret  sourcing  domain    federation  connectors
 
 | Deliverable | Proposed location | Notes |
 |-------------|-------------------|-------|
-| `GraphFederationStore` | `bom_graph/federation/composer.py` | Join on `Component.id`, `Product.id` |
-| Impact scoring | `bom_graph/federation/impact.py` | Deterministic formula (§6.3 in disruption doc) |
-| Multi-round planner | `bom_graph/agent/runner.py` | Max rounds, stop rules |
-| Unified `graph_view` | `bom_graph/graph_viz.py` | Federated subgraph for UI |
-| Mitigation templates | `bom_graph/federation/mitigations.py` | Owner-tagged actions from tool data |
-| `federation.yaml` | Skill or `bom_graph/federation/` | Join rules for agents |
+| `GraphFederationStore` | `app/federation/composer.py` | Join on `Component.id`, `Product.id` |
+| Impact scoring | `app/federation/impact.py` | Deterministic formula (§6.3 in disruption doc) |
+| Multi-round planner | `app/agent/runner.py` | Max rounds, stop rules |
+| Unified `graph_view` | `app/graph_viz.py` | Federated subgraph for UI |
+| Mitigation templates | `app/federation/mitigations.py` | Owner-tagged actions from tool data |
+| `federation.yaml` | Skill or `app/federation/` | Join rules for agents |
 | Optional API | `POST /v1/agent/incident` | Derived envelope + extra response fields |
 
 **Tests to add:**
@@ -206,7 +206,7 @@ done   interpret  sourcing  domain    federation  connectors
 | SRM → sourcing | `lancedb-sourcing` | `DOMAIN_GRAPHS["sourcing"]` |
 | News / alerts | Agent `goal` or `context.raw_text` | P1 interpretation |
 
-Keep connectors **outside** `bom_graph/` core or behind `scripts/ingest/` adapters so `uv run pytest -q` stays offline-friendly.
+Keep connectors **outside** `app/` core or behind `scripts/ingest/` adapters so `uv run pytest -q` stays offline-friendly.
 
 **Exit criteria:** Documented adapter contract; at least one sample ingest script per domain in `scripts/ingest/`.
 
@@ -225,33 +225,28 @@ Keep connectors **outside** `bom_graph/` core or behind `scripts/ingest/` adapte
 
 ### Suggested implementation order (files)
 
-1. `bom_graph/federation/playbooks.py` + tests (P1, no Lance migration yet)
-2. `bom_graph/exploration.py` sourcing filters (P2)
-3. `schema.py` `DOMAIN_GRAPHS` + `graph_id` in `lance_graph_store.py` (P3)
-4. `bom_graph/federation/composer.py` (P4)
+1. `app/federation/playbooks.yaml` + tests (P1, no Lance migration yet)
+2. `app/exploration.py` sourcing filters (P2)
+3. `domains/registry.py` + `graph_id` in `app/storage/domain_store.py` (P3)
+4. `app/federation/composer.py` (P4)
 5. `skills/bom-disruption-response/` (P1–P4 prompts and gazetteer)
 
 Do not skip tests when adding tools — agent behavior is regression-prone.
 
 ## Project layout
 
+Full directory structure, boundaries, and “where to put a change” guide: **[project-layout.md](project-layout.md)**.
+
+Quick reference:
+
 ```
-skills/
-  bom-ontology/              schema skill + assets/ontology.json
-  bom-graph-explorer/        exploration workflows
-  bom-disruption-response/   planned: playbooks, gazetteer (P1)
-bom_graph/                   Python runtime
-  agent/                     FastAPI, UI, planner, Langfuse
-  federation/                planned: playbooks, composer, mitigations (P1/P4)
-  schema.py                  ontology SSOT
-  lance_graph_store.py       Lance graph (+ graph_id in P3)
-  hybrid_store.py            vector + DuckDB + graph
-config/                      litellm.yaml
-scripts/                     seed, demos, migrate (P3), ingest adapters (P5)
-data/                        LanceDB + DuckDB (gitignored)
-  lancedb/                   P0 unified; P3 may split to lancedb-ebom/ etc.
-docs/                        runbooks + architecture
-docker-compose.yml           optional LiteLLM + Langfuse
+ontology/          shared schema + contract (Pydantic only)
+domains/           org-owned ebom | routing | sourcing slices
+pipeline/demo/     cross-domain synthetic seed
+app/               storage, federation, agent
+skills/            distributable Agent Skills
+scripts/           CLI entrypoints
+data/lancedb/      runtime LanceDB (ebom, routing, sourcing)
 ```
 
 ## Initial setup
@@ -270,7 +265,7 @@ uv run python scripts/sync_ontology.py      # after schema.py edits only
 uv run python scripts/seed_complex_bom.py --reset
 ```
 
-Default seeded BOM: **3 suppliers**, **3 products**, **4 processes**, **12 components** (`bom_graph/sample_bom.py`).
+Default seeded BOM: **3 suppliers**, **3 products**, **4 processes**, **12 components** (`pipeline/demo/sample_data.py`).
 
 | Path | Role |
 |------|------|
@@ -317,7 +312,7 @@ Minimal agent + UI (heuristic planner only, no LiteLLM/Langfuse required):
 ```bash
 export BOM_REPO_ROOT=$(pwd)
 uv run python scripts/seed_complex_bom.py --reset
-uv run python -m bom_graph.agent
+uv run python -m app.agent
 # http://localhost:8080/ui/
 ```
 
@@ -356,6 +351,8 @@ Requires Docker (or Colima: `colima start`). See [observability.md](observabilit
 
 ## Tests
 
+See **[testing-and-quality.md](testing-and-quality.md)** for the full guide (pytest, ruff, mypy, PR checklist).
+
 ```bash
 uv sync
 uv run pytest -q
@@ -392,4 +389,5 @@ Run the full suite after every phase merge; see [AGENTS.md](../AGENTS.md) done c
 | Graph context contract | [graph-context.md](graph-context.md) |
 | LiteLLM / Gemini | [llm-gateway.md](llm-gateway.md) |
 | Langfuse traces | [observability.md](observability.md) |
+| Tests, lint, type check | [testing-and-quality.md](testing-and-quality.md) |
 | Agent contributors | [AGENTS.md](../AGENTS.md) |

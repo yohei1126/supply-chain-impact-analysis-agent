@@ -4,7 +4,10 @@ Explore manufacturing BOMs with an ontology-validated graph, hybrid search (vect
 
 This repository bundles:
 
-- **`bom_graph/`** — Python runtime (stores, tools, FastAPI agent, web UI)
+- **`ontology/`** — shared schema, constraints, graph-context contract (technical SSOT)
+- **`domains/`** — organization-owned domain slices (ebom, routing, sourcing)
+- **`pipeline/demo/`** — cross-domain demo seed orchestration
+- **`app/`** — federation, stores, agent (shared runtime)
 - **`skills/`** — distributable Agent Skills (schema + exploration workflows)
 - **`docker-compose.yml`** — optional LiteLLM and Langfuse for local demos
 
@@ -20,10 +23,15 @@ This repository bundles:
 
 | Doc | Audience | Contents |
 |-----|----------|----------|
+| [docs/project-layout.md](docs/project-layout.md) | Developers / architects | Directory structure, org vs technical boundaries |
 | [docs/local-demo-runbook.md](docs/local-demo-runbook.md) | Anyone running the demo | LiteLLM + Langfuse + agent + UI end-to-end |
-| [docs/development.md](docs/development.md) | Developers | Setup, seeding, CLI demos, tests, project layout |
+| [docs/testing-and-quality.md](docs/testing-and-quality.md) | Developers | Unit tests, ruff, mypy, quality gates |
+| [docs/development.md](docs/development.md) | Developers | Setup, seeding, CLI demos, roadmap |
 | [docs/llm-gateway.md](docs/llm-gateway.md) | Operators | LiteLLM / Gemini configuration |
 | [docs/observability.md](docs/observability.md) | Operators | Langfuse telemetry |
+| [docs/enterprise-graph-design.md](docs/enterprise-graph-design.md) | Architects | Enterprise graph domains, Lance layout, agent federation |
+| [docs/supply-chain-disruption-response.md](docs/supply-chain-disruption-response.md) | Architects / ops | Disruption playbooks, logical graph federation, mitigations |
+| [docs/ontology-on-lance.md](docs/ontology-on-lance.md) | Data / ontology authors | Schema-light Lance vs application ontology layers |
 | [AGENTS.md](AGENTS.md) | Coding agents | SSOT, validation, change workflow |
 | [skills/README.md](skills/README.md) | Skill consumers | Installing `bom-ontology` and `bom-graph-explorer` |
 | [scripts/README.md](scripts/README.md) | Script reference | `seed_*`, `demo_*`, Docker helpers |
@@ -41,4 +49,4 @@ Planner details, tool arguments, and full JSON go to **Langfuse** when configure
 
 ## Contributing / agent development
 
-See [AGENTS.md](AGENTS.md). Run tests with `uv run pytest -q` after changes.
+See [AGENTS.md](AGENTS.md) and [docs/testing-and-quality.md](docs/testing-and-quality.md). Run tests with `uv run pytest -q` after changes.

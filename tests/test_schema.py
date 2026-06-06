@@ -1,6 +1,6 @@
 import pytest
 
-from bom_graph.schema import RelationEdge, validate_node_payload
+from ontology.schema import RelationEdge, validate_node_payload
 
 
 def test_validate_node_payload_unknown_type_raises() -> None:

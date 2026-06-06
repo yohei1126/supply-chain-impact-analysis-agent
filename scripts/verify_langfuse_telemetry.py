@@ -18,7 +18,7 @@ try:
 except ImportError:
     pass
 
-from bom_graph.agent.telemetry import _langfuse_client, langfuse_configured
+from app.agent.telemetry import _langfuse_client, langfuse_configured
 
 
 def main() -> int:

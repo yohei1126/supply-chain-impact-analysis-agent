@@ -19,10 +19,24 @@ dependencies = [
 # 1.87.0rc1+ for gemini/gemini-3.5-flash; [proxy] extras for the LiteLLM server CLI
 gateway = ["litellm[proxy]>=1.87.0rc1"]
 observability = ["langfuse>=4.0.0,<5"]
+dev = ["ruff>=0.8", "mypy>=1.13"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["bom_graph"]
+packages = ["domains", "ontology", "pipeline", "app"]

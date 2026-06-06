@@ -1,7 +1,7 @@
 import pytest
 
-from bom_graph.domain_graphs import graph_for_edge
-from bom_graph.lance_graph_store import LanceGraphStore
+from domains.registry import graph_for_edge
+from app.federation.graph_store import LanceGraphStore
 
 
 def _seed_graph(store: LanceGraphStore) -> None:

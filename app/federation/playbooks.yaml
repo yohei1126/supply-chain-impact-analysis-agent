@@ -1,0 +1,22 @@
+# Agent/runtime playbooks — not part of the platform-independent ontology contract.
+# Maps disruption scenarios to ordered tool names implemented in app/exploration.py.
+# See docs/supply-chain-disruption-response.md and ontology/contract/graph_context.yaml (joins).
+
+version: "1.0.0"
+
+playbooks:
+  maritime_chokepoint:
+    entry_domain: sourcing
+    tool_sequence:
+      - sourcing.suppliers_by_countries
+      - sourcing.components_by_suppliers
+      - ebom.products_by_components
+      - routing.processes_by_components
+
+  supplier_disruption:
+    entry_domain: sourcing
+    tool_sequence:
+      - sourcing.suppliers_by_risk
+      - sourcing.components_by_suppliers
+      - ebom.products_by_components
+      - routing.processes_by_components

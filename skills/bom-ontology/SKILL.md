@@ -27,4 +27,4 @@ npx skils add <source> --path skills/bom-ontology
 |---------|------|
 | **bom-ontology** (this skill) | `skills/bom-ontology/` |
 | **bom-graph-explorer** | `skills/bom-graph-explorer/` |
-| **Python authoring** | `bom_graph/schema.py` → `scripts/sync_ontology.py` |
+| **Python authoring** | `ontology/schema.py` → `scripts/sync_ontology.py` |

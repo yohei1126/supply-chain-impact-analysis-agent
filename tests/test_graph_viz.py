@@ -1,6 +1,6 @@
-from bom_graph.agent.runner import ToolCall
-from bom_graph.graph_viz import build_graph_view, extract_seed_keys, graph_view_for_run
-from bom_graph.lance_graph_store import LanceGraphStore
+from app.agent.runner import ToolCall
+from app.graph_viz import build_graph_view, extract_seed_keys, graph_view_for_run
+from app.federation.graph_store import LanceGraphStore
 
 
 def _seed_mini_graph(store: LanceGraphStore) -> None:

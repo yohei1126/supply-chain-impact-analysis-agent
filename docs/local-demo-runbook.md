@@ -102,7 +102,7 @@ The agent loads `.env` from the repo root on startup. Restart after any `.env` c
 
 ```bash
 export BOM_REPO_ROOT=$(pwd)
-uv run --extra observability python -m bom_graph.agent
+uv run --extra observability python -m app.agent
 ```
 
 Confirm Langfuse is wired:

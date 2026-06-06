@@ -2,7 +2,7 @@
 
 **Docs index:** [development.md](development.md). **Full stack (with Langfuse + agent UI):** [local-demo-runbook.md](local-demo-runbook.md).
 
-`bom_graph/agent` plans tool calls via **OpenAI-compatible** `POST /v1/chat/completions`.
+`app/agent` plans tool calls via **OpenAI-compatible** `POST /v1/chat/completions`.
 Run [LiteLLM](https://docs.litellm.ai/) (>= 1.87.0rc1 for Gemini 3.5 Flash) as a local proxy. The default planner model is **Gemini 3.5 Flash** via `config/litellm.yaml` (`gemini/gemini-3.5-flash`).
 
 ## Environment variables
@@ -59,7 +59,7 @@ export OPENAI_API_KEY=sk-litellm-local
 export OPENAI_MODEL=bom-gemini-3.5-flash
 export LLM_GATEWAY=litellm
 
-uv run python -m bom_graph.agent
+uv run python -m app.agent
 # Browser UI: http://localhost:8080/ui/
 curl -s -X POST http://localhost:8080/v1/agent/run \
   -H 'Content-Type: application/json' \
@@ -87,4 +87,4 @@ Agent Skills (prompt) -> BomAutonomousAgent
               gemini-3.5-flash / openai / ...
 ```
 
-Tool execution remains deterministic in `bom_graph` after the LLM returns `tool_calls` JSON.
+Tool execution remains deterministic in `app/` after the LLM returns `tool_calls` JSON.

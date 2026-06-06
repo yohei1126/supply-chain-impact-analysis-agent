@@ -4,7 +4,7 @@ Run from the **repository root** (`data/` paths are relative to cwd).
 
 | Script | Purpose |
 |--------|---------|
-| `sync_ontology.py` | Regenerate `skills/bom-ontology/assets/ontology.json` from `bom_graph/schema.py` |
+| `sync_ontology.py` | Regenerate `skills/bom-ontology/assets/ontology.json` from `ontology/schema.py` |
 | `seed_complex_bom.py` | Ontology-validated synthetic BOM → LanceDB + DuckDB + vectors (`--reset`) |
 | `demo.py` | Interactive graph + tool exploration demo |
 | `demo_hybrid.py` | Interactive vector → RDB → graph demo |

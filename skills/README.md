@@ -11,7 +11,8 @@ All distributable Agent Skills for this project live under `skills/`.
 
 | Layer | Location |
 |-------|----------|
-| Authoring | `bom_graph/schema.py` |
+| Layout (org vs technical boundaries) | [docs/project-layout.md](../docs/project-layout.md) |
+| Authoring | `ontology/schema.py` |
 | Published JSON (one file) | `skills/bom-ontology/assets/ontology.json` |
 
 ```bash

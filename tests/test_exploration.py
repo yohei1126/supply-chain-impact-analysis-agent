@@ -1,6 +1,6 @@
-from bom_graph.exploration import GraphExplorer
-from bom_graph.lance_graph_store import LanceGraphStore
-from bom_graph.tools import exploration_tool_definitions, run_exploration_tool
+from app.exploration import GraphExplorer
+from app.federation.graph_store import LanceGraphStore
+from app.tools import exploration_tool_definitions, run_exploration_tool
 
 
 def _seed(store: LanceGraphStore) -> None:

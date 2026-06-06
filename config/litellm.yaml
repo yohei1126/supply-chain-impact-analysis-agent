@@ -1,4 +1,4 @@
-# LiteLLM proxy: OpenAI-compatible gateway for bom_graph/agent
+# LiteLLM proxy: OpenAI-compatible gateway for app/agent
 # Docs: https://docs.litellm.ai/docs/simple_proxy
 # Gemini 3.5 Flash: https://docs.litellm.ai/blog/gemini_3_5_flash
 # Requires litellm>=1.87.0rc1 (uv sync --extra gateway)

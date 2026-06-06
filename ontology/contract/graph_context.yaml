@@ -1,0 +1,70 @@
+version: "1.0.0"
+meta:
+  name: manufacturing-supply-chain
+  owner: data-governance@example.com
+  schema_source: ontology/schema.py
+
+# Storage-agnostic identity: bridge keys only. Master-store binding is a consumer concern.
+identity:
+  master_entity: Component
+  master_key: id
+  bridges:
+    - entity: Component
+      key: id
+      graphs: [ebom, routing, sourcing]
+      rule: same_id_same_real_world_part
+    - entity: Product
+      key: id
+      graphs: [ebom, routing]
+      rule: same_id_same_finished_good
+
+domains:
+  ebom:
+    graph_id: ebom
+    owner_team: engineering
+    sla_hours: 24
+    nodes: [Component, Product]
+    edges:
+      USED_IN: { from: Component, to: Product, traverse_out: [Product] }
+
+  routing:
+    graph_id: routing
+    owner_team: manufacturing
+    sla_hours: 24
+    nodes: [Component, Process, Product]
+    edges:
+      INPUT_OF: { from: Component, to: Process }
+      PRODUCED_BY: { from: Product, to: Process }
+
+  sourcing:
+    graph_id: sourcing
+    owner_team: procurement
+    sla_hours: 24
+    nodes: [Component, Supplier]
+    edges:
+      SUPPLIED_BY:
+        from: Component
+        to: Supplier
+        traverse_in_from: [Supplier]
+
+federation:
+  joins:
+    - name: supplier_to_products
+      steps:
+        - domain: sourcing
+          edge: SUPPLIED_BY
+          direction: reverse
+          yields: component_id
+        - domain: ebom
+          edge: USED_IN
+          from: component_id
+          yields: product_id
+
+quality:
+  on_ingest:
+    - intra_graph_endpoints_exist
+    - domain_edge_allowed
+    - bridge_id_present_in_master
+  on_federate:
+    - warn_if_as_of_skew_hours: 48
+    - reject_join_if_master_missing: true

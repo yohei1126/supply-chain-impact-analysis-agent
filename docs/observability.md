@@ -62,7 +62,7 @@ Restart the agent (env is read at process start):
 ```bash
 source .env
 export BOM_REPO_ROOT=$(pwd)
-uv run python -m bom_graph.agent
+uv run python -m app.agent
 ```
 
 Run an analysis from **http://localhost:8080/ui/** — traces appear in Langfuse under **Traces** (name: `bom-agent-run`).
@@ -126,7 +126,7 @@ curl -s http://127.0.0.1:8080/v1/config | python3 -m json.tool
 # expect "langfuse_configured": true
 ```
 
-After `.env` changes, **restart** the agent (`uv run python -m bom_graph.agent`). The server loads `.env` from `BOM_REPO_ROOT` (or cwd) on startup.
+After `.env` changes, **restart** the agent (`uv run python -m app.agent`). The server loads `.env` from `BOM_REPO_ROOT` (or cwd) on startup.
 
 In Langfuse UI: **Traces** → filter name **`bom-agent-run`**.
 

@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
-"""Export ontology from bom_graph.schema into skills/bom-ontology/assets/ontology.json."""
+"""Export ontology from ontology/schema.py into ontology/assets and skills."""
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
 
-from bom_graph.schema import export_schema_bundle
+from ontology.schema import export_schema_bundle
 
-OUTPUT = (
-    Path(__file__).resolve().parents[1]
-    / "skills"
-    / "bom-ontology"
-    / "assets"
-    / "ontology.json"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+OUTPUTS = (
+    REPO_ROOT / "ontology" / "assets" / "ontology.json",
+    REPO_ROOT / "skills" / "bom-ontology" / "assets" / "ontology.json",
 )
 
 
@@ -26,7 +24,7 @@ def build_bundle() -> dict:
         "format": "bom-ontology-bundle",
         "version": 1,
         "domain": "bom-graph",
-        "source": "bom_graph/schema.py",
+        "source": "ontology/schema.py",
         "note": "Generated file. Do not edit by hand; run scripts/sync_ontology.py",
     }
     return bundle
@@ -34,9 +32,10 @@ def build_bundle() -> dict:
 
 def main() -> None:
     text = json.dumps(build_bundle(), ensure_ascii=False, indent=2) + "\n"
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(text, encoding="utf-8")
-    print(f"Wrote {OUTPUT}")
+    for output in OUTPUTS:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(text, encoding="utf-8")
+        print(f"Wrote {output}")
 
 
 if __name__ == "__main__":

@@ -2,12 +2,12 @@
 """
 Seed ontology-validated synthetic BOM data (graph + vector + RDB).
 
-All nodes and edges pass Pydantic validators from bom_graph/schema.py:
+All nodes and edges pass Pydantic validators from ontology/schema.py:
   - add_node() -> validate_node_payload()
   - add_edge() -> RelationEdge (allowed edge pairs)
   - upsert_component() -> ComponentNode
 
-Dataset definition: bom_graph/sample_bom.py (seed_complex_bom).
+Dataset orchestration: pipeline/demo/seed.py (seed_complex_bom).
 
 Usage:
   uv run python scripts/seed_complex_bom.py --reset
@@ -19,10 +19,9 @@ import argparse
 import shutil
 from pathlib import Path
 
-from bom_graph.hybrid_store import UnifiedBomContextStore
-from bom_graph.lance_graph_store import LanceGraphStore
-from bom_graph.sample_bom import seed_complex_bom
-
+from app.federation.graph_store import LanceGraphStore
+from app.hybrid_store import UnifiedBomContextStore
+from pipeline.demo.seed import seed_complex_bom
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Seed complex manufacturing BOM demo data")

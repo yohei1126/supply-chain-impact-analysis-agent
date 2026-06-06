@@ -3,9 +3,9 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from bom_graph.agent.runner import BomAutonomousAgent, plan_tools_from_goal
-from bom_graph.agent.skills import build_system_prompt, load_skill_package
-from bom_graph.agent.context import BomAgentContext
+from app.agent.runner import BomAutonomousAgent, plan_tools_from_goal
+from app.agent.skills import build_system_prompt, load_skill_package
+from app.agent.context import BomAgentContext
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -84,7 +84,7 @@ def test_remote_agent_api(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("BOM_LANCEDB_PATH", str(tmp_path / "lancedb"))
     monkeypatch.setenv("BOM_DUCKDB_PATH", str(tmp_path / "bom.duckdb"))
 
-    from bom_graph.agent import server
+    from app.agent import server
 
     ctx = _seed_context(tmp_path)
     server._context = ctx

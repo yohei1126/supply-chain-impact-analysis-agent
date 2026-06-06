@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from bom_graph.agent.context import BomAgentContext
-from bom_graph.agent.runner import BomAutonomousAgent, ToolCall
-from bom_graph.sample_bom import seed_complex_bom
+from app.agent.context import BomAgentContext
+from app.agent.runner import BomAutonomousAgent, ToolCall
+from pipeline.demo.seed import seed_complex_bom
 
 from demo_interactive import explain, prompt, section, show, wait
 from repo_paths import REPO_ROOT

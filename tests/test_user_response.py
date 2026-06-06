@@ -1,7 +1,7 @@
-from bom_graph.agent.run_report import build_run_report
-from bom_graph.agent.runner import ToolCall
-from bom_graph.agent.types import AgentRunResult
-from bom_graph.agent.user_response import build_user_response
+from app.agent.run_report import build_run_report
+from app.agent.runner import ToolCall
+from app.agent.types import AgentRunResult
+from app.agent.user_response import build_user_response
 
 
 def test_user_response_omits_technical_fields() -> None:

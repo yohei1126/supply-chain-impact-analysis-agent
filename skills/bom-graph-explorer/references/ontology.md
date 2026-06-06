@@ -11,7 +11,7 @@ npx skils add <source> --path skills/bom-ontology
 | Context | Schema source |
 |---------|----------------|
 | Agent host | bom-ontology → `assets/ontology.json` |
-| Python pipeline | `bom_graph/schema.py` (generates the JSON above) |
+| Python pipeline | `ontology/schema.py` (generates the JSON above) |
 
 ## Allowed edges (summary)
 

@@ -2,8 +2,8 @@ import json
 
 import pytest
 
-from bom_graph.agent.llm_client import parse_planner_response
-from bom_graph.agent.llm_config import OpenAICompatLLMSettings, load_openai_compat_settings
+from app.agent.llm_client import parse_planner_response
+from app.agent.llm_config import OpenAICompatLLMSettings, load_openai_compat_settings
 
 
 def test_parse_planner_response_plain_json():
@@ -25,6 +25,7 @@ def test_parse_planner_response_markdown_fence():
 def test_openai_compat_settings_aliases(monkeypatch):
     monkeypatch.delenv("OPENAI_API_BASE", raising=False)
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_MODEL", raising=False)
     monkeypatch.setenv("LLM_GATEWAY_BASE", "http://127.0.0.1:4000/v1")
     monkeypatch.setenv("LLM_GATEWAY_API_KEY", "test-key")
     monkeypatch.setenv("LLM_MODEL", "bom-gemini-planner")
