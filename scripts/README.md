@@ -9,8 +9,18 @@ Run from the **repository root** (`data/` paths are relative to cwd).
 | `demo.py` | Interactive graph + tool exploration demo |
 | `demo_hybrid.py` | Interactive vector → RDB → graph demo |
 | `demo_agent.py` | Interactive autonomous agent demo (local, no HTTP) |
+| `demo_federation.py` | Per-domain seed, validate, query, federate, mitigations |
+
+| `demo_federation.py` | Per-domain synthetic data → validate → load → query → federated analysis + mitigations |
 
 Non-interactive demos: `DEMO_NONINTERACTIVE=1 uv run python scripts/demo.py`
+
+Example federation demo (resets LanceDB):
+
+```bash
+uv run python scripts/demo_federation.py --reset
+DEMO_NONINTERACTIVE=1 uv run python scripts/demo_federation.py --reset --supplier-id SUP-001
+```
 
 | Script | Purpose |
 |--------|---------|

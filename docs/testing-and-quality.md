@@ -38,7 +38,7 @@ uv sync --extra dev              # ruff + mypy (lint / type check)
 uv run pytest -q
 ```
 
-Expected: all tests pass (currently **33** tests under `tests/`). A passing run is the minimum **done criteria** in [AGENTS.md](../AGENTS.md).
+Expected: all tests pass (currently **36** tests under `tests/`). A passing run is the minimum **done criteria** in [AGENTS.md](../AGENTS.md).
 
 Verbose output:
 
@@ -66,6 +66,7 @@ uv run pytest -q tests/test_lance_graph_store.py::test_supplier_impact
 | Ontology (schema) | `tests/test_schema.py`, `tests/test_skill_ontology_asset.py`, `tests/test_ontology_isolation.py` |
 | Domain partition | `tests/test_domain_graphs.py`, `tests/test_domain_layout.py` |
 | Graph store | `tests/test_lance_graph_store.py`, `tests/test_exploration.py`, `tests/test_graph_viz.py` |
+| Federation analysis | `tests/test_federation_analysis.py` |
 | Hybrid (vector + RDB + graph) | `tests/test_hybrid_store.py` |
 | Agent / API | `tests/test_agent.py`, `tests/test_llm_client.py`, `tests/test_explain.py`, `tests/test_user_response.py`, `tests/test_run_report.py` |
 | Skills CLI | `tests/test_skill_script.py` |
