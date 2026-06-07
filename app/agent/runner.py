@@ -60,7 +60,8 @@ def _retry_empty_supplier_impact(
     if not alt or alt == planned:
         return planned, results, None
 
-    return alt, [invoke(alt[0].name, **alt[0].arguments)], "Heuristic replan after empty supplier impact"
+    note = "Heuristic replan after empty supplier impact"
+    return alt, [invoke(alt[0].name, **alt[0].arguments)], note
 
 
 def plan_tools_from_goal(goal: str) -> list[ToolCall]:
