@@ -57,7 +57,7 @@ uv run python scripts/seed_complex_bom.py --reset
 ## 2. Terminal A — LiteLLM + Langfuse (Docker)
 
 ```bash
-./scripts/run_docker_stack.sh -d
+./scripts/start_stack.sh
 ```
 
 Wait until:
@@ -88,7 +88,7 @@ Expect models such as `bom-gemini-3.5-flash`, `bom-gemini-planner`, and `bom-ope
 Stop later:
 
 ```bash
-docker compose --profile langfuse --profile litellm down
+./scripts/stop_stack.sh
 ```
 
 ## 3. Langfuse — first-time API keys
@@ -257,15 +257,6 @@ Trace IDs differ per run; what matters is `auth_check: OK` and one or more **`bo
 | LiteLLM **401** on `/v1/chat/completions` or model errors | Set `GEMINI_API_KEY` in `.env`; ensure `OPENAI_API_KEY` matches `LITELLM_MASTER_KEY`; restart stack |
 | `langfuse_configured: false` on agent | Add keys to `.env`; restart agent with `--extra observability` |
 | Empty map / no findings | `uv run python scripts/seed_complex_bom.py --reset`; restart agent |
-| Port 4000 already in use | Stop `./scripts/run_litellm_proxy.sh` if running, or change `LITELLM_PORT` |
+| Port 4000 already in use | `./scripts/stop_stack.sh` or change `LITELLM_PORT` |
 | Port 8080 in use | `export BOM_AGENT_PORT=8081` and use `http://localhost:8081/ui/` |
 
-## Optional: LiteLLM without Docker
-
-If you prefer a local LiteLLM process instead of the Docker profile:
-
-```bash
-./scripts/run_litellm_proxy.sh
-```
-
-Do **not** run Docker LiteLLM on port 4000 at the same time. Keep `OPENAI_API_BASE=http://127.0.0.1:4000/v1` in `.env`.

@@ -6,8 +6,7 @@ from typing import Any
 from domains.registry import DOMAIN_GRAPHS, GraphId
 
 try:
-    from neo4j import GraphDatabase
-    from neo4j import Driver
+    from neo4j import Driver, GraphDatabase
 except ImportError:  # pragma: no cover - optional until package install
     GraphDatabase = None  # type: ignore[misc, assignment]
     Driver = Any  # type: ignore[misc, assignment]

@@ -1,6 +1,6 @@
 from app.agent.runner import ToolCall
-from app.graph_viz import build_graph_view, extract_seed_keys, graph_view_for_run
 from app.federation.graph_store import GraphStore
+from app.graph_viz import extract_seed_keys, graph_view_for_run
 
 
 def _seed_mini_graph(store: GraphStore) -> None:

@@ -36,19 +36,11 @@ Agent run modes:
 ## Setup
 
 1. Copy `.env.example` to `.env` and set `GEMINI_API_KEY` (and/or `UPSTREAM_OPENAI_API_KEY` for the OpenAI-backed alias).
-2. Start the proxy:
-
-```bash
-chmod +x scripts/run_litellm_proxy.sh
-./scripts/run_litellm_proxy.sh
-```
-
-Or with Docker (from `docker-compose.yml`):
+2. Start the stack (LiteLLM + Langfuse + Neo4j via Docker):
 
 ```bash
 export GEMINI_API_KEY=...
-./scripts/run_docker_stack.sh -d            # LiteLLM + Langfuse (Docker)
-# LiteLLM only: docker compose --profile litellm up -d
+./scripts/start_stack.sh
 ```
 
 3. Run the BOM agent:

@@ -16,7 +16,7 @@ With LiteLLM together:
 
 ```bash
 cd /path/to/bom-knowledge-graph-agent-skill
-./scripts/run_docker_stack.sh -d
+./scripts/start_stack.sh
 ```
 
 Langfuse only:
@@ -30,13 +30,13 @@ Wait until `langfuse-web` logs **Ready** (about 2–3 minutes on first pull). Op
 Stop:
 
 ```bash
-docker compose --profile langfuse down
+./scripts/stop_stack.sh
 ```
 
 Remove data volumes as well:
 
 ```bash
-docker compose --profile langfuse down -v
+./scripts/stop_stack.sh -v
 ```
 
 ### 2. Create API keys

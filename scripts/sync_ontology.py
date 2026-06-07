@@ -21,8 +21,16 @@ ONTOLOGY_OUTPUTS = (
 )
 
 EXPLORER_OUTPUTS: dict[Path, object] = {
-    REPO_ROOT / "skills" / "bom-graph-explorer" / "assets" / "graph-context.json": export_graph_context_bundle,
-    REPO_ROOT / "skills" / "bom-graph-explorer" / "assets" / "query-catalog.json": export_query_catalog,
+    REPO_ROOT
+    / "skills"
+    / "bom-graph-explorer"
+    / "assets"
+    / "graph-context.json": export_graph_context_bundle,
+    REPO_ROOT
+    / "skills"
+    / "bom-graph-explorer"
+    / "assets"
+    / "query-catalog.json": export_query_catalog,
     REPO_ROOT
     / "skills"
     / "bom-graph-explorer"

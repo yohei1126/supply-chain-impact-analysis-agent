@@ -14,7 +14,9 @@ def _seed_graph(store: GraphStore) -> None:
         "Process",
         {"id": "PROC-20", "name": "Heat Treatment", "work_center": "WC-7", "cycle_time_min": 35.0},
     )
-    store.add_node("Component", {"id": "COMP-100", "name": "Frame", "material": "Steel", "cost": 1500.0})
+    store.add_node(
+        "Component", {"id": "COMP-100", "name": "Frame", "material": "Steel", "cost": 1500.0}
+    )
 
     store.add_edge(
         {
@@ -49,7 +51,9 @@ def _seed_graph(store: GraphStore) -> None:
 
 
 def test_component_replicated_in_three_domain_stores(graph_store: GraphStore) -> None:
-    graph_store.add_node("Component", {"id": "COMP-100", "name": "Frame", "material": "Steel", "cost": 1500.0})
+    graph_store.add_node(
+        "Component", {"id": "COMP-100", "name": "Frame", "material": "Steel", "cost": 1500.0}
+    )
 
     for graph_id in ("ebom", "routing", "sourcing"):
         nodes = graph_store.domain(graph_id).all_nodes()
@@ -71,7 +75,9 @@ def test_edges_live_in_single_domain_store(graph_store: GraphStore) -> None:
 
 def test_domain_edge_rejected_in_wrong_store(graph_store: GraphStore) -> None:
     domain = graph_store.domain("ebom")
-    domain.add_node("Component", {"id": "COMP-100", "name": "Frame", "material": "Steel", "cost": 1500.0})
+    domain.add_node(
+        "Component", {"id": "COMP-100", "name": "Frame", "material": "Steel", "cost": 1500.0}
+    )
     domain.add_node("Product", {"id": "PROD-900", "name": "Pump", "version": "v1"})
 
     with pytest.raises(ValueError, match="not allowed in graph ebom"):

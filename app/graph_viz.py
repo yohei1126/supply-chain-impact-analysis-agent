@@ -115,7 +115,9 @@ def build_graph_view(store: Any, seeds: set[NodeKey], *, expand_hops: int = 1) -
     }
 
 
-def graph_view_for_run(store: Any, tool_calls: list[ToolCall], results: list[dict[str, Any]]) -> dict[str, Any]:
+def graph_view_for_run(
+    store: Any, tool_calls: list[ToolCall], results: list[dict[str, Any]]
+) -> dict[str, Any]:
     seeds = extract_seed_keys(tool_calls, results)
     if not seeds:
         return {"nodes": [], "edges": [], "seed_count": 0, "node_count": 0, "edge_count": 0}

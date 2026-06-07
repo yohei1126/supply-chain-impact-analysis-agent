@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -11,6 +12,34 @@ class SkillPackage:
     skill_md: str
     references: dict[str, str]
     assets: dict[str, Path]
+
+
+def resolve_repo_root(preferred: Path | str | None = None) -> Path:
+    """Find repo root via bundled skills (ignores invalid BOM_REPO_ROOT placeholders)."""
+    candidates: list[Path] = []
+    if preferred is not None:
+        candidates.append(Path(preferred))
+    env_root = os.getenv("BOM_REPO_ROOT")
+    if env_root:
+        candidates.append(Path(env_root))
+    candidates.append(Path.cwd())
+    package_root = Path(__file__).resolve().parents[2]
+    if package_root not in candidates:
+        candidates.append(package_root)
+
+    seen: set[Path] = set()
+    for path in candidates:
+        resolved = path.resolve()
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        if (resolved / "skills" / "bom-ontology" / "SKILL.md").is_file():
+            return resolved
+
+    raise FileNotFoundError(
+        "Could not locate skills/bom-ontology. Set BOM_REPO_ROOT to this repository checkout "
+        "or run the agent from the repository root."
+    )
 
 
 def load_skill_package(repo_root: Path, skill_name: str) -> SkillPackage:
@@ -47,7 +76,9 @@ def build_system_prompt(repo_root: Path) -> str:
     def _load_json_asset(pkg: SkillPackage, filename: str) -> str:
         path = pkg.assets.get(filename)
         if path and path.exists():
-            return json.dumps(json.loads(path.read_text(encoding="utf-8")), ensure_ascii=False, indent=2)
+            return json.dumps(
+                json.loads(path.read_text(encoding="utf-8")), ensure_ascii=False, indent=2
+            )
         return ""
 
     parts = [

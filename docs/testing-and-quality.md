@@ -223,7 +223,7 @@ uv sync --extra dev && \
 
 | Tool | Status |
 |------|--------|
-| GitHub Actions CI | Not configured in this repository |
+| GitHub Actions CI | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) — ruff, mypy, pytest (Neo4j service) on PRs and pushes to `main` |
 | Pre-commit hooks | Not configured |
 | Coverage (`pytest-cov`) | Not configured |
 | Markdown link checker | Manual / ad hoc (see below) |

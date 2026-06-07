@@ -9,7 +9,9 @@ def _seed(store: GraphStore) -> None:
         {"id": "SUP-001", "company_name": "Nihon Steel", "country": "JP", "risk_level": "High"},
     )
     store.add_node("Product", {"id": "PROD-900", "name": "Industrial Pump", "version": "v1"})
-    store.add_node("Component", {"id": "COMP-100", "name": "Frame", "material": "Steel", "cost": 1500.0})
+    store.add_node(
+        "Component", {"id": "COMP-100", "name": "Frame", "material": "Steel", "cost": 1500.0}
+    )
     store.add_edge(
         {
             "source_label": "Component",

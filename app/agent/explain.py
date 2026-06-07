@@ -13,7 +13,8 @@ def explain_results_heuristic(
     """Deterministic summary when no LLM gateway is configured."""
     if not results:
         return (
-            "No tools were executed. Try a goal that mentions SUP-xxx, COMP-xxx/PROD-xxx, or a supplier/part description.",
+            "No tools were executed. Try a goal that mentions SUP-xxx, "
+            "COMP-xxx/PROD-xxx, or a supplier/part description.",
             [],
         )
 

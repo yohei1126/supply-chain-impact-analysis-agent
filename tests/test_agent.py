@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -7,7 +6,6 @@ from app.agent.context import BomAgentContext
 from app.agent.runner import BomAutonomousAgent, plan_tools_from_goal
 from app.agent.skills import build_system_prompt, load_skill_package
 from app.federation.graph_store import GraphStore
-
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 

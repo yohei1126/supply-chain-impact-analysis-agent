@@ -3,7 +3,7 @@
 # Gemini 3.5 Flash: https://docs.litellm.ai/blog/gemini_3_5_flash
 # Requires litellm>=1.87.0rc1 (uv sync --extra gateway)
 #
-# Start: ./scripts/run_litellm_proxy.sh
+# Start: ./scripts/start_stack.sh
 # Client env:
 #   OPENAI_API_BASE=http://127.0.0.1:4000/v1
 #   OPENAI_API_KEY=<LITELLM_MASTER_KEY>

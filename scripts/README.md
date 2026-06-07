@@ -10,8 +10,8 @@ Run from the **repository root** (`data/` paths are relative to cwd).
 | `demo.py` | Interactive graph + tool exploration demo |
 | `demo_agent.py` | Interactive autonomous agent demo (local, no HTTP) |
 | `verify_langfuse_telemetry.py` | Check Langfuse keys + list `bom-agent-run` traces |
-| `run_docker_stack.sh` | LiteLLM + Langfuse; optional `--neo4j` for graph storage |
-| `run_litellm_proxy.sh` | LiteLLM via `uv` only (no Docker; `config/litellm.yaml`) |
+| `start_stack.sh` | Start Langfuse + LiteLLM + Neo4j (detached by default; `--no-neo4j` skips graph DB) |
+| `stop_stack.sh` | Stop the same Docker stack (`-v` removes volumes) |
 
 Per-domain ingest: `ingest/{ebom,routing,sourcing}.py` — see [ingest/README.md](ingest/README.md).
 

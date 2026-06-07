@@ -4,15 +4,13 @@ import re
 from typing import Any, Literal
 
 from app.agent.context import BomAgentContext
-from app.graph_viz import graph_view_for_run
-
 from app.agent.explain import explain_results_heuristic
 from app.agent.llm_client import plan_tool_calls_openai_compat, summarize_run_openai_compat
 from app.agent.llm_config import OpenAICompatLLMSettings, load_openai_compat_settings
-from app.agent.registry import ToolRegistry
 from app.agent.run_report import build_run_report
 from app.agent.telemetry import RunTracer, start_run_tracer
 from app.agent.types import AgentRunResult, ToolCall
+from app.graph_viz import graph_view_for_run
 
 AgentMode = Literal["tools", "auto", "llm"]
 
@@ -38,7 +36,7 @@ def plan_tools_from_goal(goal: str) -> list[ToolCall]:
             )
         ]
 
-    # Indirect demo scenarios (seed data: Euro Brass GmbH DE → SUP-002, Drive Shaft → COMP-103, Servo Motor Drive → PROD-901)
+    # Indirect demo scenarios (seed: Euro Brass DE→SUP-002, Drive Shaft→COMP-103, Servo→PROD-901)
     if (
         ("german" in goal_lower or "germany" in goal_lower)
         and "brass" in goal_lower
@@ -62,7 +60,9 @@ def plan_tools_from_goal(goal: str) -> list[ToolCall]:
     if "steel" in goal_lower or "similar" in goal_lower:
         supplier_match = re.search(r"\b(SUP-\d+)\b", goal, re.IGNORECASE)
         if supplier_match:
-            return [ToolCall("bom_supplier_impact", {"supplier_id": supplier_match.group(1).upper()})]
+            return [
+                ToolCall("bom_supplier_impact", {"supplier_id": supplier_match.group(1).upper()})
+            ]
 
     return []
 
@@ -155,9 +155,7 @@ class BomAutonomousAgent:
                 summary_notes = f"LLM summary failed, heuristic fallback: {exc}"
 
         graph_view = graph_view_for_run(registry.explorer.store, planned, results)
-        run_report = build_run_report(
-            goal, mode, planned, results, llm_notes, summary_notes
-        )
+        run_report = build_run_report(goal, mode, planned, results, llm_notes, summary_notes)
 
         result = AgentRunResult(
             goal=goal,

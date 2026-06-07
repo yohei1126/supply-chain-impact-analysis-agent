@@ -7,11 +7,15 @@ from app.agent.types import ToolCall
 LOADED_SKILLS: list[dict[str, str]] = [
     {
         "name": "bom-ontology",
-        "role": "Schema constraints and published ontology.json (loaded into the agent system prompt).",
+        "role": (
+            "Schema constraints and published ontology.json (loaded into the agent system prompt)."
+        ),
     },
     {
         "name": "bom-graph-explorer",
-        "role": "Exploration workflows and tool-selection guidance (loaded into the system prompt).",
+        "role": (
+            "Exploration workflows and tool-selection guidance (loaded into the system prompt)."
+        ),
     },
 ]
 
@@ -58,14 +62,20 @@ def _summarize_result(tool_name: str, result: dict[str, Any]) -> tuple[str, list
                 f"[cost {row.get('component_cost')}]"
             )
         rest = count - len(highlights)
-        headline = f"{count} impacted component→product row(s) for supplier {data[0].get('supplier_id')}."
+        headline = (
+            f"{count} impacted component→product row(s) for supplier {data[0].get('supplier_id')}."
+        )
         if rest > 0:
             headline += f" Showing top {len(highlights)} by cost."
         return headline, highlights, count
 
     if op in {"supply_path", "bom_supply_path"} or tool_name == "bom_supply_path":
         if not data:
-            return summary or "No path found between the given component and product.", highlights, 0
+            return (
+                summary or "No path found between the given component and product.",
+                highlights,
+                0,
+            )
         path = data[0]
         nodes = path.get("nodes") or []
         rels = path.get("relationships") or []
@@ -105,7 +115,9 @@ def build_run_report(
 
     planner = llm_notes or "No tools planned"
     if not tool_calls:
-        planner = llm_notes or "No matching tools for this goal (try example queries or configure LLM)."
+        planner = (
+            llm_notes or "No matching tools for this goal (try example queries or configure LLM)."
+        )
 
     return {
         "skills": list(LOADED_SKILLS),

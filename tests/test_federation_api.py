@@ -8,7 +8,6 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.agent import server
-from app.component_master_store import ComponentMasterStore
 from app.federation.graph_store import GraphStore
 from pipeline.demo.load_domains import load_all_domains_separately
 

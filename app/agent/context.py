@@ -29,7 +29,7 @@ class BomAgentContext:
         graph: GraphStore | None = None,
         neo4j_uri: str | None = None,
         neo4j_auth: tuple[str, str] | None = None,
-    ) -> "BomAgentContext":
+    ) -> BomAgentContext:
         root = repo_root or Path.cwd()
         owned_graph = graph is None
         graph = graph or GraphStore(uri=neo4j_uri, auth=neo4j_auth)

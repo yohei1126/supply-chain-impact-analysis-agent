@@ -8,7 +8,9 @@ def test_upsert_component_updates_rdb_and_graph(graph_store: GraphStore, tmp_pat
         duckdb_path=str(tmp_path / "bom.duckdb"),
     )
     try:
-        store.upsert_component({"id": "COMP-100", "name": "Frame", "material": "Steel", "cost": 1500.0})
+        store.upsert_component(
+            {"id": "COMP-100", "name": "Frame", "material": "Steel", "cost": 1500.0}
+        )
 
         rdb_row = store.get_component_from_rdb("COMP-100")
         assert rdb_row is not None
@@ -30,7 +32,9 @@ def test_search_components_by_material(graph_store: GraphStore, tmp_path) -> Non
         duckdb_path=str(tmp_path / "bom.duckdb"),
     )
     try:
-        store.upsert_component({"id": "COMP-200", "name": "Valve", "material": "Brass", "cost": 90.0})
+        store.upsert_component(
+            {"id": "COMP-200", "name": "Valve", "material": "Brass", "cost": 90.0}
+        )
         rows = store.search_components_by_material("brass")
         assert any(row["id"] == "COMP-200" for row in rows)
     finally:

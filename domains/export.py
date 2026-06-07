@@ -15,7 +15,9 @@ FEDERATION_RECIPES: dict[str, dict[str, Any]] = {
         "bridge": "component_id",
     },
     "supplier_disruption_with_routing": {
-        "description": "Supplier impact extended with manufacturing processes consuming affected components.",
+        "description": (
+            "Supplier impact extended with manufacturing processes consuming affected components."
+        ),
         "steps": [
             "components_by_supplier",
             "impact_products_by_components",
@@ -34,7 +36,8 @@ CYPHER_ENGINE_PROFILE: dict[str, Any] = {
         "shortestPath() is available; federated BFS remains a fallback across domains.",
     ],
     "composition_rules": [
-        "Every MATCH edge type must appear in ontology.json edges.allowed_pairs with correct direction.",
+        "Every MATCH edge type must appear in ontology.json edges.allowed_pairs "
+        "with correct direction.",
         "Restrict edges to the target graph_id listed in graph-context.json domains.",
         "Join federated steps in application logic on identity.bridges (Component.id).",
         "Prefer named queries from query-catalog.json before inventing ad-hoc patterns.",
@@ -120,6 +123,8 @@ def export_cypher_engine_profile() -> dict[str, Any]:
             "format": "bom-cypher-engine-profile",
             "version": 1,
             "source": "domains/export.py",
-            "note": "Engine dialect constraints for LLM Cypher composition; update domains/export.py",
+            "note": (
+                "Engine dialect constraints for LLM Cypher composition; update domains/export.py"
+            ),
         },
     }

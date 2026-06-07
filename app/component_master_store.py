@@ -83,11 +83,11 @@ class ComponentMasterStore:
             """,
             [pattern, pattern, limit],
         ).fetchall()
-        return [
-            {"id": row[0], "name": row[1], "material": row[2], "cost": row[3]} for row in rows
-        ]
+        return [{"id": row[0], "name": row[1], "material": row[2], "cost": row[3]} for row in rows]
 
-    def search_components_by_material(self, material: str, *, limit: int = 10) -> list[dict[str, Any]]:
+    def search_components_by_material(
+        self, material: str, *, limit: int = 10
+    ) -> list[dict[str, Any]]:
         return self.search_components(material, limit=limit)
 
 

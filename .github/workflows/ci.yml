@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-analysis:
+    name: Lint and type check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Ruff lint
+        run: uv run ruff check ontology domains pipeline app tests scripts
+
+      - name: Ruff format
+        run: uv run ruff format --check ontology domains pipeline app tests scripts
+
+      - name: Mypy
+        run: uv run mypy ontology domains pipeline app
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    services:
+      neo4j:
+        image: neo4j:5-community
+        env:
+          NEO4J_AUTH: neo4j/password
+        ports:
+          - 7687:7687
+    env:
+      BOM_NEO4J_URI: bolt://localhost:7687
+      BOM_NEO4J_USER: neo4j
+      BOM_NEO4J_PASSWORD: password
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Wait for Neo4j
+        run: |
+          for attempt in $(seq 1 30); do
+            if uv run python -c "from app.storage.neo4j_config import get_driver, verify_connectivity; d=get_driver(); verify_connectivity(d); d.close()"; then
+              echo "Neo4j is ready"
+              exit 0
+            fi
+            echo "Waiting for Neo4j (${attempt}/30)..."
+            sleep 2
+          done
+          echo "Neo4j did not become ready in time"
+          exit 1
+
+      - name: Pytest
+        run: uv run python -m pytest -q

@@ -2,11 +2,10 @@
 #
 #   docker compose --profile langfuse up -d     # Langfuse UI http://localhost:3000
 #   docker compose --profile litellm up -d     # LiteLLM      http://localhost:4000/v1
-#   ./scripts/run_docker_stack.sh -d
-#   docker compose --profile langfuse --profile litellm up -d
-#
-#   docker compose --profile langfuse down
-#   docker compose --profile langfuse down -v   # remove volumes
+#   ./scripts/start_stack.sh                    # Langfuse + LiteLLM + Neo4j (detached)
+#   ./scripts/start_stack.sh --no-neo4j         # Langfuse + LiteLLM only
+#   ./scripts/stop_stack.sh                     # stop stack
+#   ./scripts/stop_stack.sh -v                  # stop and remove volumes
 #
 # Env: copy .env.example → .env (GEMINI_API_KEY, LANGFUSE_* keys, etc.)
 

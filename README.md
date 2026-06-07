@@ -14,7 +14,7 @@ This repository bundles:
 ## Try it locally (recommended)
 
 1. **Prepare data** — seed a demo BOM into Neo4j + DuckDB (validated against the ontology).
-2. **Start services** — Neo4j (optional), LiteLLM (LLM), and Langfuse (traces) via Docker; then the BOM agent.
+2. **Start services** — `./scripts/start_stack.sh` (Neo4j, LiteLLM, Langfuse); seed data; then the BOM agent.
 3. **Use the UI** — ask questions, read Summary / Key findings / Evidence, and view the supply chain map.
 
 **Full walkthrough:** [docs/local-demo-runbook.md](docs/local-demo-runbook.md) (terminals, `.env`, Langfuse keys, browser steps, troubleshooting).

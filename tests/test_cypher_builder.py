@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import pytest
 
-from ontology.cypher_builder import QUERY_SPECS, build_query_by_name
-from ontology.schema import ALLOWED_EDGES
 from app.federation.cypher_queries import (
     cypher_components_by_supplier,
     cypher_products_by_components,
 )
+from ontology.cypher_builder import QUERY_SPECS, build_query_by_name
+from ontology.schema import ALLOWED_EDGES
 
 
 def test_query_specs_align_with_allowed_edges() -> None:

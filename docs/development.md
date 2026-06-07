@@ -354,9 +354,8 @@ User-facing response fields: `explanation`, `findings`, `evidence`, `graph_view`
 Single file: `docker-compose.yml` with profiles `litellm` and `langfuse`.
 
 ```bash
-./scripts/run_docker_stack.sh -d    # both profiles
-docker compose --profile langfuse up -d
-docker compose --profile litellm up -d
+./scripts/start_stack.sh
+./scripts/stop_stack.sh
 ```
 
 Requires Docker (or Colima: `colima start`). See [observability.md](observability.md) and [llm-gateway.md](llm-gateway.md).

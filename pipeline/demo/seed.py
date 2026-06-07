@@ -6,10 +6,16 @@ from typing import Any
 
 from app.component_master_store import ComponentMasterStore
 from app.federation.graph_store import GraphStore
-from pipeline.demo.sample_data import COMPONENT_BOM, PROCESSES, PRODUCTS, PRODUCT_PROCESSES, SUPPLIERS
 from domains.ebom import pipeline as ebom_pipeline
 from domains.routing import pipeline as routing_pipeline
 from domains.sourcing import pipeline as sourcing_pipeline
+from pipeline.demo.sample_data import (
+    COMPONENT_BOM,
+    PROCESSES,
+    PRODUCT_PROCESSES,
+    PRODUCTS,
+    SUPPLIERS,
+)
 
 
 def seed_complex_bom(

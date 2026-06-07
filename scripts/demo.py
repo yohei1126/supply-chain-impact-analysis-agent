@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+from demo_interactive import explain, prompt, section, show, wait
+
 from app.exploration import GraphExplorer
 from app.federation.graph_store import GraphStore
-from pipeline.demo.seed import seed_complex_bom
-from ontology.schema import export_schema_bundle
 from app.tools import exploration_tool_definitions, run_exploration_tool
-
-from demo_interactive import explain, prompt, section, show, wait
+from ontology.schema import export_schema_bundle
+from pipeline.demo.seed import seed_complex_bom
 
 
 def main() -> None:
@@ -50,7 +50,8 @@ def main() -> None:
             str(bundle)[:400] + "\n...",
             commentary=(
                 "Pydantic-derived JSON for prompts.\n"
-                "Production agents should treat skills/bom-ontology/assets/ontology.json as canonical."
+                "Production agents should treat "
+                "skills/bom-ontology/assets/ontology.json as canonical."
             ),
         )
         wait()

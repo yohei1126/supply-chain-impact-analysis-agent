@@ -13,7 +13,9 @@ def _seed_graph(store: GraphStore) -> None:
         "Process",
         {"id": "PROC-20", "name": "Heat Treatment", "work_center": "WC-7", "cycle_time_min": 35.0},
     )
-    store.add_node("Component", {"id": "COMP-100", "name": "Frame", "material": "Steel", "cost": 1500.0})
+    store.add_node(
+        "Component", {"id": "COMP-100", "name": "Frame", "material": "Steel", "cost": 1500.0}
+    )
 
     store.add_edge(
         {

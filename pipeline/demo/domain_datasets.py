@@ -12,8 +12,8 @@ from ontology.schema import RelationEdge, validate_node_payload
 from pipeline.demo.sample_data import (
     COMPONENT_BOM,
     PROCESSES,
-    PRODUCTS,
     PRODUCT_PROCESSES,
+    PRODUCTS,
     SUPPLIERS,
 )
 

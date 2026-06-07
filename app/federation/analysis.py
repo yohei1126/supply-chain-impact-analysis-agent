@@ -7,7 +7,6 @@ from typing import Any, Literal
 
 from app.federation.cypher_executor import execute_domain_cypher
 from app.federation.cypher_queries import (
-    ONTOLOGY_SOURCE,
     cypher_components_by_supplier,
     cypher_impact_by_components,
     cypher_processes_by_components,
@@ -73,9 +72,7 @@ def query_sourcing_for_supplier(store: GraphStore, supplier_id: str) -> DomainQu
     )
 
 
-def query_ebom_for_components(
-    store: GraphStore, component_ids: set[str]
-) -> DomainQueryResult:
+def query_ebom_for_components(store: GraphStore, component_ids: set[str]) -> DomainQueryResult:
     if not component_ids:
         return DomainQueryResult(
             graph_id="ebom",
@@ -95,9 +92,7 @@ def query_ebom_for_components(
     )
 
 
-def query_routing_for_components(
-    store: GraphStore, component_ids: set[str]
-) -> DomainQueryResult:
+def query_routing_for_components(store: GraphStore, component_ids: set[str]) -> DomainQueryResult:
     if not component_ids:
         return DomainQueryResult(
             graph_id="routing",
@@ -151,8 +146,9 @@ def _build_problems(
                 severity="high",
                 category="supplier_risk",
                 message=(
-                    f"Supplier {supplier_meta.get('supplier_name')} ({supplier_meta.get('supplier_id')}) "
-                    f"is already classified High risk ({supplier_meta.get('country')})."
+                    f"Supplier {supplier_meta.get('supplier_name')} "
+                    f"({supplier_meta.get('supplier_id')}) is already classified High risk "
+                    f"({supplier_meta.get('country')})."
                 ),
                 evidence={
                     "supplier_id": supplier_meta.get("supplier_id"),
@@ -177,7 +173,9 @@ def _build_problems(
             ProblemFinding(
                 severity="high",
                 category="single_source",
-                message=f"{len(single_source)} affected components have only one registered supplier.",
+                message=(
+                    f"{len(single_source)} affected components have only one registered supplier."
+                ),
                 evidence={"component_ids": sorted(single_source)},
             )
         )
@@ -188,7 +186,9 @@ def _build_problems(
             ProblemFinding(
                 severity="medium",
                 category="product_spread",
-                message=f"Disruption reaches {len(product_ids)} finished goods across the EBOM graph.",
+                message=(
+                    f"Disruption reaches {len(product_ids)} finished goods across the EBOM graph."
+                ),
                 evidence={"product_ids": sorted(product_ids)},
             )
         )
@@ -199,7 +199,10 @@ def _build_problems(
             ProblemFinding(
                 severity="medium",
                 category="manufacturing",
-                message=f"Routing graph shows impact on work centers: {', '.join(sorted(work_centers))}.",
+                message=(
+                    f"Routing graph shows impact on work centers: "
+                    f"{', '.join(sorted(work_centers))}."
+                ),
                 evidence={"work_centers": sorted(work_centers)},
             )
         )
@@ -227,7 +230,9 @@ def _build_mitigations(
                             f"({row['component_name']}); only {supplier_id} on record."
                         ),
                         owner_team="procurement",
-                        evidence=f"lead_time_days={row.get('lead_time_days')}, cost={row.get('cost')}",
+                        evidence=(
+                            f"lead_time_days={row.get('lead_time_days')}, cost={row.get('cost')}"
+                        ),
                     )
                 )
                 priority += 1
@@ -254,7 +259,10 @@ def _build_mitigations(
         actions.append(
             MitigationAction(
                 priority=priority,
-                action=f"Reschedule or outsource {wc} ({row['process_name']}) while components are delayed.",
+                action=(
+                    f"Reschedule or outsource {wc} ({row['process_name']}) "
+                    f"while components are delayed."
+                ),
                 owner_team="manufacturing",
                 evidence=f"INPUT_OF {row['component_id']} -> {row['process_id']}",
             )

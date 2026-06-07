@@ -60,14 +60,24 @@ COMPONENT_BOM: list[dict[str, Any]] = [
         "lead_time_days": 10,
     },
     {
-        "component": {"id": "COMP-105", "name": "Stator Lamination", "material": "Steel", "cost": 740.0},
+        "component": {
+            "id": "COMP-105",
+            "name": "Stator Lamination",
+            "material": "Steel",
+            "cost": 740.0,
+        },
         "supplier": "SUP-001",
         "products": ["PROD-901"],
         "processes": ["PROC-10"],
         "lead_time_days": 20,
     },
     {
-        "component": {"id": "COMP-106", "name": "Copper Winding", "material": "Brass", "cost": 410.0},
+        "component": {
+            "id": "COMP-106",
+            "name": "Copper Winding",
+            "material": "Brass",
+            "cost": 410.0,
+        },
         "supplier": "SUP-002",
         "products": ["PROD-901"],
         "processes": ["PROC-30"],
@@ -88,7 +98,12 @@ COMPONENT_BOM: list[dict[str, Any]] = [
         "lead_time_days": 7,
     },
     {
-        "component": {"id": "COMP-109", "name": "Manifold Body", "material": "Steel", "cost": 980.0},
+        "component": {
+            "id": "COMP-109",
+            "name": "Manifold Body",
+            "material": "Steel",
+            "cost": 980.0,
+        },
         "supplier": "SUP-003",
         "products": ["PROD-902"],
         "processes": ["PROC-10"],

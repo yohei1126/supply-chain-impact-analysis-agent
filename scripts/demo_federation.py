@@ -21,6 +21,8 @@ import argparse
 import json
 import sys
 
+from demo_interactive import explain, prompt, section, show, wait
+
 from app.federation.analysis import (
     FederatedAnalysis,
     analyze_supplier_disruption,
@@ -30,10 +32,12 @@ from app.federation.analysis import (
 )
 from app.federation.graph_store import GraphStore
 from app.storage.neo4j_config import reset_neo4j
-from pipeline.demo.domain_datasets import build_all_domain_datasets, dataset_summary, validate_all_datasets
+from pipeline.demo.domain_datasets import (
+    build_all_domain_datasets,
+    dataset_summary,
+    validate_all_datasets,
+)
 from pipeline.demo.load_domains import load_all_domains_separately
-
-from demo_interactive import explain, prompt, section, show, wait
 
 
 def parse_args() -> argparse.Namespace:
@@ -60,7 +64,11 @@ def main() -> None:
     )
     datasets = build_all_domain_datasets()
     summaries = {gid: dataset_summary(ds) for gid, ds in datasets.items()}
-    show("Domain datasets (generated)", summaries, commentary="Independent bundles before validation.")
+    show(
+        "Domain datasets (generated)",
+        summaries,
+        commentary="Independent bundles before validation.",
+    )
     wait()
 
     section(
@@ -104,7 +112,11 @@ def main() -> None:
         for result in (sourcing_q, ebom_q, routing_q):
             show(
                 f"{result.graph_id} / {result.query_name}",
-                {"summary": result.summary, "rows": result.rows[:5], "truncated": len(result.rows) > 5},
+                {
+                    "summary": result.summary,
+                    "rows": result.rows[:5],
+                    "truncated": len(result.rows) > 5,
+                },
                 commentary=result.summary,
             )
         wait()
@@ -137,7 +149,12 @@ def _show_analysis(analysis: FederatedAnalysis) -> None:
     show(
         "Problems found",
         [
-            {"severity": p.severity, "category": p.category, "message": p.message, "evidence": p.evidence}
+            {
+                "severity": p.severity,
+                "category": p.category,
+                "message": p.message,
+                "evidence": p.evidence,
+            }
             for p in analysis.problems
         ],
         commentary="Derived only from domain query results — no fabricated IDs.",
@@ -153,7 +170,9 @@ def _show_analysis(analysis: FederatedAnalysis) -> None:
             }
             for m in analysis.mitigations
         ],
-        commentary="Template actions tagged by owning team (procurement / engineering / manufacturing).",
+        commentary=(
+            "Template actions tagged by owning team (procurement / engineering / manufacturing)."
+        ),
     )
     explain(
         f"Scenario {analysis.scenario} complete.\n"

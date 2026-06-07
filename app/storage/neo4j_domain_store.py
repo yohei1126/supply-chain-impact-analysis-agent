@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from domains.registry import GraphId, assert_edge_allowed_in_graph, assert_node_allowed_in_graph
 from app.storage.neo4j_config import DEFAULT_DATABASE
+from domains.registry import GraphId, assert_edge_allowed_in_graph, assert_node_allowed_in_graph
 from ontology.schema import RelationEdge, validate_node_payload
 
 try:
@@ -23,7 +23,8 @@ class Neo4jDomainStore:
     def all_nodes(self) -> list[dict[str, Any]]:
         with self.driver.session(database=self.database) as session:
             result = session.run(
-                "MATCH (n {graph_id: $graph_id}) RETURN labels(n) AS labels, properties(n) AS props",
+                "MATCH (n {graph_id: $graph_id}) "
+                "RETURN labels(n) AS labels, properties(n) AS props",
                 graph_id=self.graph_id,
             )
             out: list[dict[str, Any]] = []
@@ -109,9 +110,9 @@ class Neo4jDomainStore:
         with self.driver.session(database=self.database) as session:
             session.run(
                 f"""
-                MATCH (s:{row['source_label']} {{id: $source_id, graph_id: $graph_id}})
-                MATCH (t:{row['target_label']} {{id: $target_id, graph_id: $graph_id}})
-                MERGE (s)-[r:{row['edge_type']}]->(t)
+                MATCH (s:{row["source_label"]} {{id: $source_id, graph_id: $graph_id}})
+                MATCH (t:{row["target_label"]} {{id: $target_id, graph_id: $graph_id}})
+                MERGE (s)-[r:{row["edge_type"]}]->(t)
                 SET r = $props
                 """,
                 source_id=row["source_id"],

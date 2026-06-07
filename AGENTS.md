@@ -163,10 +163,10 @@ Non-interactive: `DEMO_NONINTERACTIVE=1 uv run python scripts/demo.py`
 
 All under `scripts/` — see [scripts/README.md](scripts/README.md). Demos call `seed_complex_bom()`; use §4.3 `--reset` first for a clean Neo4j + DuckDB tree.
 
-Start Neo4j locally (optional Docker profile):
+Start the local Docker stack (Langfuse + LiteLLM + Neo4j):
 
 ```bash
-./scripts/run_docker_stack.sh --neo4j -d
+./scripts/start_stack.sh
 uv run python scripts/seed_complex_bom.py --reset
 ```
 
@@ -177,7 +177,7 @@ uv run python scripts/seed_complex_bom.py --reset
 | Step | What |
 |------|------|
 | 1 | `uv sync --extra observability --extra gateway`, configure `.env`, start Neo4j if needed, `seed_complex_bom.py --reset` |
-| 2 | `./scripts/run_docker_stack.sh -d` (add `--neo4j` for graph storage) → LiteLLM `:4000`, Langfuse `:3000` |
+| 2 | `./scripts/start_stack.sh` → LiteLLM `:4000`, Langfuse `:3000`, Neo4j `:7687` |
 | 3 | Langfuse UI → API keys → `.env` |
 | 4 | `uv run --extra observability python -m app.agent` → UI **http://localhost:8080/ui/** |
 | 5 | Analyze in UI; inspect traces in Langfuse (`bom-agent-run`) |

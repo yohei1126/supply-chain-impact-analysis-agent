@@ -3,7 +3,12 @@ from __future__ import annotations
 import pytest
 
 from app.federation.graph_store import GraphStore
-from app.storage.neo4j_config import ensure_domain_databases, get_driver, reset_neo4j, verify_connectivity
+from app.storage.neo4j_config import (
+    ensure_domain_databases,
+    get_driver,
+    reset_neo4j,
+    verify_connectivity,
+)
 
 
 @pytest.fixture(scope="session")

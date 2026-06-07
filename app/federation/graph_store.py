@@ -3,14 +3,14 @@ from __future__ import annotations
 from collections import deque
 from typing import Any
 
+from app.storage.neo4j_config import ensure_domain_databases, get_driver
+from app.storage.neo4j_domain_store import Neo4jDomainStore
 from domains.registry import (
     DOMAIN_GRAPHS,
     GraphId,
     graph_for_edge,
     graphs_for_node,
 )
-from app.storage.neo4j_config import ensure_domain_databases, get_driver
-from app.storage.neo4j_domain_store import Neo4jDomainStore
 from ontology.schema import RelationEdge, validate_node_payload
 
 try:
@@ -78,7 +78,9 @@ class GraphStore:
 
         return federated_impact_rows(self, supplier_id)
 
-    def shortest_supply_path(self, from_component_id: str, to_product_id: str) -> list[dict[str, Any]]:
+    def shortest_supply_path(
+        self, from_component_id: str, to_product_id: str
+    ) -> list[dict[str, Any]]:
         path_edge_types = {"USED_IN", "INPUT_OF", "PRODUCED_BY"}
         edges = self._edges_for_types(path_edge_types, ("ebom", "routing"))
 
@@ -91,7 +93,9 @@ class GraphStore:
         start = ("Component", from_component_id)
         goal = ("Product", to_product_id)
 
-        queue = deque([(start, [start], [])])
+        queue: deque[tuple[tuple[str, str], list[tuple[str, str]], list[str]]] = deque(
+            [(start, [start], [])]
+        )
         visited = {start}
         while queue:
             current, path_nodes, path_rels = queue.popleft()

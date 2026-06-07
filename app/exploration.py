@@ -51,9 +51,7 @@ class GraphExplorer:
         ]
         if component_ids:
             impact_cypher = cypher_impact_by_components(component_ids)
-            steps.append(
-                CypherStep("ebom", "impact_products_by_components", impact_cypher)
-            )
+            steps.append(CypherStep("ebom", "impact_products_by_components", impact_cypher))
 
         rows = federated_impact_rows(self.store, supplier_id)
         return ExplorationResult(
@@ -102,7 +100,8 @@ class GraphExplorer:
             CypherStep(
                 "federated",
                 "shortest_path_bfs_fallback",
-                "/* no direct USED_IN link; Python BFS over ebom+routing (USED_IN, INPUT_OF, PRODUCED_BY) */",
+                "/* no direct USED_IN link; Python BFS over ebom+routing "
+                "(USED_IN, INPUT_OF, PRODUCED_BY) */",
             )
         )
         return ExplorationResult(

@@ -28,7 +28,8 @@ def build_user_explanation(result: AgentRunResult) -> str:
     if not report.get("executions"):
         return (
             "We could not analyze that question. "
-            "Try one of the indirect examples on the left, such as a supplier disruption described by country and material."
+            "Try one of the indirect examples on the left, such as a supplier disruption "
+            "described by country and material."
         )
 
     explanation = (result.explanation or "").strip()
