@@ -2,7 +2,7 @@
 
 How to **run**, **verify**, and **evaluate** BOM supply-impact demos: federation CLI (graphs only), web UI, and full stack (LiteLLM + Langfuse + agent).
 
-**Related:** [README.md](../README.md) · [development.md](development.md) · [agent-guide.md](agent-guide.md) · [llm-gateway.md](llm-gateway.md) · [observability.md](observability.md) · [testing-and-quality.md](testing-and-quality.md)
+**Related:** [README.md](../README.md) · [development.md](development.md) · [seeding.md](seeding.md) · [setup-and-demos.md](setup-and-demos.md) · [llm-gateway.md](llm-gateway.md) · [observability.md](observability.md) · [testing-and-quality.md](testing-and-quality.md)
 
 ---
 

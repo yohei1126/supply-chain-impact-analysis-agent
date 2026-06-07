@@ -1,6 +1,6 @@
 # Agent skill assets and catalog versioning
 
-How generated JSON catalogs relate to Agent Skills, the BOM application, and multi-agent deployment. Complements [development.md](development.md) (authoring workflow), [graph-contract.md](graph-contract.md) (Graph Contract YAML), and [graph-context.md](graph-context.md) (graph context bundle). **Terminology:** [agent-guide.md § Terminology](agent-guide.md#terminology). This doc focuses on **catalog versioning** for all JSON artifacts (`ontology.json`, `graph-context.json`, …).
+How generated JSON catalogs relate to Agent Skills, the BOM application, and multi-agent deployment. Complements [development.md](development.md) (authoring workflow), [graph-contract.md](graph-contract.md) (Graph Contract YAML), and [graph-context.md](graph-context.md) (graph context bundle). **Terminology:** [terminology.md](terminology.md). This doc focuses on **catalog versioning** for all JSON artifacts (`ontology.json`, `graph-context.json`, …).
 
 ## Problem
 
@@ -256,8 +256,8 @@ Do **not** move catalog SSOT to DB tables editable by agents. DB holds **instanc
 
 | Topic | Doc |
 |-------|-----|
-| Authoring & sync commands | [development.md](development.md), [agent-guide.md](agent-guide.md) |
-| Terminology SSOT | [agent-guide.md](agent-guide.md#terminology) |
+| Authoring & sync commands | [development.md](development.md), [seeding.md](seeding.md) |
+| Terminology SSOT | [terminology.md](terminology.md) |
 | Graph Contract (YAML SSOT) | [graph-contract.md](graph-contract.md) |
 | Graph context (`graph-context.json`) | [graph-context.md](graph-context.md) |
 | Skill install | [skills/README.md](../skills/README.md) |

@@ -1,8 +1,8 @@
 # Development guide
 
-Setup, project layout, seeding, CLI demos, tests, and the **implementation roadmap** for three domain graphs with agent-driven logical federation. For the full LiteLLM + Langfuse + web UI flow, see [demo-runbook.md](demo-runbook.md). For agent conventions and detailed setup, see [AGENTS.md](../AGENTS.md) and [agent-guide.md](agent-guide.md).
+Setup, project layout, seeding, CLI demos, tests, and the **implementation roadmap** for three domain graphs with agent-driven logical federation. For the full LiteLLM + Langfuse + web UI flow, see [demo-runbook.md](demo-runbook.md). For agent conventions, see [AGENTS.md](../AGENTS.md), [seeding.md](seeding.md), and [setup-and-demos.md](setup-and-demos.md).
 
-**Architecture references:** [project-layout.md](project-layout.md) · [agent-guide.md](agent-guide.md) ([terminology](agent-guide.md#terminology)) · [demo-runbook.md](demo-runbook.md) · [graph-contract.md](graph-contract.md) · [graph-context.md](graph-context.md) · [testing-and-quality.md](testing-and-quality.md) · [enterprise-graph-design.md](enterprise-graph-design.md) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) · [agent-skill-assets.md](agent-skill-assets.md)
+**Architecture references:** [project-layout.md](project-layout.md) · [terminology.md](terminology.md) · [seeding.md](seeding.md) · [setup-and-demos.md](setup-and-demos.md) · [agent-runtime.md](agent-runtime.md) · [demo-runbook.md](demo-runbook.md) · [graph-contract.md](graph-contract.md) · [graph-context.md](graph-context.md) · [testing-and-quality.md](testing-and-quality.md) · [enterprise-graph-design.md](enterprise-graph-design.md) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) · [agent-skill-assets.md](agent-skill-assets.md)
 
 ## Ontology (single source of truth)
 
@@ -29,7 +29,7 @@ uv run python scripts/sync_ontology.py
 uv run pytest -q tests/test_skill_ontology_asset.py tests/test_skill_agent_assets.py
 ```
 
-Seeding and validation details: [agent-guide.md](agent-guide.md#seeding-synthetic-bom-data-ontology-validation).
+Seeding and validation details: [seeding.md](seeding.md).
 
 ### Ontology layers (target)
 
@@ -393,6 +393,7 @@ Run the full suite after every phase merge; see [AGENTS.md](../AGENTS.md) done c
 
 | Topic | Doc |
 |-------|-----|
+| Terminology (Contract vs context) | [terminology.md](terminology.md) |
 | Full local demo | [demo-runbook.md](demo-runbook.md#part-b--full-stack-setup-litellm--langfuse--agent) |
 | Enterprise graph + agent design | [enterprise-graph-design.md](enterprise-graph-design.md) |
 | Supply chain disruption response | [supply-chain-disruption-response.md](supply-chain-disruption-response.md) |
@@ -401,4 +402,4 @@ Run the full suite after every phase merge; see [AGENTS.md](../AGENTS.md) done c
 | Langfuse traces | [observability.md](observability.md) |
 | Tests, lint, type check | [testing-and-quality.md](testing-and-quality.md) |
 | Federated domain demo (E2E) | [demo-runbook.md](demo-runbook.md#part-a--federation-cli-no-docker--llm) |
-| Agent contributors | [AGENTS.md](../AGENTS.md) · [agent-guide.md](agent-guide.md) |
+| Agent contributors | [AGENTS.md](../AGENTS.md) · [seeding.md](seeding.md) · [setup-and-demos.md](setup-and-demos.md) · [agent-runtime.md](agent-runtime.md) |

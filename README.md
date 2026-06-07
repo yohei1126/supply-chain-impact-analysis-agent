@@ -31,10 +31,12 @@ This repository bundles:
 | [docs/observability.md](docs/observability.md) | Operators | Langfuse telemetry |
 | [docs/enterprise-graph-design.md](docs/enterprise-graph-design.md) | Architects | Enterprise graph domains, Neo4j layout, agent federation |
 | [docs/supply-chain-disruption-response.md](docs/supply-chain-disruption-response.md) | Architects / ops | Disruption playbooks, logical graph federation, mitigations |
-| [docs/agent-guide.md](docs/agent-guide.md) | Coding agents / contributors | Setup, seeding, demos, **terminology SSOT** |
+| [docs/terminology.md](docs/terminology.md) | All contributors | Naming SSOT (Graph Contract vs graph context vs `graph_view`) |
+| [docs/seeding.md](docs/seeding.md) | Coding agents / contributors | Synthetic BOM seeding and validation |
+| [docs/setup-and-demos.md](docs/setup-and-demos.md) | Coding agents / contributors | Environment, Skill install, CLI demos |
+| [docs/agent-runtime.md](docs/agent-runtime.md) | Coding agents | `app/agent` planner, tools, API modes |
 | [docs/graph-contract.md](docs/graph-contract.md) | Data / ontology authors | Graph Contract (YAML, governance, federation) |
 | [docs/graph-context.md](docs/graph-context.md) | Agent / Skill authors | graph context bundle (`graph-context.json`), sync, Cypher compose |
-| [docs/agent-guide.md](docs/agent-guide.md) | Coding agents | Seeding, setup, demos, agent runtime |
 | [AGENTS.md](AGENTS.md) | Coding agents | Principles, SSOT, change workflow, done criteria |
 | [skills/README.md](skills/README.md) | Skill consumers | Installing `bom-ontology` and `bom-graph-explorer` |
 | [scripts/README.md](scripts/README.md) | Script reference | `seed_*`, `demo_*`, Docker helpers |
@@ -52,4 +54,4 @@ Planner details, tool arguments, and full JSON go to **Langfuse** when configure
 
 ## Contributing / agent development
 
-See [AGENTS.md](AGENTS.md), [docs/agent-guide.md](docs/agent-guide.md), and [docs/testing-and-quality.md](docs/testing-and-quality.md).
+See [AGENTS.md](AGENTS.md), [docs/seeding.md](docs/seeding.md), [docs/setup-and-demos.md](docs/setup-and-demos.md), and [docs/testing-and-quality.md](docs/testing-and-quality.md).

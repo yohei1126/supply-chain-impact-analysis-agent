@@ -2,11 +2,11 @@
 
 **Graph context** is the agent-facing **scope bundle** exported as `graph-context.json`. It tells explorers and LLM planners which `graph_id` owns which node/edge **types**, how Bridge Keys align, and which federation **recipe names** exist — without loading the full Graph Contract YAML or Neo4j instance data.
 
-**Not instance graph data.** Rows like `SUP-002` or `COMP-101` live in Neo4j. Ephemeral subgraphs for the UI live in **`graph_view`**. Terminology: [agent-guide.md § Terminology](agent-guide.md#terminology).
+**Not instance graph data.** Rows like `SUP-002` or `COMP-101` live in Neo4j. Ephemeral subgraphs for the UI live in **`graph_view`**. Terminology: [terminology.md](terminology.md).
 
 **Audience:** agent developers, Skill authors, anyone composing Cypher or debugging explorer prompts.
 
-**Related:** [agent-guide.md](agent-guide.md) ([terminology](agent-guide.md#terminology)) · [graph-contract.md](graph-contract.md) (Graph Contract SSOT) · [agent-skill-assets.md](agent-skill-assets.md) (catalog sync and versioning) · [skills/bom-graph-explorer/SKILL.md](../skills/bom-graph-explorer/SKILL.md) · [skills/bom-graph-explorer/references/cypher-compose.md](../skills/bom-graph-explorer/references/cypher-compose.md)
+**Related:** [terminology.md](terminology.md) · [seeding.md](seeding.md) · [graph-contract.md](graph-contract.md) (Graph Contract SSOT) · [agent-skill-assets.md](agent-skill-assets.md) (catalog sync and versioning) · [skills/bom-graph-explorer/SKILL.md](../skills/bom-graph-explorer/SKILL.md) · [skills/bom-graph-explorer/references/cypher-compose.md](../skills/bom-graph-explorer/references/cypher-compose.md)
 
 ---
 
@@ -31,7 +31,7 @@ Graph Contract (YAML)     domains/registry.py + schema.py
 |-------|-----|------|
 | **Graph Contract** (agreement) | [graph-contract.md](graph-contract.md) | `ontology/contract/graph_context.yaml` |
 | **Graph context** (this doc) | here | `skills/bom-graph-explorer/assets/graph-context.json` |
-| **Instance data** | [demo-runbook.md](demo-runbook.md), [agent-guide.md](agent-guide.md) | Neo4j + DuckDB |
+| **Instance data** | [demo-runbook.md](demo-runbook.md), [seeding.md](seeding.md) | Neo4j + DuckDB |
 | **UI subgraph** | [demo-runbook.md](demo-runbook.md#d3-ui-vs-langfuse) | `graph_view` in API responses |
 
 ---
@@ -129,7 +129,7 @@ Server-side federation (`app/federation/analysis.py`) reads **Neo4j** and the Gr
 
 ## 5. When to use “graph context” in docs and code
 
-See [agent-guide.md § Terminology](agent-guide.md#terminology) for the full naming rules. Short version:
+See [terminology.md](terminology.md) for the full naming rules. Short version:
 
 | Say **graph context** | Say **Graph Contract** instead |
 |-----------------------|--------------------------------|
@@ -157,7 +157,7 @@ Catalog versioning and multi-agent deploy: [agent-skill-assets.md](agent-skill-a
 
 | Document | Contents |
 |----------|----------|
-| [agent-guide.md](agent-guide.md) | Terminology SSOT |
+| [terminology.md](terminology.md) | Naming SSOT |
 | [graph-contract.md](graph-contract.md) | Graph Contract YAML, Bridge Keys, joins, quality, ingest |
 | [agent-skill-assets.md](agent-skill-assets.md) | Sync pipeline, catalog versioning, all JSON artifacts |
 | [development.md](development.md) | `domains/export.py` in authoring workflow |

@@ -2,7 +2,18 @@
 
 High-level guide for agents working in this repository.
 
-**Detailed instructions** (seeding, setup, demos, agent runtime, **terminology**): [docs/agent-guide.md](docs/agent-guide.md).
+## Detailed docs
+
+| Topic | Doc |
+|-------|-----|
+| Terminology (Graph Contract vs graph context vs `graph_view`) | [docs/terminology.md](docs/terminology.md) |
+| Seeding and validation on write | [docs/seeding.md](docs/seeding.md) |
+| Setup, Skill install, CLI demos | [docs/setup-and-demos.md](docs/setup-and-demos.md) |
+| Agent runtime (`app/agent`) | [docs/agent-runtime.md](docs/agent-runtime.md) |
+| Full demo walkthrough | [docs/demo-runbook.md](docs/demo-runbook.md) |
+| Graph Contract design | [docs/graph-contract.md](docs/graph-contract.md) |
+| Graph context (`graph-context.json`) | [docs/graph-context.md](docs/graph-context.md) |
+| Tests, lint, CI | [docs/testing-and-quality.md](docs/testing-and-quality.md) |
 
 ## 1. Core Working Principles
 
@@ -11,7 +22,6 @@ High-level guide for agents working in this repository.
 - **Published ontology SSOT:** `skills/bom-ontology/assets/ontology.json` (single generated file).
 - **Graph Contract:** `ontology/contract/graph_context.yaml` — [docs/graph-contract.md](docs/graph-contract.md).
 - **Graph context (Skill export):** `skills/bom-graph-explorer/assets/graph-context.json` — [docs/graph-context.md](docs/graph-context.md).
-- **Terminology** (Contract vs context vs `graph_view`): [docs/agent-guide.md#terminology](docs/agent-guide.md#terminology).
 - **All Agent Skills** live under `skills/` (`bom-ontology`, `bom-graph-explorer`).
 - Regenerate ontology and explorer assets: `uv run python scripts/sync_ontology.py`.
 - Workflow skills must not embed a second copy of `ontology.json`.
@@ -40,8 +50,6 @@ High-level guide for agents working in this repository.
 A separate **`bom-validate` Agent Skill is not required** for the default setup: writes already go through Pydantic validators (`validate_node_payload`, `RelationEdge`). Add `skills/bom-validate/` only if you need a portable **audit playbook** for agents without the Python package (checklist + violation report format, still reading `bom-ontology`).
 
 Install skills from `skills/` only. Do not copy them into `.cursor/skills/` inside this repository.
-
-Seeding, validation on write, and demo commands: [docs/agent-guide.md](docs/agent-guide.md#seeding-synthetic-bom-data-ontology-validation).
 
 ## 4. Change Workflow
 
