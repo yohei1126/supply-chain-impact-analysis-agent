@@ -2,9 +2,9 @@
 
 The web UI is **user-facing** (summary, key findings, evidence, supply chain map). Developer details — Agent Skills, planner mode, tool arguments, store names, raw JSON, and evidence pointers — are sent to **Langfuse** when configured.
 
-**What to check where (UI vs Langfuse vs Domain/Federation tabs):** [demo-verification-and-evaluation.md](demo-verification-and-evaluation.md) — includes demo scenario playbooks and evaluation rubric.
+**What to check where (UI vs Langfuse vs Domain/Federation tabs):** [demo-runbook.md](demo-runbook.md#part-d--verification--evaluation) — includes demo scenario playbooks and evaluation rubric.
 
-**Docs index:** [development.md](development.md). **Full stack (Docker + agent + UI):** [local-demo-runbook.md](local-demo-runbook.md).
+**Docs index:** [development.md](development.md). **Full stack (Docker + agent + UI):** [demo-runbook.md](demo-runbook.md#part-b--full-stack-setup-litellm--langfuse--agent).
 
 ## Local self-host (Docker Compose)
 
@@ -16,7 +16,7 @@ With LiteLLM together:
 
 ```bash
 cd /path/to/bom-knowledge-graph-agent-skill
-./scripts/run_docker_stack.sh -d
+./scripts/start_stack.sh
 ```
 
 Langfuse only:
@@ -30,13 +30,13 @@ Wait until `langfuse-web` logs **Ready** (about 2–3 minutes on first pull). Op
 Stop:
 
 ```bash
-docker compose --profile langfuse down
+./scripts/stop_stack.sh
 ```
 
 Remove data volumes as well:
 
 ```bash
-docker compose --profile langfuse down -v
+./scripts/stop_stack.sh -v
 ```
 
 ### 2. Create API keys
@@ -138,6 +138,6 @@ If keys are unset (or `langfuse` is not installed), telemetry is a no-op; the UI
 
 ## API surface
 
-- **`POST /v1/agent/run`** — user-facing fields: `goal`, `explanation`, `findings`, `evidence`, `graph_view`. Operator detail (planner, tools, Cypher, raw JSON): Langfuse metadata — see [demo-verification-and-evaluation.md](demo-verification-and-evaluation.md).
+- **`POST /v1/agent/run`** — user-facing fields: `goal`, `explanation`, `findings`, `evidence`, `graph_view`. Operator detail (planner, tools, Cypher, raw JSON): Langfuse metadata — see [demo-runbook.md](demo-runbook.md#d3-ui-vs-langfuse).
 - Integrations: `GET /v1/tools`, `POST /v1/tools/invoke`, `GET /v1/skills/system-prompt`.
 - Full internal `AgentRunResult` in Python: `BomAutonomousAgent.run()`.

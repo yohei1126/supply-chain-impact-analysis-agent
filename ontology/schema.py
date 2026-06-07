@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator
 
@@ -24,7 +24,9 @@ class ProcessNode(BaseModel):
 class SupplierNode(BaseModel):
     id: str = Field(..., min_length=1, description="Supplier identifier")
     company_name: str = Field(..., min_length=1, description="Company name")
-    country: str = Field(..., min_length=2, max_length=2, description="ISO 3166-1 alpha-2 country code")
+    country: str = Field(
+        ..., min_length=2, max_length=2, description="ISO 3166-1 alpha-2 country code"
+    )
     risk_level: Literal["Low", "Medium", "High"] = "Medium"
     label: Literal["Supplier"] = "Supplier"
 
@@ -63,7 +65,7 @@ class RelationEdge(BaseModel):
     properties: dict[str, Any] = Field(default_factory=dict)
 
     @model_validator(mode="after")
-    def validate_domain_and_range(self) -> "RelationEdge":
+    def validate_domain_and_range(self) -> RelationEdge:
         expected_source, expected_target = ALLOWED_EDGES[self.edge_type]
         if (self.source_label, self.target_label) != (expected_source, expected_target):
             raise ValueError(
@@ -82,7 +84,7 @@ def validate_node_payload(node_type: str, payload: dict[str, Any]) -> Node:
     }
     if node_type not in mapping:
         raise ValueError(f"Unknown node type: {node_type}")
-    return mapping[node_type](**payload)
+    return cast(Node, mapping[node_type](**payload))
 
 
 def export_schema_bundle() -> dict[str, Any]:

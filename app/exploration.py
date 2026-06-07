@@ -35,7 +35,7 @@ class GraphExplorer:
     """
     Framework-facing graph exploration API.
 
-    Domain queries are generated from ontology/schema.py and executed via lance-graph.
+    Domain queries are generated from ontology/schema.py and executed via Neo4j Cypher.
     Agent Skill prose lives under skills/bom-graph-explorer/.
     """
 
@@ -51,9 +51,7 @@ class GraphExplorer:
         ]
         if component_ids:
             impact_cypher = cypher_impact_by_components(component_ids)
-            steps.append(
-                CypherStep("ebom", "impact_products_by_components", impact_cypher)
-            )
+            steps.append(CypherStep("ebom", "impact_products_by_components", impact_cypher))
 
         rows = federated_impact_rows(self.store, supplier_id)
         return ExplorationResult(
@@ -96,13 +94,14 @@ class GraphExplorer:
                 cypher_queries=steps,
             )
 
-        # lance-graph has no shortestPath; fall back to federated BFS across ebom + routing.
+        # Fall back to federated BFS across ebom + routing when no direct USED_IN link exists.
         fallback = self.store.shortest_supply_path(from_component_id, to_product_id)
         steps.append(
             CypherStep(
                 "federated",
                 "shortest_path_bfs_fallback",
-                "/* no direct USED_IN link; Python BFS over ebom+routing (USED_IN, INPUT_OF, PRODUCED_BY) */",
+                "/* no direct USED_IN link; Python BFS over ebom+routing "
+                "(USED_IN, INPUT_OF, PRODUCED_BY) */",
             )
         )
         return ExplorationResult(

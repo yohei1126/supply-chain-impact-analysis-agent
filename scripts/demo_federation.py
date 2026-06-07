@@ -5,7 +5,7 @@ Federated domain graph demo: per-domain synthetic data, validation, load, query,
 Flow:
   1. Generate synthetic datasets independently per domain (sourcing / ebom / routing)
   2. Validate each dataset against ontology/schema.py (Pydantic)
-  3. Load into separate LanceDB paths under data/lancedb/{graph_id}/
+  3. Load into separate Neo4j databases (ebom, routing, sourcing)
   4. Query each domain graph locally
   5. Federate on Component.id for a disruption scenario (default: SUP-001)
   6. Surface problems and mitigation recommendations
@@ -20,7 +20,8 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from pathlib import Path
+
+from demo_interactive import explain, prompt, section, show, wait
 
 from app.federation.analysis import (
     FederatedAnalysis,
@@ -29,17 +30,23 @@ from app.federation.analysis import (
     query_routing_for_components,
     query_sourcing_for_supplier,
 )
-from app.federation.graph_store import LanceGraphStore
-from pipeline.demo.domain_datasets import build_all_domain_datasets, dataset_summary, validate_all_datasets
-from pipeline.demo.load_domains import load_all_domains_separately, reset_lancedb
-
-from demo_interactive import explain, prompt, section, show, wait
+from app.federation.graph_store import GraphStore
+from app.storage.neo4j_config import reset_neo4j
+from pipeline.demo.domain_datasets import (
+    build_all_domain_datasets,
+    dataset_summary,
+    validate_all_datasets,
+)
+from pipeline.demo.load_domains import load_all_domains_separately
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Federated three-domain graph demo")
-    parser.add_argument("--lancedb-path", default="data/lancedb")
-    parser.add_argument("--reset", action="store_true", help="Delete LanceDB before loading")
+    parser.add_argument(
+        "--reset",
+        action="store_true",
+        help="Clear Neo4j domain databases before loading",
+    )
     parser.add_argument("--supplier-id", default="", help="Disrupted supplier (default: SUP-001)")
     return parser.parse_args()
 
@@ -57,7 +64,11 @@ def main() -> None:
     )
     datasets = build_all_domain_datasets()
     summaries = {gid: dataset_summary(ds) for gid, ds in datasets.items()}
-    show("Domain datasets (generated)", summaries, commentary="Independent bundles before validation.")
+    show(
+        "Domain datasets (generated)",
+        summaries,
+        commentary="Independent bundles before validation.",
+    )
     wait()
 
     section(
@@ -78,41 +89,47 @@ def main() -> None:
 
     section(
         "Step 3 — Load into separate domain graphs",
-        intro=f"Lance paths: {args.lancedb_path}/{{ebom,routing,sourcing}}/",
+        intro="Neo4j databases: ebom, routing, sourcing (one database per graph_id).",
     )
-    if args.reset:
-        reset_lancedb(args.lancedb_path)
-    else:
-        Path(args.lancedb_path).mkdir(parents=True, exist_ok=True)
 
-    graph = LanceGraphStore(lancedb_path=args.lancedb_path)
-    load_stats = load_all_domains_separately(graph)
-    show("Load stats", load_stats, commentary="Each domain graph loaded independently.")
-    wait()
+    graph = GraphStore()
+    try:
+        if args.reset:
+            reset_neo4j(graph.driver)
 
-    section(
-        "Step 4 — Query each domain graph",
-        intro="Domain-local reads before cross-graph federation.",
-    )
-    sourcing_q = query_sourcing_for_supplier(graph, supplier_id)
-    component_ids = {r["component_id"] for r in sourcing_q.rows}
-    ebom_q = query_ebom_for_components(graph, component_ids)
-    routing_q = query_routing_for_components(graph, component_ids)
-    for result in (sourcing_q, ebom_q, routing_q):
-        show(
-            f"{result.graph_id} / {result.query_name}",
-            {"summary": result.summary, "rows": result.rows[:5], "truncated": len(result.rows) > 5},
-            commentary=result.summary,
+        load_stats = load_all_domains_separately(graph)
+        show("Load stats", load_stats, commentary="Each domain graph loaded independently.")
+        wait()
+
+        section(
+            "Step 4 — Query each domain graph",
+            intro="Domain-local reads before cross-graph federation.",
         )
-    wait()
+        sourcing_q = query_sourcing_for_supplier(graph, supplier_id)
+        component_ids = {r["component_id"] for r in sourcing_q.rows}
+        ebom_q = query_ebom_for_components(graph, component_ids)
+        routing_q = query_routing_for_components(graph, component_ids)
+        for result in (sourcing_q, ebom_q, routing_q):
+            show(
+                f"{result.graph_id} / {result.query_name}",
+                {
+                    "summary": result.summary,
+                    "rows": result.rows[:5],
+                    "truncated": len(result.rows) > 5,
+                },
+                commentary=result.summary,
+            )
+        wait()
 
-    section(
-        "Step 5 — Federate and analyze disruption",
-        intro=f"Scenario: supplier disruption on {supplier_id} (join on Component.id).",
-    )
-    analysis = analyze_supplier_disruption(graph, supplier_id)
-    _show_analysis(analysis)
-    wait()
+        section(
+            "Step 5 — Federate and analyze disruption",
+            intro=f"Scenario: supplier disruption on {supplier_id} (join on Component.id).",
+        )
+        analysis = analyze_supplier_disruption(graph, supplier_id)
+        _show_analysis(analysis)
+        wait()
+    finally:
+        graph.close()
 
     section(
         "Demo complete",
@@ -132,7 +149,12 @@ def _show_analysis(analysis: FederatedAnalysis) -> None:
     show(
         "Problems found",
         [
-            {"severity": p.severity, "category": p.category, "message": p.message, "evidence": p.evidence}
+            {
+                "severity": p.severity,
+                "category": p.category,
+                "message": p.message,
+                "evidence": p.evidence,
+            }
             for p in analysis.problems
         ],
         commentary="Derived only from domain query results — no fabricated IDs.",
@@ -148,7 +170,9 @@ def _show_analysis(analysis: FederatedAnalysis) -> None:
             }
             for m in analysis.mitigations
         ],
-        commentary="Template actions tagged by owning team (procurement / engineering / manufacturing).",
+        commentary=(
+            "Template actions tagged by owning team (procurement / engineering / manufacturing)."
+        ),
     )
     explain(
         f"Scenario {analysis.scenario} complete.\n"

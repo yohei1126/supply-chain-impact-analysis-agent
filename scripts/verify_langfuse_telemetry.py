@@ -18,12 +18,13 @@ try:
 except ImportError:
     pass
 
-from app.agent.telemetry import _langfuse_client, langfuse_configured
+from app.agent.telemetry import _langfuse_client, langfuse_configured  # noqa: E402
 
 
 def main() -> int:
     print("Langfuse telemetry check")
-    print(f"  LANGFUSE_HOST: {os.getenv('LANGFUSE_HOST') or os.getenv('LANGFUSE_BASE_URL') or '(default)'}")
+    host = os.getenv("LANGFUSE_HOST") or os.getenv("LANGFUSE_BASE_URL") or "(default)"
+    print(f"  LANGFUSE_HOST: {host}")
     print(f"  keys set: {langfuse_configured()}")
 
     client = _langfuse_client()

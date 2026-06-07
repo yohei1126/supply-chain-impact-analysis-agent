@@ -13,7 +13,7 @@ Each subdirectory is owned by a different enterprise team. A domain packages:
 | Layer | Location | Role |
 |-------|----------|------|
 | Schema + validators | `ontology/schema.py` | Global SSOT (`Component`, `ALLOWED_EDGES`, …) |
-| Federation contract | `ontology/contract/graph_context.yaml` | Bridge keys and join paths |
+| Graph Contract | `ontology/contract/graph_context.yaml` | Bridge Keys, joins, quality gates (YAML SSOT) |
 | Domain registry | `domains/registry.py` | Which graph owns which node/edge types |
 | Federation runtime | `app/federation/` | `LanceGraphStore` facade, playbooks |
 | Agent | `app/agent/` | Cross-domain planner and UI |

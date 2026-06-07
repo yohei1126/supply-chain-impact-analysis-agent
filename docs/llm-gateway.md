@@ -1,6 +1,6 @@
 # LLM gateway (LiteLLM)
 
-**Docs index:** [development.md](development.md). **Full stack (with Langfuse + agent UI):** [local-demo-runbook.md](local-demo-runbook.md).
+**Docs index:** [development.md](development.md). **Full stack (with Langfuse + agent UI):** [demo-runbook.md](demo-runbook.md#part-b--full-stack-setup-litellm--langfuse--agent).
 
 `app/agent` plans tool calls via **OpenAI-compatible** `POST /v1/chat/completions`.
 Run [LiteLLM](https://docs.litellm.ai/) (>= 1.87.0rc1 for Gemini 3.5 Flash) as a local proxy. The default planner model is **Gemini 3.5 Flash** via `config/litellm.yaml` (`gemini/gemini-3.5-flash`).
@@ -36,19 +36,11 @@ Agent run modes:
 ## Setup
 
 1. Copy `.env.example` to `.env` and set `GEMINI_API_KEY` (and/or `UPSTREAM_OPENAI_API_KEY` for the OpenAI-backed alias).
-2. Start the proxy:
-
-```bash
-chmod +x scripts/run_litellm_proxy.sh
-./scripts/run_litellm_proxy.sh
-```
-
-Or with Docker (from `docker-compose.yml`):
+2. Start the stack (LiteLLM + Langfuse + Neo4j via Docker):
 
 ```bash
 export GEMINI_API_KEY=...
-./scripts/run_docker_stack.sh -d            # LiteLLM + Langfuse (Docker)
-# LiteLLM only: docker compose --profile litellm up -d
+./scripts/start_stack.sh
 ```
 
 3. Run the BOM agent:

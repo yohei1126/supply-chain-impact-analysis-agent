@@ -14,8 +14,16 @@ from domains.export import (
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 EXPLORER_ASSETS: dict[Path, object] = {
-    REPO_ROOT / "skills" / "bom-graph-explorer" / "assets" / "graph-context.json": export_graph_context_bundle,
-    REPO_ROOT / "skills" / "bom-graph-explorer" / "assets" / "query-catalog.json": export_query_catalog,
+    REPO_ROOT
+    / "skills"
+    / "bom-graph-explorer"
+    / "assets"
+    / "graph-context.json": export_graph_context_bundle,
+    REPO_ROOT
+    / "skills"
+    / "bom-graph-explorer"
+    / "assets"
+    / "query-catalog.json": export_query_catalog,
     REPO_ROOT
     / "skills"
     / "bom-graph-explorer"

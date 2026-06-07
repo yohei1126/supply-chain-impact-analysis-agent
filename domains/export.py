@@ -15,7 +15,9 @@ FEDERATION_RECIPES: dict[str, dict[str, Any]] = {
         "bridge": "component_id",
     },
     "supplier_disruption_with_routing": {
-        "description": "Supplier impact extended with manufacturing processes consuming affected components.",
+        "description": (
+            "Supplier impact extended with manufacturing processes consuming affected components."
+        ),
         "steps": [
             "components_by_supplier",
             "impact_products_by_components",
@@ -26,15 +28,16 @@ FEDERATION_RECIPES: dict[str, dict[str, Any]] = {
 }
 
 CYPHER_ENGINE_PROFILE: dict[str, Any] = {
-    "engine": "lance-graph",
+    "engine": "neo4j",
     "dialect_notes": [
-        "Cypher subset only — not full Neo4j.",
-        "No shortestPath(); use direct edge match or multi-hop outside Cypher.",
-        "List parameters such as IN $ids may be unsupported; embed component id literals when required.",
+        "Full Neo4j Cypher (5.x) on the default database with graph_id property per domain.",
+        "Use parameterized queries ($supplier_id, $ids) where possible.",
         "One domain graph per execute call (sourcing, ebom, or routing).",
+        "shortestPath() is available; federated BFS remains a fallback across domains.",
     ],
     "composition_rules": [
-        "Every MATCH edge type must appear in ontology.json edges.allowed_pairs with correct direction.",
+        "Every MATCH edge type must appear in ontology.json edges.allowed_pairs "
+        "with correct direction.",
         "Restrict edges to the target graph_id listed in graph-context.json domains.",
         "Join federated steps in application logic on identity.bridges (Component.id).",
         "Prefer named queries from query-catalog.json before inventing ad-hoc patterns.",
@@ -120,6 +123,8 @@ def export_cypher_engine_profile() -> dict[str, Any]:
             "format": "bom-cypher-engine-profile",
             "version": 1,
             "source": "domains/export.py",
-            "note": "Engine dialect constraints for LLM Cypher composition; update domains/export.py",
+            "note": (
+                "Engine dialect constraints for LLM Cypher composition; update domains/export.py"
+            ),
         },
     }

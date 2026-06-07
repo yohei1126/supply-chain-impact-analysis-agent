@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 from app.agent.context import BomAgentContext
 from app.agent.llm_config import load_openai_compat_settings
 from app.agent.runner import BomAutonomousAgent
+from app.agent.skills import resolve_repo_root
 from app.agent.telemetry import langfuse_configured, start_run_tracer
 from app.agent.types import AgentRunResult, ToolCall
 from app.agent.user_response import build_user_response
@@ -34,13 +35,18 @@ _STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 
 def _load_repo_env() -> None:
-    """Load .env from BOM_REPO_ROOT (or cwd) so Langfuse/OpenAI vars apply without manual export."""
+    """Load .env from cwd, then from resolved repo root."""
     try:
         from dotenv import load_dotenv
     except ImportError:
         return
-    root = Path(os.getenv("BOM_REPO_ROOT", Path.cwd()))
-    load_dotenv(root / ".env")
+    load_dotenv()
+    try:
+        from app.agent.skills import resolve_repo_root
+
+        load_dotenv(resolve_repo_root() / ".env")
+    except FileNotFoundError:
+        pass
 
 
 _load_repo_env()
@@ -92,10 +98,9 @@ def _get_context() -> BomAgentContext:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global _context
-    repo_root = Path(os.getenv("BOM_REPO_ROOT", Path.cwd()))
+    repo_root = resolve_repo_root(os.getenv("BOM_REPO_ROOT"))
     _context = BomAgentContext.create(
         repo_root=repo_root,
-        lancedb_path=os.getenv("BOM_LANCEDB_PATH", "data/lancedb"),
         duckdb_path=os.getenv("BOM_DUCKDB_PATH", "data/bom.duckdb"),
     )
     yield
@@ -156,7 +161,9 @@ def invoke_tool(body: ToolCallRequest) -> dict[str, Any]:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
-def _graph_view_for_federation(ctx: BomAgentContext, supplier_id: str, federated_rows: list[dict[str, Any]]) -> dict[str, Any]:
+def _graph_view_for_federation(
+    ctx: BomAgentContext, supplier_id: str, federated_rows: list[dict[str, Any]]
+) -> dict[str, Any]:
     seeds: set[tuple[str, str]] = {("Supplier", supplier_id)}
     for row in federated_rows:
         if row.get("component_id"):
@@ -204,15 +211,21 @@ def run_domain_query(body: DomainQueryRequest) -> dict[str, Any]:
     ctx = _get_context()
     if body.graph_id == "sourcing":
         if not body.supplier_id:
-            raise HTTPException(status_code=400, detail="supplier_id is required for sourcing queries")
+            raise HTTPException(
+                status_code=400, detail="supplier_id is required for sourcing queries"
+            )
         result = query_sourcing_for_supplier(ctx.graph, body.supplier_id.strip())
     elif body.graph_id == "ebom":
         if not body.component_ids:
-            raise HTTPException(status_code=400, detail="component_ids is required for ebom queries")
+            raise HTTPException(
+                status_code=400, detail="component_ids is required for ebom queries"
+            )
         result = query_ebom_for_components(ctx.graph, set(body.component_ids))
     elif body.graph_id == "routing":
         if not body.component_ids:
-            raise HTTPException(status_code=400, detail="component_ids is required for routing queries")
+            raise HTTPException(
+                status_code=400, detail="component_ids is required for routing queries"
+            )
         result = query_routing_for_components(ctx.graph, set(body.component_ids))
     else:
         raise HTTPException(status_code=400, detail=f"Unknown graph_id: {body.graph_id}")

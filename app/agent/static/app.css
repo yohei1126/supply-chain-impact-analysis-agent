@@ -803,6 +803,11 @@ textarea:focus {
   min-height: 240px;
 }
 
+.col-graph .graph-network {
+  min-height: 240px;
+  height: 240px;
+}
+
 .graph-block {
   flex: 1;
   min-height: 0;

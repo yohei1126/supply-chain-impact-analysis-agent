@@ -68,7 +68,7 @@ const AGENT_EXAMPLES = [
     intent:
       "Test multi-hop reasoning: semantic similarity first, then upstream supplier linkage — not a single pre-known part ID.",
     exploration:
-      "bom_hybrid_query (vector + RDB over material/name) to surface brass valve-like components → bom_supplier_impact or graph impact rows for suppliers on the matched parts.",
+      "Resolve brass valve-like parts via component master text search (name/material) → bom_supplier_impact or catalog impact queries on matched component IDs.",
   },
 ];
 
@@ -588,8 +588,8 @@ function renderGraphView(graphView, containerId, captionId, mode) {
     container.style.minHeight = "280px";
     container.style.height = "280px";
   } else {
-    container.style.minHeight = "180px";
-    container.style.height = "100%";
+    container.style.minHeight = "240px";
+    container.style.height = "240px";
   }
 
   const network = new vis.Network(

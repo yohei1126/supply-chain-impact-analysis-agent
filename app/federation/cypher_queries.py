@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from domains.registry import GraphId, assert_edge_allowed_in_graph
 from app.federation.cypher_executor import cypher_string_list
-from ontology.cypher_builder import QUERY_SPECS, build_query, build_query_by_name
+from domains.registry import GraphId, assert_edge_allowed_in_graph
+from ontology.cypher_builder import QUERY_SPECS, build_query_by_name
 from ontology.schema import EdgeType
 
 ONTOLOGY_SOURCE = "ontology/schema.py + ontology/cypher_builder.py"

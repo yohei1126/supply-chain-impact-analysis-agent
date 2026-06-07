@@ -28,7 +28,8 @@ def build_user_explanation(result: AgentRunResult) -> str:
     if not report.get("executions"):
         return (
             "We could not analyze that question. "
-            "Try one of the indirect examples on the left, such as a supplier disruption described by country and material."
+            "Try one of the indirect examples on the left, such as a supplier disruption "
+            "described by country and material."
         )
 
     explanation = (result.explanation or "").strip()
@@ -74,27 +75,6 @@ def build_user_cypher_executions(result: AgentRunResult) -> list[dict[str, Any]]
                     }
                 ]
         if not steps:
-            if call.name == "bom_hybrid_query":
-                executions.append(
-                    {
-                        "tool": call.name,
-                        "operation": payload.get("operation", call.name),
-                        "summary": payload.get("summary", ""),
-                        "ontology_source": "hybrid: LanceDB vector + DuckDB (graph step uses Cypher internally)",
-                        "steps": [
-                            {
-                                "graph_id": "",
-                                "query_name": "hybrid_pipeline",
-                                "cypher": (
-                                    "/* Hybrid pipeline — no single user-facing Cypher string.\n"
-                                    "   1) LanceDB vector search\n"
-                                    "   2) DuckDB component attributes\n"
-                                    "   3) Graph impact rows (ontology Cypher on sourcing/ebom) */"
-                                ),
-                            }
-                        ],
-                    }
-                )
             continue
         executions.append(
             {

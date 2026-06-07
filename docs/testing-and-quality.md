@@ -4,7 +4,7 @@ How to verify changes in this repository: unit tests, optional linters, and arch
 
 **Audience:** developers and coding agents.
 
-**Related:** [development.md](development.md) (setup) · [project-layout.md](project-layout.md) (layer boundaries) · [AGENTS.md](../AGENTS.md) (change workflow)
+**Related:** [development.md](development.md) (setup) · [project-layout.md](project-layout.md) (layer boundaries) · [AGENTS.md](../AGENTS.md) (principles) · [agent-guide.md](agent-guide.md) (detailed setup)
 
 ---
 
@@ -223,7 +223,7 @@ uv sync --extra dev && \
 
 | Tool | Status |
 |------|--------|
-| GitHub Actions CI | Not configured in this repository |
+| GitHub Actions CI | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) — ruff, mypy, pytest (Neo4j service) on PRs and pushes to `main` |
 | Pre-commit hooks | Not configured |
 | Coverage (`pytest-cov`) | Not configured |
 | Markdown link checker | Manual / ad hoc (see below) |
@@ -281,4 +281,4 @@ Roadmap items referenced in docs but not yet on disk (e.g. `app/federation/compo
 |-------|-----|
 | Project layout | [project-layout.md](project-layout.md) |
 | Developer setup | [development.md](development.md) |
-| Agent change workflow | [AGENTS.md](../AGENTS.md) |
+| Agent change workflow | [AGENTS.md](../AGENTS.md) · [agent-guide.md](agent-guide.md) |

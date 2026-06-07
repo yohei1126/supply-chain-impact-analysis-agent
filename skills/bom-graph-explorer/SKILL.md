@@ -1,6 +1,6 @@
 ---
 name: bom-graph-explorer
-description: Compose and validate BOM graph Cypher using bom-ontology assets and generated query catalogs. Use for supplier impact, supply-path, or hybrid exploration when the agent must interpret context and build domain-scoped queries.
+description: Compose and validate BOM graph Cypher using bom-ontology assets and generated query catalogs. Use for supplier impact, supply-path, or component search exploration when the agent must interpret context and build domain-scoped queries.
 compatibility: Requires bom-ontology (skills/bom-ontology). Read generated assets under assets/; do not duplicate schema tables in prompts.
 metadata:
   author: bom-knowledge-graph-agent-skill
@@ -21,9 +21,9 @@ npx skils add <source> --path skills/bom-graph-explorer
 ## Read order (generated assets — do not hand-edit)
 
 1. **bom-ontology** → `assets/ontology.json` — node shapes and `allowed_pairs`.
-2. **This skill** → `assets/graph-context.json` — domain graphs and federation bridges.
+2. **This skill** → `assets/graph-context.json` — graph context (domain graphs and federation bridges).
 3. **This skill** → `assets/query-catalog.json` — named query recipes and federation steps.
-4. **This skill** → `assets/cypher-engine-profile.json` — lance-graph dialect limits.
+4. **This skill** → `assets/cypher-engine-profile.json` — Neo4j dialect limits.
 5. **references/cypher-compose.md** — composition checklist (prose only).
 
 Regenerate all JSON after schema or query changes:
@@ -38,7 +38,6 @@ uv run python scripts/sync_ontology.py
 |------|------|
 | `bom_supplier_impact` | Supplier disruption → components and products |
 | `bom_supply_path` | Path from component to product |
-| `bom_hybrid_query` | Natural-language similarity → RDB → graph impact |
 
 Tool names are stable; internal execution may use catalog queries and federation joins.
 

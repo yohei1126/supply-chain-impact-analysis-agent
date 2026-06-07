@@ -4,17 +4,64 @@ import re
 from typing import Any, Literal
 
 from app.agent.context import BomAgentContext
-from app.graph_viz import graph_view_for_run
-
 from app.agent.explain import explain_results_heuristic
 from app.agent.llm_client import plan_tool_calls_openai_compat, summarize_run_openai_compat
 from app.agent.llm_config import OpenAICompatLLMSettings, load_openai_compat_settings
-from app.agent.registry import ToolRegistry
 from app.agent.run_report import build_run_report
 from app.agent.telemetry import RunTracer, start_run_tracer
 from app.agent.types import AgentRunResult, ToolCall
+from app.graph_viz import graph_view_for_run
 
 AgentMode = Literal["tools", "auto", "llm"]
+
+_SUPPLIER_ID = re.compile(r"^SUP-\d+$", re.IGNORECASE)
+_COMPONENT_ID = re.compile(r"^COMP-\d+$", re.IGNORECASE)
+_PRODUCT_ID = re.compile(r"^PROD-\d+$", re.IGNORECASE)
+
+
+def _valid_tool_call(call: ToolCall) -> bool:
+    if call.name == "bom_supplier_impact":
+        supplier_id = str(call.arguments.get("supplier_id", "")).strip().upper()
+        return bool(_SUPPLIER_ID.fullmatch(supplier_id))
+    if call.name == "bom_supply_path":
+        component_id = str(call.arguments.get("from_component_id", "")).strip().upper()
+        product_id = str(call.arguments.get("to_product_id", "")).strip().upper()
+        return bool(_COMPONENT_ID.fullmatch(component_id) and _PRODUCT_ID.fullmatch(product_id))
+    return True
+
+
+def reconcile_planned_tools(goal: str, planned: list[ToolCall]) -> list[ToolCall]:
+    """
+    Prefer heuristic plans when the LLM invents invalid demo IDs (e.g. SUP-DE-01).
+
+    Keeps valid explicit LLM plans; falls back to plan_tools_from_goal for indirect
+    demo questions that the heuristic handles reliably.
+    """
+    heuristic = plan_tools_from_goal(goal)
+    if not planned:
+        return heuristic
+    if all(_valid_tool_call(call) for call in planned):
+        return planned
+    return heuristic or planned
+
+
+def _retry_empty_supplier_impact(
+    goal: str,
+    planned: list[ToolCall],
+    results: list[dict[str, Any]],
+    invoke,
+) -> tuple[list[ToolCall], list[dict[str, Any]], str | None]:
+    if len(planned) != 1 or planned[0].name != "bom_supplier_impact":
+        return planned, results, None
+    if results and (results[0].get("data") or []):
+        return planned, results, None
+
+    alt = plan_tools_from_goal(goal)
+    if not alt or alt == planned:
+        return planned, results, None
+
+    note = "Heuristic replan after empty supplier impact"
+    return alt, [invoke(alt[0].name, **alt[0].arguments)], note
 
 
 def plan_tools_from_goal(goal: str) -> list[ToolCall]:
@@ -38,7 +85,7 @@ def plan_tools_from_goal(goal: str) -> list[ToolCall]:
             )
         ]
 
-    # Indirect demo scenarios (seed data: Euro Brass GmbH DE → SUP-002, Drive Shaft → COMP-103, Servo Motor Drive → PROD-901)
+    # Indirect demo scenarios (seed: Euro Brass DE→SUP-002, Drive Shaft→COMP-103, Servo→PROD-901)
     if (
         ("german" in goal_lower or "germany" in goal_lower)
         and "brass" in goal_lower
@@ -57,11 +104,14 @@ def plan_tools_from_goal(goal: str) -> list[ToolCall]:
         ]
 
     if "brass" in goal_lower and "valve" in goal_lower:
-        return [ToolCall("bom_hybrid_query", {"query": goal.strip(), "top_k": 3})]
+        return [ToolCall("bom_supplier_impact", {"supplier_id": "SUP-002"})]
 
-    if "steel" in goal_lower or "vector" in goal_lower or "similar" in goal_lower:
-        query = goal.strip()
-        return [ToolCall("bom_hybrid_query", {"query": query, "top_k": 3})]
+    if "steel" in goal_lower or "similar" in goal_lower:
+        supplier_match = re.search(r"\b(SUP-\d+)\b", goal, re.IGNORECASE)
+        if supplier_match:
+            return [
+                ToolCall("bom_supplier_impact", {"supplier_id": supplier_match.group(1).upper()})
+            ]
 
     return []
 
@@ -112,6 +162,7 @@ class BomAutonomousAgent:
                     settings=settings,
                     tracer=run_tracer,
                 )
+                planned = reconcile_planned_tools(goal, planned)
                 llm_notes = _planner_note(settings)
             else:
                 planned = plan_tools_from_goal(goal)
@@ -126,6 +177,15 @@ class BomAutonomousAgent:
         results: list[dict[str, Any]] = []
         for call in planned:
             results.append(registry.invoke(call.name, **call.arguments))
+
+        planned, results, retry_note = _retry_empty_supplier_impact(
+            goal,
+            planned,
+            results,
+            registry.invoke,
+        )
+        if retry_note:
+            llm_notes = f"{llm_notes}; {retry_note}" if llm_notes else retry_note
 
         explanation: str | None = None
         evidence: list[dict[str, Any]] = []
@@ -154,9 +214,7 @@ class BomAutonomousAgent:
                 summary_notes = f"LLM summary failed, heuristic fallback: {exc}"
 
         graph_view = graph_view_for_run(registry.explorer.store, planned, results)
-        run_report = build_run_report(
-            goal, mode, planned, results, llm_notes, summary_notes
-        )
+        run_report = build_run_report(goal, mode, planned, results, llm_notes, summary_notes)
 
         result = AgentRunResult(
             goal=goal,

@@ -7,11 +7,15 @@ from app.agent.types import ToolCall
 LOADED_SKILLS: list[dict[str, str]] = [
     {
         "name": "bom-ontology",
-        "role": "Schema constraints and published ontology.json (loaded into the agent system prompt).",
+        "role": (
+            "Schema constraints and published ontology.json (loaded into the agent system prompt)."
+        ),
     },
     {
         "name": "bom-graph-explorer",
-        "role": "Exploration workflows and tool-selection guidance (loaded into the system prompt).",
+        "role": (
+            "Exploration workflows and tool-selection guidance (loaded into the system prompt)."
+        ),
     },
 ]
 
@@ -21,7 +25,7 @@ def _describe_query(tool_name: str, arguments: dict[str, Any]) -> str:
         supplier_id = arguments.get("supplier_id", "?")
         return (
             f"Cypher via ontology: sourcing SUPPLIED_BY → Supplier {supplier_id}, "
-            f"then ebom USED_IN to products (lance-graph)."
+            f"then ebom USED_IN to products (Neo4j)."
         )
     if tool_name == "bom_supply_path":
         comp = arguments.get("from_component_id", "?")
@@ -30,28 +34,14 @@ def _describe_query(tool_name: str, arguments: dict[str, Any]) -> str:
             f"Cypher via ontology: ebom USED_IN direct link Component {comp} → Product {prod}; "
             f"multi-hop falls back to Python BFS across ebom+routing."
         )
-    if tool_name == "bom_hybrid_query":
-        query = arguments.get("query", "")
-        top_k = arguments.get("top_k", 3)
-        return (
-            f"Hybrid pipeline: (1) LanceDB vector search top-{top_k} for text {query!r}, "
-            f"(2) DuckDB SELECT on components by id, "
-            f"(3) ontology Cypher supplier-impact on matching components."
-        )
     return f"Invoke {tool_name} with {arguments}"
 
 
 def _stores_for_tool(tool_name: str) -> list[str]:
     if tool_name == "bom_supplier_impact":
-        return ["LanceGraph / lance-graph Cypher (sourcing, ebom)"]
+        return ["Neo4j Cypher (sourcing, ebom databases)"]
     if tool_name == "bom_supply_path":
-        return ["LanceGraph / lance-graph Cypher (ebom); BFS fallback (ebom+routing)"]
-    if tool_name == "bom_hybrid_query":
-        return [
-            "LanceDB (component_vectors)",
-            "DuckDB (components)",
-            "LanceGraph (graph_nodes, graph_edges)",
-        ]
+        return ["Neo4j Cypher (ebom database); BFS fallback (ebom+routing)"]
     return []
 
 
@@ -72,14 +62,20 @@ def _summarize_result(tool_name: str, result: dict[str, Any]) -> tuple[str, list
                 f"[cost {row.get('component_cost')}]"
             )
         rest = count - len(highlights)
-        headline = f"{count} impacted component→product row(s) for supplier {data[0].get('supplier_id')}."
+        headline = (
+            f"{count} impacted component→product row(s) for supplier {data[0].get('supplier_id')}."
+        )
         if rest > 0:
             headline += f" Showing top {len(highlights)} by cost."
         return headline, highlights, count
 
     if op in {"supply_path", "bom_supply_path"} or tool_name == "bom_supply_path":
         if not data:
-            return summary or "No path found between the given component and product.", highlights, 0
+            return (
+                summary or "No path found between the given component and product.",
+                highlights,
+                0,
+            )
         path = data[0]
         nodes = path.get("nodes") or []
         rels = path.get("relationships") or []
@@ -88,20 +84,6 @@ def _summarize_result(tool_name: str, result: dict[str, Any]) -> tuple[str, list
         if rels:
             highlights.append(f"Edges: {' / '.join(rels)}")
         return f"Shortest path found ({len(nodes)} nodes).", highlights, 1
-
-    if op == "bom_hybrid_query" or tool_name == "bom_hybrid_query":
-        count = len(data)
-        if not data:
-            return summary or "No vector hits returned for the query.", highlights, 0
-        for row in data[:3]:
-            comp = row.get("query_component")
-            detail = row.get("rdb_detail") or {}
-            impacts = row.get("graph_impacts") or []
-            highlights.append(
-                f"{comp}: {detail.get('name')} ({detail.get('material')}, "
-                f"cost {detail.get('cost')}) — {len(impacts)} graph impact row(s)"
-            )
-        return f"{count} hybrid pipeline result(s) for query.", highlights, count
 
     return summary or "Tool completed.", highlights, len(data) if isinstance(data, list) else None
 
@@ -133,7 +115,9 @@ def build_run_report(
 
     planner = llm_notes or "No tools planned"
     if not tool_calls:
-        planner = llm_notes or "No matching tools for this goal (try example queries or configure LLM)."
+        planner = (
+            llm_notes or "No matching tools for this goal (try example queries or configure LLM)."
+        )
 
     return {
         "skills": list(LOADED_SKILLS),

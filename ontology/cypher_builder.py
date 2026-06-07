@@ -127,7 +127,8 @@ def _return_node_columns(label: NodeLabel) -> list[str]:
 
 def _return_edge_columns(edge_type: EdgeType, rel_var: str = "r") -> list[str]:
     return [
-        f"{rel_var}.{prop} AS {out}" for prop, out in _EDGE_PROPERTY_ALIASES.get(edge_type, {}).items()
+        f"{rel_var}.{prop} AS {out}"
+        for prop, out in _EDGE_PROPERTY_ALIASES.get(edge_type, {}).items()
     ]
 
 
@@ -147,17 +148,26 @@ def _match_line(
         if not source_id or not target_id:
             raise ValueError("endpoint_pair requires source_id and target_id")
         return (
-            f"MATCH ({source}:{source_label} {{id: '{validate_graph_id(source_id)}'}})-[{rel}]->"
-            f"({target}:{target_label} {{id: '{validate_graph_id(target_id)}'}})"
+            f"MATCH ({source}:{source_label} {{id: '{validate_graph_id(source_id)}', "
+            f"graph_id: $graph_id}})-[{rel}]->"
+            f"({target}:{target_label} {{id: '{validate_graph_id(target_id)}', "
+            f"graph_id: $graph_id}})"
         )
 
-    if spec.filter_mode == "anchor_property" and spec.anchor_label == target_label and spec.anchor_param:
+    if (
+        spec.filter_mode == "anchor_property"
+        and spec.anchor_label == target_label
+        and spec.anchor_param
+    ):
         return (
-            f"MATCH ({source}:{source_label})-[{rel}]->"
-            f"({target}:{target_label} {{id: ${spec.anchor_param}}})"
+            f"MATCH ({source}:{source_label} {{graph_id: $graph_id}})-[{rel}]->"
+            f"({target}:{target_label} {{id: ${spec.anchor_param}, graph_id: $graph_id}})"
         )
 
-    return f"MATCH ({source}:{source_label})-[{rel}]->({target}:{target_label})"
+    return (
+        f"MATCH ({source}:{source_label} {{graph_id: $graph_id}})-[{rel}]->"
+        f"({target}:{target_label} {{graph_id: $graph_id}})"
+    )
 
 
 def _where_clause(spec: CypherQuerySpec, *, component_ids_literal: str | None) -> str:
@@ -176,7 +186,9 @@ def _return_clause(spec: CypherQuerySpec) -> str:
     target_alias = alias_for(target_label)
 
     if spec.aggregate and spec.edge_type == "SUPPLIED_BY":
-        return f"RETURN {source}.id AS component_id, count({alias_for('Supplier')}) AS supplier_count"
+        return (
+            f"RETURN {source}.id AS component_id, count({alias_for('Supplier')}) AS supplier_count"
+        )
 
     if spec.query_name == "impact_products_by_components":
         return (

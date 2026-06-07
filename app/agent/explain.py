@@ -13,7 +13,8 @@ def explain_results_heuristic(
     """Deterministic summary when no LLM gateway is configured."""
     if not results:
         return (
-            "No tools were executed. Try a goal that mentions SUP-xxx, COMP-xxx/PROD-xxx, or steel/vector.",
+            "No tools were executed. Try a goal that mentions SUP-xxx, "
+            "COMP-xxx/PROD-xxx, or a supplier/part description.",
             [],
         )
 
@@ -57,20 +58,6 @@ def explain_results_heuristic(
                     "value": node_ids,
                 }
             )
-        elif op == "bom_hybrid_query" and data:
-            for row in data[:3]:
-                comp = row.get("query_component")
-                impacts = len(row.get("graph_impacts") or [])
-                claim = f"Component {comp}: {impacts} graph impact row(s) after vector+RDB pipeline."
-                lines.append(f"- {claim}")
-                evidence.append(
-                    {
-                        "claim": claim,
-                        "tool": call.name,
-                        "pointer": f"results[].query_component={comp}",
-                        "value": comp,
-                    }
-                )
         lines.append("")
 
     return "\n".join(lines).strip(), evidence

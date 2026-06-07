@@ -4,7 +4,7 @@ Proposal for **immediate cross-domain impact analysis and mitigation guidance** 
 
 **Audience:** program managers, domain data owners (engineering, manufacturing, procurement), and agent platform developers.
 
-**Related:** [enterprise-graph-design.md](enterprise-graph-design.md) (domain model and Lance layout), [ontology-on-lance.md](ontology-on-lance.md) (semantics and federation contract), [local-demo-runbook.md](local-demo-runbook.md) (running the agent), [observability.md](observability.md) (Langfuse traces for audit).
+**Related:** [enterprise-graph-design.md](enterprise-graph-design.md) (domain model and Neo4j layout), [graph-contract.md](graph-contract.md) (Graph Contract: semantics, Bridge Keys), [demo-runbook.md](demo-runbook.md) (running the agent), [observability.md](observability.md) (Langfuse traces for audit).
 
 ---
 
@@ -79,7 +79,7 @@ Each domain is a **bounded context** with its own ingest pipeline, ontology bund
 | Manufacturing | `Process`, `INPUT_OF`, `PRODUCED_BY`; work centers; cycle times | Vendor risk scores, EBOM release policy |
 | Procurement | `Supplier`, `SUPPLIED_BY`; lead time, risk, alternates | Product BOM structure, routing logic |
 
-### 2.2 Federation contract (shared keys)
+### 2.2 Bridge keys (Graph Contract)
 
 Cross-domain analysis is only possible if all three teams honor the same **bridge identifiers**:
 
@@ -349,7 +349,7 @@ ELSE
 | 5 | Master | `master.component_attributes(component_ids)` | Cost exposure |
 | 6 | Federation | `federation.build_impact_graph(...)` | Unified map + ranking |
 
-**Ontology enrichment (enterprise):** add optional edge/node properties in sourcing ingest — `shipping_lane`, `primary_port`, `transit_region` — so Hormuz news maps to **data-backed** filters, not only `Supplier.country`. See [ontology-on-lance.md](ontology-on-lance.md).
+**Ontology enrichment (enterprise):** add optional edge/node properties in sourcing ingest — `shipping_lane`, `primary_port`, `transit_region` — so Hormuz news maps to **data-backed** filters, not only `Supplier.country`. See [graph-contract.md](graph-contract.md).
 
 **Demo limitation:** Seeded suppliers use `country` only (`JP`, `DE`, `US`). A Hormuz scenario in demo may show **low direct Gulf exposure** but still demonstrate the pipeline; production graphs include Gulf/Middle East suppliers and lane metadata.
 
@@ -722,8 +722,8 @@ This use case is the **primary justification** for domain-separated graphs with 
 
 | Document | Contents |
 |----------|----------|
-| [ontology-on-lance.md](ontology-on-lance.md) | Semantics, federation keys, lane/country enrichments |
+| [graph-contract.md](graph-contract.md) | Semantics, federation keys, lane/country enrichments |
 | [enterprise-graph-design.md](enterprise-graph-design.md) | Domain model, Lance phases, ontology bundles |
 | [development.md](development.md) | Local setup, tests, phased implementation roadmap (P0–P5) |
 | [observability.md](observability.md) | Langfuse traces for playbooks |
-| [local-demo-runbook.md](local-demo-runbook.md) | Run agent + UI locally |
+| [demo-runbook.md](demo-runbook.md) | Run agent + UI locally |

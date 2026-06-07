@@ -1,4 +1,6 @@
 from app.federation.analysis import analyze_supplier_disruption
-from app.federation.graph_store import LanceGraphStore
+from app.federation.graph_store import GraphStore
 
-__all__ = ["LanceGraphStore", "analyze_supplier_disruption"]
+LanceGraphStore = GraphStore
+
+__all__ = ["GraphStore", "LanceGraphStore", "analyze_supplier_disruption"]

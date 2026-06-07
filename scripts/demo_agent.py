@@ -1,16 +1,16 @@
 from __future__ import annotations
 
+from demo_interactive import explain, prompt, section, show, wait
+from repo_paths import REPO_ROOT
+
 from app.agent.context import BomAgentContext
 from app.agent.runner import BomAutonomousAgent, ToolCall
 from pipeline.demo.seed import seed_complex_bom
 
-from demo_interactive import explain, prompt, section, show, wait
-from repo_paths import REPO_ROOT
 
-
-def seed(lancedb: str, duckdb: str) -> BomAgentContext:
-    ctx = BomAgentContext.create(repo_root=REPO_ROOT, lancedb_path=lancedb, duckdb_path=duckdb)
-    seed_complex_bom(ctx.graph, ctx.hybrid)
+def seed(duckdb: str) -> BomAgentContext:
+    ctx = BomAgentContext.create(repo_root=REPO_ROOT, duckdb_path=duckdb)
+    seed_complex_bom(ctx.graph, ctx.component_master)
     return ctx
 
 
@@ -24,7 +24,7 @@ def main() -> None:
     )
     wait()
 
-    ctx = seed("data/lancedb", "data/bom.duckdb")
+    ctx = seed("data/bom.duckdb")
     agent = BomAutonomousAgent(ctx)
 
     try:
@@ -34,7 +34,8 @@ def main() -> None:
             prompt_preview,
             commentary=(
                 "SKILL.md bodies become behavioral instructions for the agent.\n"
-                "bom-ontology holds schema constraints; bom-graph-explorer holds exploration workflows."
+                "bom-ontology holds schema constraints; "
+                "bom-graph-explorer holds exploration workflows."
             ),
         )
         wait()
@@ -63,7 +64,9 @@ def main() -> None:
                     )
                 ],
             )
-            show("Explicit tool call result", path_result, commentary=_explain_agent_run(path_result))
+            show(
+                "Explicit tool call result", path_result, commentary=_explain_agent_run(path_result)
+            )
 
         section(
             "Demo complete",

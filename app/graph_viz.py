@@ -28,8 +28,6 @@ def extract_seed_keys(
         elif call.name == "bom_supply_path":
             seeds.add(("Component", str(args.get("from_component_id", ""))))
             seeds.add(("Product", str(args.get("to_product_id", ""))))
-        elif call.name == "bom_hybrid_query":
-            pass
 
         op = result.get("operation", call.name)
         data = result.get("data") or []
@@ -48,17 +46,6 @@ def extract_seed_keys(
                     labels = node.get("labels") or []
                     if labels and node.get("id"):
                         seeds.add((labels[0], node["id"]))
-        elif op in {"bom_hybrid_query", "hybrid_query"}:
-            for row in data:
-                if row.get("query_component"):
-                    seeds.add(("Component", row["query_component"]))
-                for impact in row.get("graph_impacts") or []:
-                    if impact.get("supplier_id"):
-                        seeds.add(("Supplier", impact["supplier_id"]))
-                    if impact.get("component_id"):
-                        seeds.add(("Component", impact["component_id"]))
-                    if impact.get("product_id"):
-                        seeds.add(("Product", impact["product_id"]))
 
     return {(label, node_id) for label, node_id in seeds if label and node_id}
 
@@ -128,7 +115,9 @@ def build_graph_view(store: Any, seeds: set[NodeKey], *, expand_hops: int = 1) -
     }
 
 
-def graph_view_for_run(store: Any, tool_calls: list[ToolCall], results: list[dict[str, Any]]) -> dict[str, Any]:
+def graph_view_for_run(
+    store: Any, tool_calls: list[ToolCall], results: list[dict[str, Any]]
+) -> dict[str, Any]:
     seeds = extract_seed_keys(tool_calls, results)
     if not seeds:
         return {"nodes": [], "edges": [], "seed_count": 0, "node_count": 0, "edge_count": 0}

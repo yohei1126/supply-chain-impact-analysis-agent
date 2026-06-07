@@ -2,25 +2,18 @@
 
 from __future__ import annotations
 
-import shutil
-
 import pytest
 
 from app.federation.analysis import analyze_supplier_disruption
-from app.federation.graph_store import LanceGraphStore
+from app.federation.graph_store import GraphStore
 from pipeline.demo.domain_datasets import build_all_domain_datasets, validate_all_datasets
-from pipeline.demo.load_domains import load_all_domains_separately, reset_lancedb
+from pipeline.demo.load_domains import load_all_domains_separately
 
 
 @pytest.fixture
-def federated_graph(tmp_path):
-    lance = tmp_path / "lancedb"
-    reset_lancedb(lance)
-    graph = LanceGraphStore(lancedb_path=str(lance))
-    load_all_domains_separately(graph)
-    yield graph
-    if lance.exists():
-        shutil.rmtree(lance)
+def federated_graph(graph_store: GraphStore):
+    load_all_domains_separately(graph_store)
+    return graph_store
 
 
 def test_domain_datasets_validate_clean() -> None:

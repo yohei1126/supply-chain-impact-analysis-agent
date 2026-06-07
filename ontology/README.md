@@ -1,7 +1,7 @@
 # Ontology layer (shared technical boundary)
 
 Platform-independent definitions for the manufacturing supply-chain knowledge graph:
-global schema, validation constraints, and the cross-domain **graph context contract**.
+global schema, validation constraints, and the cross-domain **Graph Contract**.
 
 Organization-owned domain slices live under **`domains/`** (bundle, pipeline, tools per team).
 This directory holds what every domain shares for federation consistency.
@@ -23,13 +23,13 @@ It must not import those layers back.
 ontology/
   schema.py                 SSOT: node/edge Pydantic models, ALLOWED_EDGES, validators
   contract/
-    graph_context.yaml      federation identity, joins, quality rules (storage-agnostic)
+    graph_context.yaml      Graph Contract SSOT: identity bindings, joins, quality gates (storage-agnostic)
   assets/
     ontology.json             generated JSON Schema export (run scripts/sync_ontology.py)
 ```
 
 Domain partitioning (`DOMAIN_GRAPHS`, owner metadata) lives in **`domains/registry.py`**
-and **`domains/*/bundle.py`**, not here. See [docs/project-layout.md](../docs/project-layout.md).
+and **`domains/*/bundle.py`**, not here. The agent **graph context** bundle (`graph-context.json`) is exported from **`domains/export.py`** via `scripts/sync_ontology.py`. Terminology: [docs/agent-guide.md](../docs/agent-guide.md#terminology) · Graph context: [docs/graph-context.md](../docs/graph-context.md).
 
 ## Authoring workflow
 

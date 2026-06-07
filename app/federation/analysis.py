@@ -7,14 +7,13 @@ from typing import Any, Literal
 
 from app.federation.cypher_executor import execute_domain_cypher
 from app.federation.cypher_queries import (
-    ONTOLOGY_SOURCE,
     cypher_components_by_supplier,
     cypher_impact_by_components,
     cypher_processes_by_components,
     cypher_products_by_components,
     cypher_supplier_counts,
 )
-from app.federation.graph_store import LanceGraphStore
+from app.federation.graph_store import GraphStore
 
 GraphId = Literal["sourcing", "ebom", "routing"]
 
@@ -55,7 +54,7 @@ class FederatedAnalysis:
     federated_rows: list[dict[str, Any]] = field(default_factory=list)
 
 
-def query_sourcing_for_supplier(store: LanceGraphStore, supplier_id: str) -> DomainQueryResult:
+def query_sourcing_for_supplier(store: GraphStore, supplier_id: str) -> DomainQueryResult:
     supplier_id = supplier_id.strip()
     cypher = cypher_components_by_supplier()
     rows = execute_domain_cypher(
@@ -73,9 +72,7 @@ def query_sourcing_for_supplier(store: LanceGraphStore, supplier_id: str) -> Dom
     )
 
 
-def query_ebom_for_components(
-    store: LanceGraphStore, component_ids: set[str]
-) -> DomainQueryResult:
+def query_ebom_for_components(store: GraphStore, component_ids: set[str]) -> DomainQueryResult:
     if not component_ids:
         return DomainQueryResult(
             graph_id="ebom",
@@ -95,9 +92,7 @@ def query_ebom_for_components(
     )
 
 
-def query_routing_for_components(
-    store: LanceGraphStore, component_ids: set[str]
-) -> DomainQueryResult:
+def query_routing_for_components(store: GraphStore, component_ids: set[str]) -> DomainQueryResult:
     if not component_ids:
         return DomainQueryResult(
             graph_id="routing",
@@ -117,7 +112,7 @@ def query_routing_for_components(
     )
 
 
-def _single_source_components(store: LanceGraphStore, component_ids: set[str]) -> set[str]:
+def _single_source_components(store: GraphStore, component_ids: set[str]) -> set[str]:
     if not component_ids:
         return set()
     cypher = cypher_supplier_counts(component_ids)
@@ -151,8 +146,9 @@ def _build_problems(
                 severity="high",
                 category="supplier_risk",
                 message=(
-                    f"Supplier {supplier_meta.get('supplier_name')} ({supplier_meta.get('supplier_id')}) "
-                    f"is already classified High risk ({supplier_meta.get('country')})."
+                    f"Supplier {supplier_meta.get('supplier_name')} "
+                    f"({supplier_meta.get('supplier_id')}) is already classified High risk "
+                    f"({supplier_meta.get('country')})."
                 ),
                 evidence={
                     "supplier_id": supplier_meta.get("supplier_id"),
@@ -177,7 +173,9 @@ def _build_problems(
             ProblemFinding(
                 severity="high",
                 category="single_source",
-                message=f"{len(single_source)} affected components have only one registered supplier.",
+                message=(
+                    f"{len(single_source)} affected components have only one registered supplier."
+                ),
                 evidence={"component_ids": sorted(single_source)},
             )
         )
@@ -188,7 +186,9 @@ def _build_problems(
             ProblemFinding(
                 severity="medium",
                 category="product_spread",
-                message=f"Disruption reaches {len(product_ids)} finished goods across the EBOM graph.",
+                message=(
+                    f"Disruption reaches {len(product_ids)} finished goods across the EBOM graph."
+                ),
                 evidence={"product_ids": sorted(product_ids)},
             )
         )
@@ -199,7 +199,10 @@ def _build_problems(
             ProblemFinding(
                 severity="medium",
                 category="manufacturing",
-                message=f"Routing graph shows impact on work centers: {', '.join(sorted(work_centers))}.",
+                message=(
+                    f"Routing graph shows impact on work centers: "
+                    f"{', '.join(sorted(work_centers))}."
+                ),
                 evidence={"work_centers": sorted(work_centers)},
             )
         )
@@ -227,7 +230,9 @@ def _build_mitigations(
                             f"({row['component_name']}); only {supplier_id} on record."
                         ),
                         owner_team="procurement",
-                        evidence=f"lead_time_days={row.get('lead_time_days')}, cost={row.get('cost')}",
+                        evidence=(
+                            f"lead_time_days={row.get('lead_time_days')}, cost={row.get('cost')}"
+                        ),
                     )
                 )
                 priority += 1
@@ -254,7 +259,10 @@ def _build_mitigations(
         actions.append(
             MitigationAction(
                 priority=priority,
-                action=f"Reschedule or outsource {wc} ({row['process_name']}) while components are delayed.",
+                action=(
+                    f"Reschedule or outsource {wc} ({row['process_name']}) "
+                    f"while components are delayed."
+                ),
                 owner_team="manufacturing",
                 evidence=f"INPUT_OF {row['component_id']} -> {row['process_id']}",
             )
@@ -290,7 +298,7 @@ def _impact_score(
     )
 
 
-def federated_impact_rows(store: LanceGraphStore, supplier_id: str) -> list[dict[str, Any]]:
+def federated_impact_rows(store: GraphStore, supplier_id: str) -> list[dict[str, Any]]:
     """Join sourcing + ebom on Component.id using two Cypher queries."""
     sourcing = query_sourcing_for_supplier(store, supplier_id)
     component_ids = {row["component_id"] for row in sourcing.rows}
@@ -317,10 +325,10 @@ def federated_impact_rows(store: LanceGraphStore, supplier_id: str) -> list[dict
     return output
 
 
-def analyze_supplier_disruption(store: LanceGraphStore, supplier_id: str) -> FederatedAnalysis:
+def analyze_supplier_disruption(store: GraphStore, supplier_id: str) -> FederatedAnalysis:
     """
     Federate sourcing → ebom → routing on Component.id for a supplier disruption scenario.
-    Each domain step runs Cypher via lance-graph; federation joins results in Python.
+    Each domain step runs Cypher via Neo4j; federation joins results in Python.
     """
     sourcing = query_sourcing_for_supplier(store, supplier_id)
     component_ids = {r["component_id"] for r in sourcing.rows}

@@ -9,7 +9,7 @@ Each script loads synthetic data through the matching domain pipeline under `dom
 | `sourcing.py` | Supply and sourcing | `data/lancedb/sourcing/` | Procurement / SRM |
 
 Shared schema: `ontology/schema.py`. Domain bundles: `domains/*/bundle.py`.  
-Federation contract: `ontology/contract/graph_context.yaml`.
+Graph Contract: `ontology/contract/graph_context.yaml`.
 
 For the full cross-domain demo, prefer:
 

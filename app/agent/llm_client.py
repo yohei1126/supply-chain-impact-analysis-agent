@@ -4,7 +4,7 @@ import json
 import re
 import urllib.error
 import urllib.request
-from typing import Any
+from typing import Any, cast
 
 from app.agent.llm_config import OpenAICompatLLMSettings
 from app.agent.telemetry import RunTracer
@@ -17,7 +17,7 @@ def parse_planner_response(content: str) -> dict[str, Any]:
     fence = re.search(r"```(?:json)?\s*([\s\S]*?)```", text, re.IGNORECASE)
     if fence:
         text = fence.group(1).strip()
-    return json.loads(text)
+    return cast(dict[str, Any], json.loads(text))
 
 
 def chat_completions(
@@ -60,7 +60,7 @@ def chat_completions(
             messages,
             content,
         )
-    return content
+    return str(content)
 
 
 def plan_tool_calls_openai_compat(
@@ -124,7 +124,8 @@ def summarize_run_openai_compat(
                 "Rules:\n"
                 "- Use ONLY facts present in tool_results JSON. Do not invent IDs or metrics.\n"
                 "- Write explanation in clear English (2-5 short paragraphs).\n"
-                "- evidence[] must cite specific tool output: claim, tool name, pointer (JSON path), value.\n"
+                "- evidence[] must cite specific tool output: "
+                "claim, tool name, pointer (JSON path), value.\n"
                 "Respond with JSON only, no markdown:\n"
                 '{"explanation":"...","evidence":[{"claim":"...","tool":"...","pointer":"...","value":"..."}]}'
             ),

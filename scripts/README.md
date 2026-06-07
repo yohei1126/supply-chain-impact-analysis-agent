@@ -5,20 +5,19 @@ Run from the **repository root** (`data/` paths are relative to cwd).
 | Script | Purpose |
 |--------|---------|
 | `sync_ontology.py` | Regenerate `skills/bom-ontology/assets/ontology.json` from `ontology/schema.py` |
-| `seed_complex_bom.py` | Ontology-validated synthetic BOM → LanceDB + DuckDB + vectors (`--reset`) |
-| `demo_federation.py` | **E2E federated demo** — [docs/federation-demo-runbook.md](../docs/federation-demo-runbook.md) |
+| `seed_complex_bom.py` | Ontology-validated synthetic BOM → Neo4j + DuckDB (`--reset`) |
+| `demo_federation.py` | **E2E federated demo** — [docs/demo-runbook.md](../docs/demo-runbook.md#part-a--federation-cli-no-docker--llm) |
 | `demo.py` | Interactive graph + tool exploration demo |
-| `demo_hybrid.py` | Interactive vector → RDB → graph demo |
 | `demo_agent.py` | Interactive autonomous agent demo (local, no HTTP) |
 | `verify_langfuse_telemetry.py` | Check Langfuse keys + list `bom-agent-run` traces |
-| `run_docker_stack.sh` | LiteLLM + Langfuse (`docker compose --profile litellm --profile langfuse`) |
-| `run_litellm_proxy.sh` | LiteLLM via `uv` only (no Docker; `config/litellm.yaml`) |
+| `start_stack.sh` | Start Langfuse + LiteLLM + Neo4j (detached by default; `--no-neo4j` skips graph DB) |
+| `stop_stack.sh` | Stop the same Docker stack (`-v` removes volumes) |
 
 Per-domain ingest: `ingest/{ebom,routing,sourcing}.py` — see [ingest/README.md](ingest/README.md).
 
 Non-interactive demos: `DEMO_NONINTERACTIVE=1 uv run python scripts/demo.py`
 
-Federation demo (resets LanceDB):
+Federation demo (resets Neo4j):
 
 ```bash
 uv run python scripts/demo_federation.py --reset
