@@ -6,9 +6,9 @@ Within the Graph Contract, **Bridge Keys** (shared IDs such as `Component.id`) a
 
 **Audience:** data platform owners, ontology authors, pipeline engineers.
 
-**Related:** [agent-guide.md](agent-guide.md) ([terminology](agent-guide.md#terminology)) · [graph-context.md](graph-context.md) · [enterprise-graph-design.md](enterprise-graph-design.md) (three domains) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) (agent playbooks) · [development.md](development.md) (implementation phases).
+**Related:** [terminology.md](terminology.md) · [seeding.md](seeding.md) · [graph-context.md](graph-context.md) · [enterprise-graph-design.md](enterprise-graph-design.md) (three domains) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) (agent playbooks) · [development.md](development.md) (implementation phases).
 
-> **Terminology** (Graph Contract vs graph context vs `graph_view`): [agent-guide.md § Terminology](agent-guide.md#terminology).
+> **Terminology** (Graph Contract vs graph context vs `graph_view`): [terminology.md](terminology.md).
 
 ---
 
@@ -401,7 +401,8 @@ Maintaining integrability is **continuous Graph Contract compliance**, not a one
 
 | Document | Contents |
 |----------|----------|
-| [agent-guide.md](agent-guide.md) | Terminology SSOT, ontology SSOT, seeding, validation on write |
+| [terminology.md](terminology.md) | Naming SSOT |
+| [seeding.md](seeding.md) | Ontology SSOT, seeding, validation on write |
 | [graph-context.md](graph-context.md) | `graph-context.json` bundle, sync, agent/Skill consumption |
 | [enterprise-graph-design.md](enterprise-graph-design.md) | Three domains, physical layout |
 | [supply-chain-disruption-response.md](supply-chain-disruption-response.md) | News-driven playbooks |

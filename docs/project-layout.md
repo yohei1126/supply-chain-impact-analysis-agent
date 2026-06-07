@@ -7,13 +7,16 @@ Why the repository is structured the way it is: **organization boundaries** (who
 **Related:** 
 
 * [enterprise-graph-design.md](enterprise-graph-design.md) (three logical graphs) 
-* [agent-guide.md](agent-guide.md) (setup, seeding, demos, **terminology**)
+* [terminology.md](terminology.md) (naming SSOT)
+* [seeding.md](seeding.md) (synthetic BOM seeding)
+* [setup-and-demos.md](setup-and-demos.md) (environment, Skill install, CLI demos)
+* [agent-runtime.md](agent-runtime.md) (`app/agent` runtime)
 * [graph-contract.md](graph-contract.md) (Graph Contract)
 * [graph-context.md](graph-context.md) (graph context / `graph-context.json`)
 * [demo-runbook.md](demo-runbook.md) (E2E demos: federation CLI, full stack, verification)
 * [testing-and-quality.md](testing-and-quality.md) (tests, lint, mypy)
 * [development.md](development.md) (setup and roadmap) 
-* [AGENTS.md](../AGENTS.md) (principles) · [agent-guide.md](agent-guide.md) (setup, seeding)
+* [AGENTS.md](../AGENTS.md) (principles) · [seeding.md](seeding.md) · [setup-and-demos.md](setup-and-demos.md)
 
 ---
 
@@ -268,12 +271,12 @@ There are **no empty legacy directories** left from these moves. Placeholder fil
 | Topic | Document |
 |-------|----------|
 | Enterprise three-graph design | [enterprise-graph-design.md](enterprise-graph-design.md) |
-| Terminology (Contract vs context vs `graph_view`) | [agent-guide.md](agent-guide.md#terminology) |
+| Terminology (Contract vs context vs `graph_view`) | [terminology.md](terminology.md) |
 | Graph Contract | [graph-contract.md](graph-contract.md) |
 | Graph context | [graph-context.md](graph-context.md) |
 | Disruption playbooks | [supply-chain-disruption-response.md](supply-chain-disruption-response.md) |
 | Demo runbook (federation, full stack, verify) | [demo-runbook.md](demo-runbook.md) |
 | Developer setup & roadmap | [development.md](development.md) |
 | Tests, lint, static analysis | [testing-and-quality.md](testing-and-quality.md) |
-| Agent / SSOT workflow | [AGENTS.md](../AGENTS.md) · [agent-guide.md](agent-guide.md) |
+| Agent / SSOT workflow | [AGENTS.md](../AGENTS.md) · [seeding.md](seeding.md) · [setup-and-demos.md](setup-and-demos.md) · [agent-runtime.md](agent-runtime.md) |
 | Agent skill JSON catalogs & versioning | [agent-skill-assets.md](agent-skill-assets.md) |

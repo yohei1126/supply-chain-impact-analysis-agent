@@ -4,7 +4,7 @@ Design proposal for manufacturing knowledge graphs and AI-assisted cross-domain 
 
 **Audience:** architects, data platform owners, and agent developers extending this repository.
 
-**Related:** [project-layout.md](project-layout.md) (directory structure) · [development.md](development.md) (setup and roadmap) · [graph-contract.md](graph-contract.md) (Graph Contract) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) (disruption playbooks and logical federation) · [AGENTS.md](../AGENTS.md) (ontology SSOT) · [demo-runbook.md](demo-runbook.md) (running the agent).
+**Related:** [project-layout.md](project-layout.md) (directory structure) · [development.md](development.md) (setup and roadmap) · [terminology.md](terminology.md) · [graph-contract.md](graph-contract.md) (Graph Contract) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) (disruption playbooks and logical federation) · [AGENTS.md](../AGENTS.md) (ontology SSOT) · [demo-runbook.md](demo-runbook.md) (running the agent).
 
 ---
 
@@ -364,7 +364,7 @@ User-facing responses intentionally omit raw tool JSON ([README.md](../README.md
 | MES/ERP → routing | `routing` bundle | Lance `graph_id=routing` |
 | SRM → sourcing | `sourcing` bundle | Lance `graph_id=sourcing` |
 
-Every write goes through `validate_node_payload` / `RelationEdge` (see [agent-guide.md](agent-guide.md#what-gets-validated-on-each-write)). Reject invalid rows at the boundary; do not repair silently in the agent.
+Every write goes through `validate_node_payload` / `RelationEdge` (see [seeding.md](seeding.md#what-gets-validated-on-each-write)). Reject invalid rows at the boundary; do not repair silently in the agent.
 
 ### 9.2 Ownership and SLAs
 
@@ -443,5 +443,5 @@ For most manufacturing enterprises, the third option is a **starting point**, no
 | [development.md](development.md) | Setup, paths under `data/`, tests |
 | [demo-runbook.md](demo-runbook.md) | Agent UI, LiteLLM, Langfuse |
 | [observability.md](observability.md) | Trace structure for planner and tools |
-| [AGENTS.md](../AGENTS.md) · [agent-guide.md](agent-guide.md) | Ontology authoring, seeding, change workflow |
+| [AGENTS.md](../AGENTS.md) · [seeding.md](seeding.md) | Ontology authoring, seeding, change workflow |
 | [skills/bom-graph-explorer/references/workflows.md](../skills/bom-graph-explorer/references/workflows.md) | Current exploration workflows |
