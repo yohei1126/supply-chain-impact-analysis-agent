@@ -38,7 +38,7 @@ uv sync --extra dev              # ruff + mypy (lint / type check)
 uv run pytest -q
 ```
 
-Expected: all tests pass (currently **36** tests under `tests/`). A passing run is the minimum **done criteria** in [AGENTS.md](../AGENTS.md).
+Expected: all tests pass (currently **54** tests under `tests/`). A passing run is the minimum **done criteria** in [AGENTS.md](../AGENTS.md).
 
 Verbose output:
 
@@ -223,44 +223,20 @@ uv sync --extra dev && \
 
 | Tool | Status |
 |------|--------|
-| GitHub Actions CI | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) — ruff, mypy, pytest (Neo4j service) on PRs and pushes to `main` |
+| GitHub Actions CI | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) — ruff, mypy, Markdown link check, pytest (Neo4j service) on PRs and pushes to `main` |
 | Pre-commit hooks | Not configured |
 | Coverage (`pytest-cov`) | Not configured |
-| Markdown link checker | Manual / ad hoc (see below) |
+| External URL link checker | Not configured (optional: lychee) |
 
-### Markdown links (manual)
+### Markdown internal links
 
-Relative links in `docs/` and `*.md` should target existing files. Quick check from repo root:
+Relative links in `docs/` and `*.md` must target existing files or directories under the repo. CI runs [`tests/test_markdown_links.py`](../tests/test_markdown_links.py) in the static-analysis job; it is also included in `uv run pytest -q`.
 
 ```bash
-python3 - <<'PY'
-import re
-from pathlib import Path
-root = Path(".")
-broken = []
-for md in root.rglob("*.md"):
-    if ".venv" in md.parts or ".pytest_cache" in md.parts:
-        continue
-    for m in re.finditer(r"\]\(([^)#]+)", md.read_text()):
-        t = m.group(1).strip()
-        if t.startswith(("http://", "https://", "mailto:")):
-            continue
-        if not (md.parent / t).resolve().is_file() and not (root / t).resolve().is_file():
-            p = (md.parent / t).resolve()
-            if p.exists():
-                continue
-            try:
-                p.relative_to(root.resolve())
-            except ValueError:
-                continue
-            broken.append((md, t))
-for x in sorted(set(broken)):
-    print(x)
-print("broken:", len(set(broken)))
-PY
+uv run pytest -q tests/test_markdown_links.py
 ```
 
-Roadmap items referenced in docs but not yet on disk (e.g. `app/federation/composer.py`) are intentional **planned** paths — not link errors.
+Roadmap items mentioned inline in prose (e.g. `app/federation/composer.py`) are intentional **planned** paths — only relative markdown hyperlinks are checked.
 
 ---
 

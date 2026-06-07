@@ -36,6 +36,9 @@ jobs:
       - name: Mypy
         run: uv run mypy ontology domains pipeline app
 
+      - name: Markdown internal links
+        run: uv run pytest -q tests/test_markdown_links.py
+
   test:
     name: Tests
     runs-on: ubuntu-latest
