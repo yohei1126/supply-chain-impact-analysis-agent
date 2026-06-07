@@ -5,10 +5,10 @@ from typing import Any, TYPE_CHECKING
 from pipeline.demo.sample_data import PROCESSES, PRODUCT_PROCESSES
 
 if TYPE_CHECKING:
-    from app.federation.graph_store import LanceGraphStore
+    from app.federation.graph_store import GraphStore
 
 
-def seed_nodes(graph: LanceGraphStore) -> int:
+def seed_nodes(graph: GraphStore) -> int:
     """Load routing-owned process nodes."""
     for process in PROCESSES:
         graph.add_node("Process", process)
@@ -16,7 +16,7 @@ def seed_nodes(graph: LanceGraphStore) -> int:
 
 
 def seed_edges(
-    graph: LanceGraphStore,
+    graph: GraphStore,
     component_bom: list[dict[str, Any]],
     product_processes: list[tuple[str, str]] | None = None,
 ) -> int:

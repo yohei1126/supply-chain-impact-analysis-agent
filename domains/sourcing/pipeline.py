@@ -5,17 +5,17 @@ from typing import Any, TYPE_CHECKING
 from pipeline.demo.sample_data import SUPPLIERS
 
 if TYPE_CHECKING:
-    from app.federation.graph_store import LanceGraphStore
+    from app.federation.graph_store import GraphStore
 
 
-def seed_nodes(graph: LanceGraphStore) -> int:
+def seed_nodes(graph: GraphStore) -> int:
     """Load sourcing-owned supplier nodes."""
     for supplier in SUPPLIERS:
         graph.add_node("Supplier", supplier)
     return len(SUPPLIERS)
 
 
-def seed_edges(graph: LanceGraphStore, component_bom: list[dict[str, Any]]) -> int:
+def seed_edges(graph: GraphStore, component_bom: list[dict[str, Any]]) -> int:
     """Load SUPPLIED_BY edges into the sourcing domain graph."""
     count = 0
     for row in component_bom:

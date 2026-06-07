@@ -34,13 +34,13 @@ Allowed edge types for multi-hop: `USED_IN`, `INPUT_OF`, `PRODUCED_BY` (see `gra
 
 **Catalog path:** `federation_recipes.supplier_disruption_with_routing` (adds `processes_by_components` on **routing**).
 
-## Hybrid similarity
+## Component search
 
 **User intent:** Find catalog parts like a description, then trace suppliers.
 
 **Flow:**
 
-1. `bom_hybrid_query` — vector + RDB resolution (not in query catalog).
+1. Resolve candidates via component master text search (name/material in DuckDB).
 2. For each resolved `component_id`, use sourcing/ebom catalog queries or `bom_supplier_impact` on inferred suppliers.
 
 ## Indirect questions

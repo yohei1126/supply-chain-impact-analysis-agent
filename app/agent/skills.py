@@ -67,7 +67,7 @@ def build_system_prompt(repo_root: Path) -> str:
     for asset_name, heading in (
         ("graph-context.json", "graph-context.json (domains + federation)"),
         ("query-catalog.json", "query-catalog.json (named Cypher recipes)"),
-        ("cypher-engine-profile.json", "cypher-engine-profile.json (lance-graph dialect)"),
+        ("cypher-engine-profile.json", "cypher-engine-profile.json (neo4j dialect)"),
     ):
         body = _load_json_asset(explorer, asset_name)
         if body:

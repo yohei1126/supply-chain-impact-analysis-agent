@@ -147,17 +147,20 @@ def _match_line(
         if not source_id or not target_id:
             raise ValueError("endpoint_pair requires source_id and target_id")
         return (
-            f"MATCH ({source}:{source_label} {{id: '{validate_graph_id(source_id)}'}})-[{rel}]->"
-            f"({target}:{target_label} {{id: '{validate_graph_id(target_id)}'}})"
+            f"MATCH ({source}:{source_label} {{id: '{validate_graph_id(source_id)}', graph_id: $graph_id}})-[{rel}]->"
+            f"({target}:{target_label} {{id: '{validate_graph_id(target_id)}', graph_id: $graph_id}})"
         )
 
     if spec.filter_mode == "anchor_property" and spec.anchor_label == target_label and spec.anchor_param:
         return (
-            f"MATCH ({source}:{source_label})-[{rel}]->"
-            f"({target}:{target_label} {{id: ${spec.anchor_param}}})"
+            f"MATCH ({source}:{source_label} {{graph_id: $graph_id}})-[{rel}]->"
+            f"({target}:{target_label} {{id: ${spec.anchor_param}, graph_id: $graph_id}})"
         )
 
-    return f"MATCH ({source}:{source_label})-[{rel}]->({target}:{target_label})"
+    return (
+        f"MATCH ({source}:{source_label} {{graph_id: $graph_id}})-[{rel}]->"
+        f"({target}:{target_label} {{graph_id: $graph_id}})"
+    )
 
 
 def _where_clause(spec: CypherQuerySpec, *, component_ids_literal: str | None) -> str:

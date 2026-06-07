@@ -35,7 +35,7 @@ class GraphExplorer:
     """
     Framework-facing graph exploration API.
 
-    Domain queries are generated from ontology/schema.py and executed via lance-graph.
+    Domain queries are generated from ontology/schema.py and executed via Neo4j Cypher.
     Agent Skill prose lives under skills/bom-graph-explorer/.
     """
 
@@ -96,7 +96,7 @@ class GraphExplorer:
                 cypher_queries=steps,
             )
 
-        # lance-graph has no shortestPath; fall back to federated BFS across ebom + routing.
+        # Fall back to federated BFS across ebom + routing when no direct USED_IN link exists.
         fallback = self.store.shortest_supply_path(from_component_id, to_product_id)
         steps.append(
             CypherStep(

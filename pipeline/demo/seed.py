@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.federation.graph_store import LanceGraphStore
-from app.hybrid_store import UnifiedBomContextStore
+from app.component_master_store import ComponentMasterStore
+from app.federation.graph_store import GraphStore
 from pipeline.demo.sample_data import COMPONENT_BOM, PROCESSES, PRODUCTS, PRODUCT_PROCESSES, SUPPLIERS
 from domains.ebom import pipeline as ebom_pipeline
 from domains.routing import pipeline as routing_pipeline
@@ -13,11 +13,11 @@ from domains.sourcing import pipeline as sourcing_pipeline
 
 
 def seed_complex_bom(
-    graph: LanceGraphStore,
-    unified: UnifiedBomContextStore | None = None,
+    graph: GraphStore,
+    component_master: ComponentMasterStore | None = None,
 ) -> dict[str, int]:
     """
-    Load demo BOM data through domain-owned pipelines into three LanceDB graphs.
+    Load demo BOM data through domain-owned pipelines into three Neo4j databases.
 
     Order: domain nodes → shared components (master + graph replication) → domain edges.
     """
@@ -27,8 +27,8 @@ def seed_complex_bom(
 
     for row in COMPONENT_BOM:
         component = row["component"]
-        if unified is not None:
-            unified.upsert_component(component)
+        if component_master is not None:
+            component_master.upsert_component(component)
         else:
             graph.add_node("Component", component)
 
@@ -45,7 +45,7 @@ def seed_complex_bom(
 
 
 def seed_domain_only(
-    graph: LanceGraphStore,
+    graph: GraphStore,
     graph_id: str,
     component_bom: list[dict[str, Any]] | None = None,
 ) -> dict[str, int]:

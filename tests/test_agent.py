@@ -3,26 +3,27 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
+from app.agent.context import BomAgentContext
 from app.agent.runner import BomAutonomousAgent, plan_tools_from_goal
 from app.agent.skills import build_system_prompt, load_skill_package
-from app.agent.context import BomAgentContext
+from app.federation.graph_store import GraphStore
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
-def _seed_context(tmp_path: Path) -> BomAgentContext:
+def _seed_context(graph_store: GraphStore, tmp_path: Path) -> BomAgentContext:
     ctx = BomAgentContext.create(
         repo_root=REPO_ROOT,
-        lancedb_path=str(tmp_path / "lancedb"),
         duckdb_path=str(tmp_path / "bom.duckdb"),
+        graph=graph_store,
     )
     ctx.graph.add_node(
         "Supplier",
         {"id": "SUP-001", "company_name": "Nihon Steel", "country": "JP", "risk_level": "High"},
     )
     ctx.graph.add_node("Product", {"id": "PROD-900", "name": "Industrial Pump", "version": "v1"})
-    ctx.hybrid.upsert_component(
+    ctx.component_master.upsert_component(
         {"id": "COMP-100", "name": "Frame", "material": "Steel", "cost": 1500.0}
     )
     ctx.graph.add_edge(
@@ -78,8 +79,8 @@ def test_plan_tools_from_goal() -> None:
     assert german[0].arguments["supplier_id"] == "SUP-002"
 
 
-def test_autonomous_agent_run(tmp_path) -> None:
-    ctx = _seed_context(tmp_path)
+def test_autonomous_agent_run(graph_store: GraphStore, tmp_path) -> None:
+    ctx = _seed_context(graph_store, tmp_path)
     agent = BomAutonomousAgent(ctx)
     try:
         result = agent.run("supplier impact SUP-001", mode="tools")
@@ -92,14 +93,13 @@ def test_autonomous_agent_run(tmp_path) -> None:
         ctx.close()
 
 
-def test_remote_agent_api(tmp_path, monkeypatch) -> None:
+def test_remote_agent_api(graph_store: GraphStore, tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("BOM_REPO_ROOT", str(REPO_ROOT))
-    monkeypatch.setenv("BOM_LANCEDB_PATH", str(tmp_path / "lancedb"))
     monkeypatch.setenv("BOM_DUCKDB_PATH", str(tmp_path / "bom.duckdb"))
 
     from app.agent import server
 
-    ctx = _seed_context(tmp_path)
+    ctx = _seed_context(graph_store, tmp_path)
     server._context = ctx
 
     client = TestClient(server.app)

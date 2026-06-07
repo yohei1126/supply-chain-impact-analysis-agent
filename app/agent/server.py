@@ -95,7 +95,6 @@ async def lifespan(app: FastAPI):
     repo_root = Path(os.getenv("BOM_REPO_ROOT", Path.cwd()))
     _context = BomAgentContext.create(
         repo_root=repo_root,
-        lancedb_path=os.getenv("BOM_LANCEDB_PATH", "data/lancedb"),
         duckdb_path=os.getenv("BOM_DUCKDB_PATH", "data/bom.duckdb"),
     )
     yield

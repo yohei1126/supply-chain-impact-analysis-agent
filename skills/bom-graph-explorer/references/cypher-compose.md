@@ -9,7 +9,7 @@ Use this playbook with **generated assets only**. Never copy edge tables or MATC
 | 1 | `bom-ontology/assets/ontology.json` | Legal node types and `edges.allowed_pairs` |
 | 2 | `bom-graph-explorer/assets/graph-context.json` | Which edges belong to `sourcing`, `ebom`, `routing` |
 | 3 | `bom-graph-explorer/assets/query-catalog.json` | Named recipes and federation step lists |
-| 4 | `bom-graph-explorer/assets/cypher-engine-profile.json` | Engine limits (no `shortestPath`, etc.) |
+| 4 | `bom-graph-explorer/assets/cypher-engine-profile.json` | Engine limits (Neo4j 5.x per domain database) |
 
 ## 2. Choose a strategy
 
@@ -49,7 +49,7 @@ Before emitting Cypher, verify:
 - [ ] Every node label appears in the target domain's `nodes` list.
 - [ ] Query targets **one** `graph_id` per execute call.
 - [ ] Federation carries `component_id` (or documented bridge key) between steps.
-- [ ] No `shortestPath`, no unsupported `IN $ids` if the engine profile forbids it.
+- [ ] Use parameterized queries (`$supplier_id`, `$ids`) where the engine profile allows.
 - [ ] Prefer catalog query names over ad-hoc patterns when a recipe matches the user goal.
 
 ## 5. Map user language to graph (indirect goals)
@@ -61,10 +61,10 @@ Resolve entities from **ontology field semantics**, not from memorized IDs:
 | Country + material + supplier role | `Supplier` node (`country`, supplier name) → `components_by_supplier` |
 | Part name / role (e.g. drive shaft) | `Component.name` → then path or impact recipes |
 | Product line name | `Product.name` → pair with component for `direct_component_product_link` or path tools |
-| Similar parts / shortage wording | hybrid tool first, then catalog impact queries on resolved `component_id` |
+| Similar parts / shortage wording | component master search first, then catalog impact queries on resolved `component_id` |
 
-When IDs are unknown, plan **resolve then query** (LLM inference or hybrid search), then call tools or emit catalog-based Cypher with resolved ids.
+When IDs are unknown, plan **resolve then query** (LLM inference or component master search), then call tools or emit catalog-based Cypher with resolved ids.
 
 ## 6. When to call tools instead of raw Cypher
 
-If the host exposes `bom_supplier_impact`, `bom_supply_path`, or `bom_hybrid_query`, prefer tools for execution. Use this protocol to **validate** tool choice and to explain which catalog recipes the runtime should apply.
+If the host exposes `bom_supplier_impact` or `bom_supply_path`, prefer tools for execution. Use this protocol to **validate** tool choice and to explain which catalog recipes the runtime should apply.

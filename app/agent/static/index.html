@@ -44,7 +44,7 @@
       <section class="mode-panel is-active" id="panel-domain" role="tabpanel" aria-labelledby="tab-domain">
         <aside class="panel rail">
           <h2>Single-domain query</h2>
-          <p class="rail-intro">Each team owns one Lance graph. Queries stay inside that graph — no cross-domain join yet.</p>
+          <p class="rail-intro">Each team owns one domain graph. Queries stay inside that graph — no cross-domain join yet.</p>
 
           <label class="field-label" for="domain-graph">Domain graph</label>
           <select id="domain-graph" class="select-input">
@@ -87,7 +87,7 @@
             <h3 id="section-domain-query">Cypher query</h3>
             <p class="query-disclaimer">
               Generated from <code>ontology/schema.py</code> (<code>ALLOWED_EDGES</code>, node fields)
-              and executed by <code>lance-graph</code> on this domain&apos;s Lance tables.
+              and executed by Neo4j on this domain&apos;s database.
             </p>
             <dl class="query-spec" id="domain-query-spec"></dl>
             <pre class="query-expression" id="domain-query-expression" aria-label="Cypher query"></pre>

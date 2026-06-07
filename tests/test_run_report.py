@@ -33,7 +33,7 @@ def test_run_report_supplier_impact() -> None:
     assert report["planning"]["mode"] == "tools"
     assert report["executions"][0]["tool"] == "bom_supplier_impact"
     assert "SUP-001" in report["executions"][0]["query_description"]
-    assert "LanceGraph" in report["executions"][0]["stores"][0]
+    assert "Neo4j" in report["executions"][0]["stores"][0]
     assert report["executions"][0]["row_count"] == 1
     assert report["executions"][0]["highlights"]
 

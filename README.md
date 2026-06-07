@@ -1,6 +1,6 @@
 # BOM Knowledge Graph Agent
 
-Explore manufacturing BOMs with an ontology-validated graph, hybrid search (vector + SQL + graph), and optional LLM-assisted analysis.
+Explore manufacturing BOMs with an ontology-validated Neo4j graph, DuckDB component master, and optional LLM-assisted analysis.
 
 This repository bundles:
 
@@ -9,12 +9,12 @@ This repository bundles:
 - **`pipeline/demo/`** — cross-domain demo seed orchestration
 - **`app/`** — federation, stores, agent (shared runtime)
 - **`skills/`** — distributable Agent Skills (schema + exploration workflows)
-- **`docker-compose.yml`** — optional LiteLLM and Langfuse for local demos
+- **`docker-compose.yml`** — optional LiteLLM, Langfuse, and Neo4j for local demos
 
 ## Try it locally (recommended)
 
-1. **Prepare data** — seed a demo BOM into `data/` (validated against the ontology).
-2. **Start services** — LiteLLM (LLM) and Langfuse (traces) via Docker; then the BOM agent.
+1. **Prepare data** — seed a demo BOM into Neo4j + DuckDB (validated against the ontology).
+2. **Start services** — Neo4j (optional), LiteLLM (LLM), and Langfuse (traces) via Docker; then the BOM agent.
 3. **Use the UI** — ask questions, read Summary / Key findings / Evidence, and view the supply chain map.
 
 **Full walkthrough:** [docs/local-demo-runbook.md](docs/local-demo-runbook.md) (terminals, `.env`, Langfuse keys, browser steps, troubleshooting).
@@ -31,9 +31,9 @@ This repository bundles:
 | [docs/llm-gateway.md](docs/llm-gateway.md) | Operators | LiteLLM / Gemini configuration |
 | [docs/observability.md](docs/observability.md) | Operators | Langfuse telemetry |
 | [docs/demo-verification-and-evaluation.md](docs/demo-verification-and-evaluation.md) | Developers / operators | Demo scenarios: how to confirm results and evaluate pass/fail (UI vs Langfuse) |
-| [docs/enterprise-graph-design.md](docs/enterprise-graph-design.md) | Architects | Enterprise graph domains, Lance layout, agent federation |
+| [docs/enterprise-graph-design.md](docs/enterprise-graph-design.md) | Architects | Enterprise graph domains, Neo4j layout, agent federation |
 | [docs/supply-chain-disruption-response.md](docs/supply-chain-disruption-response.md) | Architects / ops | Disruption playbooks, logical graph federation, mitigations |
-| [docs/ontology-on-lance.md](docs/ontology-on-lance.md) | Data / ontology authors | Schema-light Lance vs application ontology layers |
+| [docs/ontology-on-lance.md](docs/ontology-on-lance.md) | Data / ontology authors | Schema-light storage vs application ontology layers |
 | [AGENTS.md](AGENTS.md) | Coding agents | SSOT, validation, change workflow |
 | [skills/README.md](skills/README.md) | Skill consumers | Installing `bom-ontology` and `bom-graph-explorer` |
 | [scripts/README.md](scripts/README.md) | Script reference | `seed_*`, `demo_*`, Docker helpers |

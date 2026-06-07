@@ -1,10 +1,10 @@
 import pytest
 
+from app.federation.graph_store import GraphStore
 from domains.registry import graph_for_edge
-from app.federation.graph_store import LanceGraphStore
 
 
-def _seed_graph(store: LanceGraphStore) -> None:
+def _seed_graph(store: GraphStore) -> None:
     store.add_node(
         "Supplier",
         {"id": "SUP-001", "company_name": "Nihon Steel", "country": "JP", "risk_level": "High"},
@@ -48,31 +48,29 @@ def _seed_graph(store: LanceGraphStore) -> None:
     )
 
 
-def test_component_replicated_in_three_domain_stores(tmp_path) -> None:
-    store = LanceGraphStore(lancedb_path=str(tmp_path / "lancedb"))
-    store.add_node("Component", {"id": "COMP-100", "name": "Frame", "material": "Steel", "cost": 1500.0})
+def test_component_replicated_in_three_domain_stores(graph_store: GraphStore) -> None:
+    graph_store.add_node("Component", {"id": "COMP-100", "name": "Frame", "material": "Steel", "cost": 1500.0})
 
     for graph_id in ("ebom", "routing", "sourcing"):
-        nodes = store.domain(graph_id).all_nodes()
+        nodes = graph_store.domain(graph_id).all_nodes()
         assert any(n["id"] == "COMP-100" and n["label"] == "Component" for n in nodes)
 
 
-def test_edges_live_in_single_domain_store(tmp_path) -> None:
-    store = LanceGraphStore(lancedb_path=str(tmp_path / "lancedb"))
-    _seed_graph(store)
+def test_edges_live_in_single_domain_store(graph_store: GraphStore) -> None:
+    _seed_graph(graph_store)
 
-    assert len(store.domain("sourcing").all_edges()) == 1
-    assert store.domain("sourcing").all_edges()[0]["edge_type"] == "SUPPLIED_BY"
+    assert len(graph_store.domain("sourcing").all_edges()) == 1
+    assert graph_store.domain("sourcing").all_edges()[0]["edge_type"] == "SUPPLIED_BY"
 
-    assert len(store.domain("ebom").all_edges()) == 1
-    assert store.domain("ebom").all_edges()[0]["edge_type"] == "USED_IN"
+    assert len(graph_store.domain("ebom").all_edges()) == 1
+    assert graph_store.domain("ebom").all_edges()[0]["edge_type"] == "USED_IN"
 
-    assert len(store.domain("routing").all_edges()) == 1
-    assert store.domain("routing").all_edges()[0]["edge_type"] == "PRODUCED_BY"
+    assert len(graph_store.domain("routing").all_edges()) == 1
+    assert graph_store.domain("routing").all_edges()[0]["edge_type"] == "PRODUCED_BY"
 
 
-def test_domain_edge_rejected_in_wrong_store(tmp_path) -> None:
-    domain = LanceGraphStore(lancedb_path=str(tmp_path / "lancedb")).domain("ebom")
+def test_domain_edge_rejected_in_wrong_store(graph_store: GraphStore) -> None:
+    domain = graph_store.domain("ebom")
     domain.add_node("Component", {"id": "COMP-100", "name": "Frame", "material": "Steel", "cost": 1500.0})
     domain.add_node("Product", {"id": "PROD-900", "name": "Pump", "version": "v1"})
 
@@ -95,13 +93,12 @@ def test_graph_for_edge_mapping() -> None:
     assert graph_for_edge("INPUT_OF") == "routing"
 
 
-def test_federated_traversal_matches_prior_behavior(tmp_path) -> None:
-    store = LanceGraphStore(lancedb_path=str(tmp_path / "lancedb"))
-    _seed_graph(store)
+def test_federated_traversal_matches_prior_behavior(graph_store: GraphStore) -> None:
+    _seed_graph(graph_store)
 
-    impact = store.impacted_products_by_supplier("SUP-001")
+    impact = graph_store.impacted_products_by_supplier("SUP-001")
     assert len(impact) == 1
     assert impact[0]["product_id"] == "PROD-900"
 
-    path = store.shortest_supply_path("COMP-100", "PROD-900")
+    path = graph_store.shortest_supply_path("COMP-100", "PROD-900")
     assert path[0]["relationships"] == ["USED_IN"]

@@ -1,9 +1,9 @@
 from app.agent.runner import ToolCall
 from app.graph_viz import build_graph_view, extract_seed_keys, graph_view_for_run
-from app.federation.graph_store import LanceGraphStore
+from app.federation.graph_store import GraphStore
 
 
-def _seed_mini_graph(store: LanceGraphStore) -> None:
+def _seed_mini_graph(store: GraphStore) -> None:
     store.add_node(
         "Supplier",
         {"id": "SUP-001", "company_name": "Nihon Steel", "country": "JP", "risk_level": "High"},
@@ -55,9 +55,8 @@ def test_extract_seed_keys_supplier_impact() -> None:
     assert ("Product", "PROD-900") in seeds
 
 
-def test_graph_view_for_run(tmp_path) -> None:
-    store = LanceGraphStore(lancedb_path=str(tmp_path / "lancedb"))
-    _seed_mini_graph(store)
+def test_graph_view_for_run(graph_store: GraphStore) -> None:
+    _seed_mini_graph(graph_store)
     calls = [ToolCall("bom_supplier_impact", {"supplier_id": "SUP-001"})]
     results = [
         {
@@ -73,7 +72,7 @@ def test_graph_view_for_run(tmp_path) -> None:
             ],
         }
     ]
-    view = graph_view_for_run(store, calls, results)
+    view = graph_view_for_run(graph_store, calls, results)
     assert view["node_count"] >= 3
     assert view["edge_count"] >= 2
     ids = {n["id"] for n in view["nodes"]}

@@ -1,10 +1,7 @@
 from __future__ import annotations
 
 from collections import deque
-from pathlib import Path
 from typing import Any
-
-import lancedb
 
 from domains.registry import (
     DOMAIN_GRAPHS,
@@ -12,27 +9,41 @@ from domains.registry import (
     graph_for_edge,
     graphs_for_node,
 )
-from app.storage.domain_store import DomainLanceGraphStore
+from app.storage.neo4j_config import ensure_domain_databases, get_driver
+from app.storage.neo4j_domain_store import Neo4jDomainStore
 from ontology.schema import RelationEdge, validate_node_payload
 
+try:
+    from neo4j import Driver
+except ImportError:  # pragma: no cover
+    Driver = Any  # type: ignore[misc, assignment]
 
-class LanceGraphStore:
+
+class GraphStore:
     """
-    Federated graph facade over three domain LanceDB datasets (ebom, routing, sourcing).
+    Federated graph facade over three domain Neo4j databases (ebom, routing, sourcing).
 
-    External API matches the original single-graph store; cross-domain traversals
-    federate at query time on shared node IDs.
+    External API matches the original store; cross-domain traversals federate at query
+    time on shared node IDs.
     """
 
-    def __init__(self, lancedb_path: str = "data/lancedb"):
-        self.lancedb_path = lancedb_path
-        base = Path(lancedb_path)
-        self.domains: dict[GraphId, DomainLanceGraphStore] = {
-            graph_id: DomainLanceGraphStore(graph_id, str(base / graph_id))
-            for graph_id in DOMAIN_GRAPHS
+    def __init__(
+        self,
+        driver: Driver | None = None,
+        *,
+        uri: str | None = None,
+        auth: tuple[str, str] | None = None,
+    ):
+        self.driver = driver or get_driver(uri=uri, auth=auth)
+        ensure_domain_databases(self.driver)
+        self.domains: dict[GraphId, Neo4jDomainStore] = {
+            graph_id: Neo4jDomainStore(graph_id, self.driver) for graph_id in DOMAIN_GRAPHS
         }
 
-    def domain(self, graph_id: GraphId) -> DomainLanceGraphStore:
+    def close(self) -> None:
+        self.driver.close()
+
+    def domain(self, graph_id: GraphId) -> Neo4jDomainStore:
         return self.domains[graph_id]
 
     def add_node(self, node_type: str, payload: dict[str, Any]) -> dict[str, Any]:
@@ -49,14 +60,6 @@ class LanceGraphStore:
         edge = RelationEdge(**payload)
         graph_id = graph_for_edge(edge.edge_type)
         return self.domains[graph_id].add_edge(payload)
-
-    def _node_map(self, graph_ids: tuple[GraphId, ...] | None = None) -> dict[tuple[str, str], dict[str, Any]]:
-        ids = graph_ids or tuple(DOMAIN_GRAPHS)
-        merged: dict[tuple[str, str], dict[str, Any]] = {}
-        for graph_id in ids:
-            for node in self.domains[graph_id].all_nodes():
-                merged[(node["label"], node["id"])] = node["properties"]
-        return merged
 
     def _edges_for_types(
         self,
@@ -104,19 +107,6 @@ class LanceGraphStore:
                 queue.append((nxt, path_nodes + [nxt], path_rels + [rel]))
         return []
 
-    # Legacy helpers for callers that read raw tables from the unified path.
-    @property
-    def db(self) -> Any:
-        return lancedb.connect(self.lancedb_path)
-
-    @staticmethod
-    def _rows(table: Any) -> list[dict[str, Any]]:
-        if hasattr(table, "to_arrow"):
-            return [dict(r) for r in table.to_arrow().to_pylist()]
-        if hasattr(table, "search"):
-            return [dict(r) for r in table.search().limit(100000).to_list()]
-        return []
-
     def _all_nodes(self) -> list[dict[str, Any]]:
         nodes: list[dict[str, Any]] = []
         for graph_id in DOMAIN_GRAPHS:
@@ -139,3 +129,7 @@ class LanceGraphStore:
                 item.setdefault("graph_id", graph_id)
                 edges.append(item)
         return edges
+
+
+# Backward-compatible alias for imports that still reference LanceGraphStore.
+LanceGraphStore = GraphStore

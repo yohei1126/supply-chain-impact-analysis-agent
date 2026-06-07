@@ -1,9 +1,9 @@
 from app.exploration import GraphExplorer
-from app.federation.graph_store import LanceGraphStore
+from app.federation.graph_store import GraphStore
 from app.tools import exploration_tool_definitions, run_exploration_tool
 
 
-def _seed(store: LanceGraphStore) -> None:
+def _seed(store: GraphStore) -> None:
     store.add_node(
         "Supplier",
         {"id": "SUP-001", "company_name": "Nihon Steel", "country": "JP", "risk_level": "High"},
@@ -38,10 +38,9 @@ def test_exploration_tool_definitions_shape() -> None:
     assert names == {"bom_supplier_impact", "bom_supply_path"}
 
 
-def test_run_exploration_tool_supplier_impact(tmp_path) -> None:
-    store = LanceGraphStore(lancedb_path=str(tmp_path / "lancedb"))
-    _seed(store)
-    explorer = GraphExplorer(store)
+def test_run_exploration_tool_supplier_impact(graph_store: GraphStore) -> None:
+    _seed(graph_store)
+    explorer = GraphExplorer(graph_store)
 
     payload = run_exploration_tool(explorer, "bom_supplier_impact", supplier_id="SUP-001")
     assert payload["operation"] == "supplier_impact"

@@ -21,7 +21,7 @@ High-level guide for agents working in this repository.
 | Ontology | `ontology/` | Platform-independent shared schema + graph context contract (Pydantic only) |
 | Domains | `domains/` | Org-owned slices: bundle, pipeline, tools per `ebom` / `routing` / `sourcing` |
 | Pipeline | `pipeline/demo/` | Cross-domain demo fixtures and seed orchestration |
-| Application | `app/` | Storage, federation facade, hybrid store, cross-domain tools, agent |
+| Application | `app/` | Storage, federation facade, component master store, cross-domain tools, agent |
 | Ontology skill | `skills/bom-ontology/` | Distributable schema for agents (`skills/bom-ontology/assets/ontology.json`) |
 | Exploration skill | `skills/bom-graph-explorer/` | Cypher compose protocol + generated `graph-context.json`, `query-catalog.json`, `cypher-engine-profile.json` |
 
@@ -39,7 +39,7 @@ Install skills from `skills/` only. Do not copy them into `.cursor/skills/` insi
 
 ## 4. Seeding synthetic BOM data (ontology validation)
 
-Demo and agent runtime need graph, vector, and RDB data under `data/`. **Do not hand-edit LanceDB/DuckDB files.** Load synthetic BOM through the Python stores so every node and edge is validated against the ontology defined in `ontology/schema.py`.
+Demo and agent runtime need Neo4j graph data and DuckDB component master under `data/`. **Do not hand-edit Neo4j databases or DuckDB files.** Load synthetic BOM through the Python stores so every node and edge is validated against the ontology defined in `ontology/schema.py`.
 
 ### 4.1 One definition, two consumers (not two competing schemas)
 
@@ -69,14 +69,14 @@ pipeline/demo/sample_data.py  (suppliers, products, processes, components, edges
         │
         ├── graph.add_node(type, payload)  → validate_node_payload()  (per node type)
         ├── graph.add_edge(payload)        → RelationEdge  (allowed source/target pairs)
-        └── unified.upsert_component(...)  → ComponentNode + graph node
+        └── component_master.upsert_component(...)  → ComponentNode + graph node
 ```
 
 | Write API | Validator | Typical failure |
 |-----------|-----------|-----------------|
-| `LanceGraphStore.add_node` | `validate_node_payload` | Missing field, wrong type, bad `country` length |
-| `LanceGraphStore.add_edge` | `RelationEdge` | Disallowed edge (e.g. `Product → Component` for `USED_IN`) |
-| `UnifiedBomContextStore.upsert_component` | `ComponentNode` | Invalid component attributes |
+| `GraphStore.add_node` | `validate_node_payload` | Missing field, wrong type, bad `country` length |
+| `GraphStore.add_edge` | `RelationEdge` | Disallowed edge (e.g. `Product → Component` for `USED_IN`) |
+| `ComponentMasterStore.upsert_component` | `ComponentNode` | Invalid component attributes |
 
 Invalid rows raise `pydantic.ValidationError` or `ValueError`; nothing is partially committed for that failed call. Fix `pipeline/demo/sample_data.py` (or your own loader that calls the same APIs), not the binary DB files.
 
@@ -88,15 +88,15 @@ uv sync
 # After editing ontology/schema.py only (Skills / prompts):
 uv run python scripts/sync_ontology.py
 
-# Load synthetic BOM into data/lancedb + data/bom.duckdb (validated writes):
+# Load synthetic BOM into Neo4j domain databases + data/bom.duckdb (validated writes):
 uv run python scripts/seed_complex_bom.py --reset
 ```
 
 | Flag / path | Meaning |
 |-------------|---------|
-| `--reset` | Delete `data/lancedb` and `data/bom.duckdb` before insert (avoids duplicate nodes on re-run) |
-| `--lancedb-path` | Default `data/lancedb` |
+| `--reset` | Clear Neo4j domain databases and delete `data/bom.duckdb` before insert |
 | `--duckdb-path` | Default `data/bom.duckdb` |
+| `BOM_NEO4J_URI` | Default `bolt://localhost:7687` (see `.env.example`) |
 
 Default dataset (`seed_complex_bom` in `pipeline/demo/`): **3 suppliers**, **3 products**, **4 processes**, **12 components**, with shared parts, multiple suppliers, and `SUPPLIED_BY` / `USED_IN` / `INPUT_OF` / `PRODUCED_BY` edges.
 
@@ -116,7 +116,7 @@ uv run python scripts/seed_complex_bom.py --reset
 
 ```bash
 uv run python scripts/seed_complex_bom.py --reset
-uv run pytest -q tests/test_schema.py tests/test_lance_graph_store.py tests/test_hybrid_store.py
+uv run pytest -q tests/test_schema.py tests/test_graph_store.py tests/test_component_master_store.py
 
 # Quick exploration (also seeds if --seed):
 uv run python skills/bom-graph-explorer/scripts/explore_graph.py --seed \
@@ -155,20 +155,19 @@ This repository does not commit tool-specific copies under `.cursor/skills/`.
 | Script | Command | What it shows |
 |--------|---------|----------------|
 | Graph + tools | `uv run python scripts/demo.py` | Interactive graph exploration |
-| Hybrid | `uv run python scripts/demo_hybrid.py` | Vector → RDB → graph (`LANCEDB_PATH` optional) |
 | Agent (local) | `uv run python scripts/demo_agent.py` | Agent Skills + tool run |
 | Federation demo | `uv run python scripts/demo_federation.py --reset` | Per-domain seed, validate, query, federated mitigations — [docs/federation-demo-runbook.md](docs/federation-demo-runbook.md) |
 | Skill CLI | `uv run python skills/bom-graph-explorer/scripts/explore_graph.py --seed --mode supplier-impact --supplier-id SUP-001` | Exploration without HTTP server |
 
 Non-interactive: `DEMO_NONINTERACTIVE=1 uv run python scripts/demo.py`
 
-All under `scripts/` — see [scripts/README.md](scripts/README.md). Demos call `seed_complex_bom()`; use §4.3 `--reset` first for a clean `data/` tree.
+All under `scripts/` — see [scripts/README.md](scripts/README.md). Demos call `seed_complex_bom()`; use §4.3 `--reset` first for a clean Neo4j + DuckDB tree.
 
-Example hybrid run:
+Start Neo4j locally (optional Docker profile):
 
 ```bash
-export LANCEDB_PATH=data/lancedb
-uv run python scripts/demo_hybrid.py
+./scripts/run_docker_stack.sh --neo4j -d
+uv run python scripts/seed_complex_bom.py --reset
 ```
 
 ### 5.4 Local full stack (LiteLLM + Langfuse + agent UI)
@@ -177,8 +176,8 @@ uv run python scripts/demo_hybrid.py
 
 | Step | What |
 |------|------|
-| 1 | `uv sync --extra observability --extra gateway`, configure `.env`, `seed_complex_bom.py --reset` |
-| 2 | `./scripts/run_docker_stack.sh -d` → LiteLLM `:4000`, Langfuse `:3000` |
+| 1 | `uv sync --extra observability --extra gateway`, configure `.env`, start Neo4j if needed, `seed_complex_bom.py --reset` |
+| 2 | `./scripts/run_docker_stack.sh -d` (add `--neo4j` for graph storage) → LiteLLM `:4000`, Langfuse `:3000` |
 | 3 | Langfuse UI → API keys → `.env` |
 | 4 | `uv run --extra observability python -m app.agent` → UI **http://localhost:8080/ui/** |
 | 5 | Analyze in UI; inspect traces in Langfuse (`bom-agent-run`) |

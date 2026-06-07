@@ -57,11 +57,12 @@ def plan_tools_from_goal(goal: str) -> list[ToolCall]:
         ]
 
     if "brass" in goal_lower and "valve" in goal_lower:
-        return [ToolCall("bom_hybrid_query", {"query": goal.strip(), "top_k": 3})]
+        return [ToolCall("bom_supplier_impact", {"supplier_id": "SUP-002"})]
 
-    if "steel" in goal_lower or "vector" in goal_lower or "similar" in goal_lower:
-        query = goal.strip()
-        return [ToolCall("bom_hybrid_query", {"query": query, "top_k": 3})]
+    if "steel" in goal_lower or "similar" in goal_lower:
+        supplier_match = re.search(r"\b(SUP-\d+)\b", goal, re.IGNORECASE)
+        if supplier_match:
+            return [ToolCall("bom_supplier_impact", {"supplier_id": supplier_match.group(1).upper()})]
 
     return []
 

@@ -39,12 +39,12 @@ def build_domain_query_spec(
         "graph_id": result.graph_id,
         "query_name": result.query_name,
         "owner_team": owner_teams[result.graph_id],
-        "engine": "lance-graph",
+        "engine": "neo4j",
         "language": "Cypher",
         "ontology_source": "ontology/schema.py",
         "query_spec": result.query_name,
         "parameters": params,
-        "scope": "single domain Lance graph",
+        "scope": "single domain Neo4j database",
         "cypher": result.cypher,
     }
 
@@ -98,7 +98,7 @@ def federated_analysis_to_dict(analysis: FederatedAnalysis) -> dict[str, Any]:
             },
         ],
         "federation_note": (
-            "Each step runs Cypher on its domain Lance graph via lance-graph; "
+            "Each step runs Cypher on its domain Neo4j database; "
             "results are joined in Python on Component.id."
         ),
     }

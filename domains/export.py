@@ -26,12 +26,12 @@ FEDERATION_RECIPES: dict[str, dict[str, Any]] = {
 }
 
 CYPHER_ENGINE_PROFILE: dict[str, Any] = {
-    "engine": "lance-graph",
+    "engine": "neo4j",
     "dialect_notes": [
-        "Cypher subset only — not full Neo4j.",
-        "No shortestPath(); use direct edge match or multi-hop outside Cypher.",
-        "List parameters such as IN $ids may be unsupported; embed component id literals when required.",
+        "Full Neo4j Cypher (5.x) on the default database with graph_id property per domain.",
+        "Use parameterized queries ($supplier_id, $ids) where possible.",
         "One domain graph per execute call (sourcing, ebom, or routing).",
+        "shortestPath() is available; federated BFS remains a fallback across domains.",
     ],
     "composition_rules": [
         "Every MATCH edge type must appear in ontology.json edges.allowed_pairs with correct direction.",

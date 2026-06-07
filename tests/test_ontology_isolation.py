@@ -15,7 +15,7 @@ ALLOWED_THIRD_PARTY = frozenset({"pydantic"})
 FORBIDDEN_PREFIXES = (
     "app",
     "pipeline",
-    "lancedb",
+    "neo4j",
     "duckdb",
     "fastapi",
     "httpx",

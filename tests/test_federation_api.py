@@ -2,42 +2,36 @@
 
 from __future__ import annotations
 
-import shutil
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 
 from app.agent import server
-from app.federation.graph_store import LanceGraphStore
-from pipeline.demo.load_domains import load_all_domains_separately, reset_lancedb
+from app.component_master_store import ComponentMasterStore
+from app.federation.graph_store import GraphStore
+from pipeline.demo.load_domains import load_all_domains_separately
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 @pytest.fixture
-def federation_client(tmp_path, monkeypatch):
-    lance = tmp_path / "lancedb"
-    reset_lancedb(lance)
-    graph = LanceGraphStore(lancedb_path=str(lance))
-    load_all_domains_separately(graph)
+def federation_client(graph_store: GraphStore, tmp_path, monkeypatch):
+    load_all_domains_separately(graph_store)
 
     monkeypatch.setenv("BOM_REPO_ROOT", str(REPO_ROOT))
-    monkeypatch.setenv("BOM_LANCEDB_PATH", str(lance))
     monkeypatch.setenv("BOM_DUCKDB_PATH", str(tmp_path / "bom.duckdb"))
 
     ctx = server.BomAgentContext.create(
         repo_root=REPO_ROOT,
-        lancedb_path=str(lance),
         duckdb_path=str(tmp_path / "bom.duckdb"),
+        graph=graph_store,
     )
     server._context = ctx
     client = TestClient(server.app)
     yield client
     ctx.close()
     server._context = None
-    if lance.exists():
-        shutil.rmtree(lance)
 
 
 def test_list_federation_domains(federation_client) -> None:

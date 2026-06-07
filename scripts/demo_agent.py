@@ -8,9 +8,9 @@ from demo_interactive import explain, prompt, section, show, wait
 from repo_paths import REPO_ROOT
 
 
-def seed(lancedb: str, duckdb: str) -> BomAgentContext:
-    ctx = BomAgentContext.create(repo_root=REPO_ROOT, lancedb_path=lancedb, duckdb_path=duckdb)
-    seed_complex_bom(ctx.graph, ctx.hybrid)
+def seed(duckdb: str) -> BomAgentContext:
+    ctx = BomAgentContext.create(repo_root=REPO_ROOT, duckdb_path=duckdb)
+    seed_complex_bom(ctx.graph, ctx.component_master)
     return ctx
 
 
@@ -24,7 +24,7 @@ def main() -> None:
     )
     wait()
 
-    ctx = seed("data/lancedb", "data/bom.duckdb")
+    ctx = seed("data/bom.duckdb")
     agent = BomAutonomousAgent(ctx)
 
     try:

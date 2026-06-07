@@ -1,25 +1,37 @@
-"""Load validated domain datasets into separate LanceDB graph paths."""
+"""Load validated domain datasets into separate Neo4j databases."""
 
 from __future__ import annotations
 
-import shutil
 from pathlib import Path
 from typing import Any
 
-from app.federation.graph_store import LanceGraphStore
+from app.federation.graph_store import GraphStore
+from app.storage.neo4j_config import reset_neo4j
 from domains.registry import GraphId
 from pipeline.demo.domain_datasets import DomainDataset, build_all_domain_datasets
 
+try:
+    from neo4j import Driver
+except ImportError:  # pragma: no cover
+    Driver = Any  # type: ignore[misc, assignment]
+
+
+def reset_graph_data(driver: Driver, graph_ids: tuple[GraphId, ...] | None = None) -> None:
+    reset_neo4j(driver, graph_ids)
+
 
 def reset_lancedb(lancedb_path: str | Path) -> None:
-    path = Path(lancedb_path)
-    if path.exists():
-        shutil.rmtree(path)
-    path.mkdir(parents=True, exist_ok=True)
+    """Deprecated: kept for script compatibility; clears Neo4j domain databases instead."""
+    del lancedb_path  # unused — graph data lives in Neo4j
+    graph = GraphStore()
+    try:
+        reset_neo4j(graph.driver)
+    finally:
+        graph.close()
 
 
-def load_domain_dataset(graph: LanceGraphStore, dataset: DomainDataset) -> dict[str, int]:
-    """Write one domain dataset into its Lance path (ontology-validated rows only)."""
+def load_domain_dataset(graph: GraphStore, dataset: DomainDataset) -> dict[str, int]:
+    """Write one domain dataset into its Neo4j database (ontology-validated rows only)."""
     store = graph.domain(dataset.graph_id)
     for node in dataset.nodes:
         store.add_node(node.label, node.payload)
@@ -31,7 +43,7 @@ def load_domain_dataset(graph: LanceGraphStore, dataset: DomainDataset) -> dict[
 
 
 def load_all_domains_separately(
-    graph: LanceGraphStore,
+    graph: GraphStore,
     *,
     component_bom: list[dict[str, Any]] | None = None,
 ) -> dict[GraphId, dict[str, int]]:
