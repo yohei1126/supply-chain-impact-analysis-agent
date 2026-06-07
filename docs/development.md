@@ -2,7 +2,7 @@
 
 Setup, project layout, seeding, CLI demos, tests, and the **implementation roadmap** for three domain graphs with agent-driven logical federation. For the full LiteLLM + Langfuse + web UI flow, see [local-demo-runbook.md](local-demo-runbook.md). For agent conventions and detailed setup, see [AGENTS.md](../AGENTS.md) and [agent-guide.md](agent-guide.md).
 
-**Architecture references:** [project-layout.md](project-layout.md) · [agent-guide.md](agent-guide.md) · [federation-demo-runbook.md](federation-demo-runbook.md) · [testing-and-quality.md](testing-and-quality.md) · [enterprise-graph-design.md](enterprise-graph-design.md) · [graph-context.md](graph-context.md) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) · [ontology-on-lance.md](ontology-on-lance.md) · [agent-skill-assets.md](agent-skill-assets.md) · [demo-verification-and-evaluation.md](demo-verification-and-evaluation.md)
+**Architecture references:** [project-layout.md](project-layout.md) · [agent-guide.md](agent-guide.md) · [federation-demo-runbook.md](federation-demo-runbook.md) · [testing-and-quality.md](testing-and-quality.md) · [enterprise-graph-design.md](enterprise-graph-design.md) · [graph-context.md](graph-context.md) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) · [agent-skill-assets.md](agent-skill-assets.md) · [demo-verification-and-evaluation.md](demo-verification-and-evaluation.md)
 
 ## Ontology (single source of truth)
 
@@ -33,7 +33,7 @@ Seeding and validation details: [agent-guide.md](agent-guide.md#seeding-syntheti
 
 ### Ontology layers (target)
 
-LanceDB is schema-light; meaning and integrity live above storage ([ontology-on-lance.md](ontology-on-lance.md)):
+Neo4j stores graph topology; meaning and integrity live in the application ontology ([graph-context.md](graph-context.md)):
 
 | Layer | Location (today → target) |
 |-------|---------------------------|
@@ -396,7 +396,6 @@ Run the full suite after every phase merge; see [AGENTS.md](../AGENTS.md) done c
 | Full local demo | [local-demo-runbook.md](local-demo-runbook.md) |
 | Enterprise graph + agent design | [enterprise-graph-design.md](enterprise-graph-design.md) |
 | Supply chain disruption response | [supply-chain-disruption-response.md](supply-chain-disruption-response.md) |
-| Ontology on LanceDB | [ontology-on-lance.md](ontology-on-lance.md) |
 | Graph context contract | [graph-context.md](graph-context.md) |
 | LiteLLM / Gemini | [llm-gateway.md](llm-gateway.md) |
 | Langfuse traces | [observability.md](observability.md) |

@@ -33,7 +33,7 @@ This repository bundles:
 | [docs/demo-verification-and-evaluation.md](docs/demo-verification-and-evaluation.md) | Developers / operators | Demo scenarios: how to confirm results and evaluate pass/fail (UI vs Langfuse) |
 | [docs/enterprise-graph-design.md](docs/enterprise-graph-design.md) | Architects | Enterprise graph domains, Neo4j layout, agent federation |
 | [docs/supply-chain-disruption-response.md](docs/supply-chain-disruption-response.md) | Architects / ops | Disruption playbooks, logical graph federation, mitigations |
-| [docs/ontology-on-lance.md](docs/ontology-on-lance.md) | Data / ontology authors | Schema-light storage vs application ontology layers |
+| [docs/graph-context.md](docs/graph-context.md) | Data / ontology authors | Cross-domain federation contract and identity rules |
 | [docs/agent-guide.md](docs/agent-guide.md) | Coding agents | Seeding, setup, demos, agent runtime |
 | [AGENTS.md](AGENTS.md) | Coding agents | Principles, SSOT, change workflow, done criteria |
 | [skills/README.md](skills/README.md) | Skill consumers | Installing `bom-ontology` and `bom-graph-explorer` |

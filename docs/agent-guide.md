@@ -147,7 +147,7 @@ Stop: `./scripts/stop_stack.sh`
 
 ### Local full stack (LiteLLM + Langfuse + agent UI)
 
-**Human runbook:** [local-demo-runbook.md](local-demo-runbook.md) · **Developer setup:** [development.md](development.md) · **Enterprise graph design:** [enterprise-graph-design.md](enterprise-graph-design.md) · **Ontology on Lance:** [ontology-on-lance.md](ontology-on-lance.md) · **Disruption response:** [supply-chain-disruption-response.md](supply-chain-disruption-response.md)
+**Human runbook:** [local-demo-runbook.md](local-demo-runbook.md) · **Developer setup:** [development.md](development.md) · **Enterprise graph design:** [enterprise-graph-design.md](enterprise-graph-design.md) · **Graph context:** [graph-context.md](graph-context.md) · **Disruption response:** [supply-chain-disruption-response.md](supply-chain-disruption-response.md)
 
 | Step | What |
 |------|------|

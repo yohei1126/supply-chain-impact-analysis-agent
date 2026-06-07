@@ -4,7 +4,7 @@ Design proposal for manufacturing knowledge graphs and AI-assisted cross-domain 
 
 **Audience:** architects, data platform owners, and agent developers extending this repository.
 
-**Related:** [project-layout.md](project-layout.md) (directory structure) · [development.md](development.md) (setup and roadmap) · [ontology-on-lance.md](ontology-on-lance.md) (schema-light Lance vs ontology layers) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) (disruption playbooks and logical federation) · [AGENTS.md](../AGENTS.md) (ontology SSOT) · [local-demo-runbook.md](local-demo-runbook.md) (running the agent).
+**Related:** [project-layout.md](project-layout.md) (directory structure) · [development.md](development.md) (setup and roadmap) · [graph-context.md](graph-context.md) (federation contract) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) (disruption playbooks and logical federation) · [AGENTS.md](../AGENTS.md) (ontology SSOT) · [local-demo-runbook.md](local-demo-runbook.md) (running the agent).
 
 ---
 

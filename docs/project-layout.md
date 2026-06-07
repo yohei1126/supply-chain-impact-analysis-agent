@@ -8,7 +8,6 @@ Why the repository is structured the way it is: **organization boundaries** (who
 
 * [enterprise-graph-design.md](enterprise-graph-design.md) (three logical graphs) 
 * [graph-context.md](graph-context.md) (federation contract) 
-* [ontology-on-lance.md](ontology-on-lance.md) (schema-light storage)
 * [federation-demo-runbook.md](federation-demo-runbook.md) (E2E domain federation demo)
 * [testing-and-quality.md](testing-and-quality.md) (tests, lint, mypy)
 * [development.md](development.md) (setup and roadmap) 

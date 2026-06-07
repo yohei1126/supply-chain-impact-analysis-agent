@@ -4,7 +4,7 @@ A **graph context** is the cross-domain agreement that lets physically separate 
 
 **Audience:** data platform owners, ontology authors, pipeline engineers, agent developers.
 
-**Related:** [ontology-on-lance.md](ontology-on-lance.md) (layers under the contract), [enterprise-graph-design.md](enterprise-graph-design.md) (three domains), [supply-chain-disruption-response.md](supply-chain-disruption-response.md) (agent playbooks), [development.md](development.md) (implementation phases).
+**Related:** [agent-guide.md](agent-guide.md) (ontology SSOT and seeding), [enterprise-graph-design.md](enterprise-graph-design.md) (three domains), [supply-chain-disruption-response.md](supply-chain-disruption-response.md) (agent playbooks), [development.md](development.md) (implementation phases).
 
 ---
 
@@ -389,7 +389,7 @@ Maintaining integrability is **continuous contract compliance**, not a one-time 
 
 | Document | Contents |
 |----------|----------|
-| [ontology-on-lance.md](ontology-on-lance.md) | Schema-light Lance, ontology layers |
+| [agent-guide.md](agent-guide.md) | Ontology SSOT, seeding, validation on write |
 | [enterprise-graph-design.md](enterprise-graph-design.md) | Three domains, physical layout |
 | [supply-chain-disruption-response.md](supply-chain-disruption-response.md) | News-driven playbooks |
 | [development.md](development.md) | Phased build plan |

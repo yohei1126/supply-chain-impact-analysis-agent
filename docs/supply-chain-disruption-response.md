@@ -4,7 +4,7 @@ Proposal for **immediate cross-domain impact analysis and mitigation guidance** 
 
 **Audience:** program managers, domain data owners (engineering, manufacturing, procurement), and agent platform developers.
 
-**Related:** [enterprise-graph-design.md](enterprise-graph-design.md) (domain model and Lance layout), [ontology-on-lance.md](ontology-on-lance.md) (semantics and federation contract), [local-demo-runbook.md](local-demo-runbook.md) (running the agent), [observability.md](observability.md) (Langfuse traces for audit).
+**Related:** [enterprise-graph-design.md](enterprise-graph-design.md) (domain model and Neo4j layout), [graph-context.md](graph-context.md) (semantics and federation contract), [local-demo-runbook.md](local-demo-runbook.md) (running the agent), [observability.md](observability.md) (Langfuse traces for audit).
 
 ---
 
@@ -349,7 +349,7 @@ ELSE
 | 5 | Master | `master.component_attributes(component_ids)` | Cost exposure |
 | 6 | Federation | `federation.build_impact_graph(...)` | Unified map + ranking |
 
-**Ontology enrichment (enterprise):** add optional edge/node properties in sourcing ingest — `shipping_lane`, `primary_port`, `transit_region` — so Hormuz news maps to **data-backed** filters, not only `Supplier.country`. See [ontology-on-lance.md](ontology-on-lance.md).
+**Ontology enrichment (enterprise):** add optional edge/node properties in sourcing ingest — `shipping_lane`, `primary_port`, `transit_region` — so Hormuz news maps to **data-backed** filters, not only `Supplier.country`. See [graph-context.md](graph-context.md).
 
 **Demo limitation:** Seeded suppliers use `country` only (`JP`, `DE`, `US`). A Hormuz scenario in demo may show **low direct Gulf exposure** but still demonstrate the pipeline; production graphs include Gulf/Middle East suppliers and lane metadata.
 
@@ -722,7 +722,7 @@ This use case is the **primary justification** for domain-separated graphs with 
 
 | Document | Contents |
 |----------|----------|
-| [ontology-on-lance.md](ontology-on-lance.md) | Semantics, federation keys, lane/country enrichments |
+| [graph-context.md](graph-context.md) | Semantics, federation keys, lane/country enrichments |
 | [enterprise-graph-design.md](enterprise-graph-design.md) | Domain model, Lance phases, ontology bundles |
 | [development.md](development.md) | Local setup, tests, phased implementation roadmap (P0–P5) |
 | [observability.md](observability.md) | Langfuse traces for playbooks |
