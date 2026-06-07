@@ -12,7 +12,7 @@ Why the repository is structured the way it is: **organization boundaries** (who
 * [federation-demo-runbook.md](federation-demo-runbook.md) (E2E domain federation demo)
 * [testing-and-quality.md](testing-and-quality.md) (tests, lint, mypy)
 * [development.md](development.md) (setup and roadmap) 
-* [AGENTS.md](../AGENTS.md) (change workflow)
+* [AGENTS.md](../AGENTS.md) (principles) · [agent-guide.md](agent-guide.md) (setup, seeding)
 
 ---
 
@@ -273,6 +273,6 @@ There are **no empty legacy directories** left from these moves. Placeholder fil
 | Federated domain demo (E2E) | [federation-demo-runbook.md](federation-demo-runbook.md) |
 | Developer setup & roadmap | [development.md](development.md) |
 | Tests, lint, static analysis | [testing-and-quality.md](testing-and-quality.md) |
-| Agent / SSOT workflow | [AGENTS.md](../AGENTS.md) |
+| Agent / SSOT workflow | [AGENTS.md](../AGENTS.md) · [agent-guide.md](agent-guide.md) |
 | Agent skill JSON catalogs & versioning | [agent-skill-assets.md](agent-skill-assets.md) |
 | Demo verify & evaluate (UI vs Langfuse) | [demo-verification-and-evaluation.md](demo-verification-and-evaluation.md) |

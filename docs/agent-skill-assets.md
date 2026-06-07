@@ -256,7 +256,7 @@ Do **not** move catalog SSOT to DB tables editable by agents. DB holds **instanc
 
 | Topic | Doc |
 |-------|-----|
-| Authoring & sync commands | [development.md](development.md), [AGENTS.md](../AGENTS.md) |
+| Authoring & sync commands | [development.md](development.md), [agent-guide.md](agent-guide.md) |
 | Federation YAML contract | [graph-context.md](graph-context.md) |
 | Skill install | [skills/README.md](../skills/README.md) |
 | Drift tests | [testing-and-quality.md](testing-and-quality.md) |

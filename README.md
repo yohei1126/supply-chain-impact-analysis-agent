@@ -34,7 +34,8 @@ This repository bundles:
 | [docs/enterprise-graph-design.md](docs/enterprise-graph-design.md) | Architects | Enterprise graph domains, Neo4j layout, agent federation |
 | [docs/supply-chain-disruption-response.md](docs/supply-chain-disruption-response.md) | Architects / ops | Disruption playbooks, logical graph federation, mitigations |
 | [docs/ontology-on-lance.md](docs/ontology-on-lance.md) | Data / ontology authors | Schema-light storage vs application ontology layers |
-| [AGENTS.md](AGENTS.md) | Coding agents | SSOT, validation, change workflow |
+| [docs/agent-guide.md](docs/agent-guide.md) | Coding agents | Seeding, setup, demos, agent runtime |
+| [AGENTS.md](AGENTS.md) | Coding agents | Principles, SSOT, change workflow, done criteria |
 | [skills/README.md](skills/README.md) | Skill consumers | Installing `bom-ontology` and `bom-graph-explorer` |
 | [scripts/README.md](scripts/README.md) | Script reference | `seed_*`, `demo_*`, Docker helpers |
 
@@ -51,4 +52,4 @@ Planner details, tool arguments, and full JSON go to **Langfuse** when configure
 
 ## Contributing / agent development
 
-See [AGENTS.md](AGENTS.md) and [docs/testing-and-quality.md](docs/testing-and-quality.md). Run tests with `uv run pytest -q` after changes.
+See [AGENTS.md](AGENTS.md), [docs/agent-guide.md](docs/agent-guide.md), and [docs/testing-and-quality.md](docs/testing-and-quality.md).

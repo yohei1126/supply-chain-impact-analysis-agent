@@ -233,7 +233,7 @@ Source system export
     → upsert Lance row
 ```
 
-This matches [AGENTS.md](../AGENTS.md) §4: never hand-edit Lance files.
+This matches [agent-guide.md](agent-guide.md#seeding-synthetic-bom-data-ontology-validation): never hand-edit graph or DuckDB files directly.
 
 ### 5.2 Component master (cross-graph anchor)
 
@@ -436,4 +436,4 @@ Lance is the **disk format**. The ontology is the **contract** that keeps three 
 | [enterprise-graph-design.md](enterprise-graph-design.md) | Three domains, Lance layout phases |
 | [supply-chain-disruption-response.md](supply-chain-disruption-response.md) | Playbooks using federation |
 | [development.md](development.md) | `schema.py` ↔ `ontology.json` workflow |
-| [AGENTS.md](../AGENTS.md) | SSOT and seeding rules |
+| [AGENTS.md](../AGENTS.md) · [agent-guide.md](agent-guide.md) | SSOT and seeding rules |

@@ -1,8 +1,8 @@
 # Development guide
 
-Setup, project layout, seeding, CLI demos, tests, and the **implementation roadmap** for three domain graphs with agent-driven logical federation. For the full LiteLLM + Langfuse + web UI flow, see [local-demo-runbook.md](local-demo-runbook.md). For agent/automation conventions, see [AGENTS.md](../AGENTS.md).
+Setup, project layout, seeding, CLI demos, tests, and the **implementation roadmap** for three domain graphs with agent-driven logical federation. For the full LiteLLM + Langfuse + web UI flow, see [local-demo-runbook.md](local-demo-runbook.md). For agent conventions and detailed setup, see [AGENTS.md](../AGENTS.md) and [agent-guide.md](agent-guide.md).
 
-**Architecture references:** [project-layout.md](project-layout.md) · [federation-demo-runbook.md](federation-demo-runbook.md) · [testing-and-quality.md](testing-and-quality.md) · [enterprise-graph-design.md](enterprise-graph-design.md) · [graph-context.md](graph-context.md) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) · [ontology-on-lance.md](ontology-on-lance.md) · [agent-skill-assets.md](agent-skill-assets.md) · [demo-verification-and-evaluation.md](demo-verification-and-evaluation.md)
+**Architecture references:** [project-layout.md](project-layout.md) · [agent-guide.md](agent-guide.md) · [federation-demo-runbook.md](federation-demo-runbook.md) · [testing-and-quality.md](testing-and-quality.md) · [enterprise-graph-design.md](enterprise-graph-design.md) · [graph-context.md](graph-context.md) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) · [ontology-on-lance.md](ontology-on-lance.md) · [agent-skill-assets.md](agent-skill-assets.md) · [demo-verification-and-evaluation.md](demo-verification-and-evaluation.md)
 
 ## Ontology (single source of truth)
 
@@ -29,7 +29,7 @@ uv run python scripts/sync_ontology.py
 uv run pytest -q tests/test_skill_ontology_asset.py tests/test_skill_agent_assets.py
 ```
 
-Seeding and validation details: [AGENTS.md](../AGENTS.md) §4.
+Seeding and validation details: [agent-guide.md](agent-guide.md#seeding-synthetic-bom-data-ontology-validation).
 
 ### Ontology layers (target)
 
@@ -402,4 +402,4 @@ Run the full suite after every phase merge; see [AGENTS.md](../AGENTS.md) done c
 | Langfuse traces | [observability.md](observability.md) |
 | Tests, lint, type check | [testing-and-quality.md](testing-and-quality.md) |
 | Federated domain demo (E2E) | [federation-demo-runbook.md](federation-demo-runbook.md) |
-| Agent contributors | [AGENTS.md](../AGENTS.md) |
+| Agent contributors | [AGENTS.md](../AGENTS.md) · [agent-guide.md](agent-guide.md) |

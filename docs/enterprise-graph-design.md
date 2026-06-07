@@ -364,7 +364,7 @@ User-facing responses intentionally omit raw tool JSON ([README.md](../README.md
 | MES/ERP → routing | `routing` bundle | Lance `graph_id=routing` |
 | SRM → sourcing | `sourcing` bundle | Lance `graph_id=sourcing` |
 
-Every write goes through `validate_node_payload` / `RelationEdge` (see [AGENTS.md](../AGENTS.md) §4). Reject invalid rows at the boundary; do not repair silently in the agent.
+Every write goes through `validate_node_payload` / `RelationEdge` (see [agent-guide.md](agent-guide.md#what-gets-validated-on-each-write)). Reject invalid rows at the boundary; do not repair silently in the agent.
 
 ### 9.2 Ownership and SLAs
 
@@ -443,5 +443,5 @@ For most manufacturing enterprises, the third option is a **starting point**, no
 | [development.md](development.md) | Setup, paths under `data/`, tests |
 | [local-demo-runbook.md](local-demo-runbook.md) | Agent UI, LiteLLM, Langfuse |
 | [observability.md](observability.md) | Trace structure for planner and tools |
-| [AGENTS.md](../AGENTS.md) | Ontology authoring, seeding, change workflow |
+| [AGENTS.md](../AGENTS.md) · [agent-guide.md](agent-guide.md) | Ontology authoring, seeding, change workflow |
 | [skills/bom-graph-explorer/references/workflows.md](../skills/bom-graph-explorer/references/workflows.md) | Current exploration workflows |
