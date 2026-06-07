@@ -3,8 +3,9 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 from app.agent.context import BomAgentContext
-from app.agent.runner import BomAutonomousAgent, plan_tools_from_goal
+from app.agent.runner import BomAutonomousAgent, plan_tools_from_goal, reconcile_planned_tools
 from app.agent.skills import build_system_prompt, load_skill_package
+from app.agent.types import ToolCall
 from app.federation.graph_store import GraphStore
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -75,6 +76,23 @@ def test_plan_tools_from_goal() -> None:
     )
     assert german[0].name == "bom_supplier_impact"
     assert german[0].arguments["supplier_id"] == "SUP-002"
+
+
+def test_reconcile_planned_tools_replaces_hallucinated_supplier_id() -> None:
+    goal = (
+        "Our German brass supplier might face a disruption — "
+        "which finished products are exposed?"
+    )
+    llm_plan = [ToolCall("bom_supplier_impact", {"supplier_id": "SUP-DE-01"})]
+    reconciled = reconcile_planned_tools(goal, llm_plan)
+    assert reconciled[0].name == "bom_supplier_impact"
+    assert reconciled[0].arguments["supplier_id"] == "SUP-002"
+
+
+def test_reconcile_planned_tools_keeps_valid_llm_plan() -> None:
+    goal = "Analyze supplier impact for SUP-001"
+    llm_plan = [ToolCall("bom_supplier_impact", {"supplier_id": "SUP-001"})]
+    assert reconcile_planned_tools(goal, llm_plan) == llm_plan
 
 
 def test_autonomous_agent_run(graph_store: GraphStore, tmp_path) -> None:

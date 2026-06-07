@@ -588,8 +588,8 @@ function renderGraphView(graphView, containerId, captionId, mode) {
     container.style.minHeight = "280px";
     container.style.height = "280px";
   } else {
-    container.style.minHeight = "180px";
-    container.style.height = "100%";
+    container.style.minHeight = "240px";
+    container.style.height = "240px";
   }
 
   const network = new vis.Network(

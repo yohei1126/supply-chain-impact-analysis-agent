@@ -14,6 +14,54 @@ from app.graph_viz import graph_view_for_run
 
 AgentMode = Literal["tools", "auto", "llm"]
 
+_SUPPLIER_ID = re.compile(r"^SUP-\d+$", re.IGNORECASE)
+_COMPONENT_ID = re.compile(r"^COMP-\d+$", re.IGNORECASE)
+_PRODUCT_ID = re.compile(r"^PROD-\d+$", re.IGNORECASE)
+
+
+def _valid_tool_call(call: ToolCall) -> bool:
+    if call.name == "bom_supplier_impact":
+        supplier_id = str(call.arguments.get("supplier_id", "")).strip().upper()
+        return bool(_SUPPLIER_ID.fullmatch(supplier_id))
+    if call.name == "bom_supply_path":
+        component_id = str(call.arguments.get("from_component_id", "")).strip().upper()
+        product_id = str(call.arguments.get("to_product_id", "")).strip().upper()
+        return bool(_COMPONENT_ID.fullmatch(component_id) and _PRODUCT_ID.fullmatch(product_id))
+    return True
+
+
+def reconcile_planned_tools(goal: str, planned: list[ToolCall]) -> list[ToolCall]:
+    """
+    Prefer heuristic plans when the LLM invents invalid demo IDs (e.g. SUP-DE-01).
+
+    Keeps valid explicit LLM plans; falls back to plan_tools_from_goal for indirect
+    demo questions that the heuristic handles reliably.
+    """
+    heuristic = plan_tools_from_goal(goal)
+    if not planned:
+        return heuristic
+    if all(_valid_tool_call(call) for call in planned):
+        return planned
+    return heuristic or planned
+
+
+def _retry_empty_supplier_impact(
+    goal: str,
+    planned: list[ToolCall],
+    results: list[dict[str, Any]],
+    invoke,
+) -> tuple[list[ToolCall], list[dict[str, Any]], str | None]:
+    if len(planned) != 1 or planned[0].name != "bom_supplier_impact":
+        return planned, results, None
+    if results and (results[0].get("data") or []):
+        return planned, results, None
+
+    alt = plan_tools_from_goal(goal)
+    if not alt or alt == planned:
+        return planned, results, None
+
+    return alt, [invoke(alt[0].name, **alt[0].arguments)], "Heuristic replan after empty supplier impact"
+
 
 def plan_tools_from_goal(goal: str) -> list[ToolCall]:
     """Lightweight planner without LLM (suitable for tests and offline agents)."""
@@ -113,6 +161,7 @@ class BomAutonomousAgent:
                     settings=settings,
                     tracer=run_tracer,
                 )
+                planned = reconcile_planned_tools(goal, planned)
                 llm_notes = _planner_note(settings)
             else:
                 planned = plan_tools_from_goal(goal)
@@ -127,6 +176,15 @@ class BomAutonomousAgent:
         results: list[dict[str, Any]] = []
         for call in planned:
             results.append(registry.invoke(call.name, **call.arguments))
+
+        planned, results, retry_note = _retry_empty_supplier_impact(
+            goal,
+            planned,
+            results,
+            registry.invoke,
+        )
+        if retry_note:
+            llm_notes = f"{llm_notes}; {retry_note}" if llm_notes else retry_note
 
         explanation: str | None = None
         evidence: list[dict[str, Any]] = []
