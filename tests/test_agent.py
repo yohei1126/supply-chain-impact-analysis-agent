@@ -80,8 +80,7 @@ def test_plan_tools_from_goal() -> None:
 
 def test_reconcile_planned_tools_replaces_hallucinated_supplier_id() -> None:
     goal = (
-        "Our German brass supplier might face a disruption — "
-        "which finished products are exposed?"
+        "Our German brass supplier might face a disruption — which finished products are exposed?"
     )
     llm_plan = [ToolCall("bom_supplier_impact", {"supplier_id": "SUP-DE-01"})]
     reconciled = reconcile_planned_tools(goal, llm_plan)
