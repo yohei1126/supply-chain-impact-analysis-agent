@@ -71,7 +71,7 @@ This repository therefore separates concerns into three layers:
 | [`skills/`](../skills/) | Distribution | Agent Skills (`bom-ontology`, `bom-graph-explorer`) |
 | [`tests/`](../tests/) | Quality | Unit tests mirroring the layers above |
 | [`docs/`](../docs/) | Documentation | Architecture, runbooks, this file |
-| [`data/`](../data/) | Runtime (gitignored) | LanceDB domain graphs, vectors, DuckDB component master |
+| `data/` | Runtime (gitignored) | LanceDB domain graphs, vectors, DuckDB component master |
 | [`config/`](../config/) | Ops | LiteLLM proxy config |
 
 Python packages (see [`pyproject.toml`](../pyproject.toml)): `ontology`, `domains`, `pipeline`, `app`.
