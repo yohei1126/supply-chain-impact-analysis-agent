@@ -6,7 +6,7 @@ Run from the **repository root** (`data/` paths are relative to cwd).
 |--------|---------|
 | `sync_ontology.py` | Regenerate `skills/bom-ontology/assets/ontology.json` from `ontology/schema.py` |
 | `seed_complex_bom.py` | Ontology-validated synthetic BOM → Neo4j + DuckDB (`--reset`) |
-| `demo_federation.py` | **E2E federated demo** — [docs/federation-demo-runbook.md](../docs/federation-demo-runbook.md) |
+| `demo_federation.py` | **E2E federated demo** — [docs/demo-runbook.md](../docs/demo-runbook.md#part-a--federation-cli-no-docker--llm) |
 | `demo.py` | Interactive graph + tool exploration demo |
 | `demo_agent.py` | Interactive autonomous agent demo (local, no HTTP) |
 | `verify_langfuse_telemetry.py` | Check Langfuse keys + list `bom-agent-run` traces |

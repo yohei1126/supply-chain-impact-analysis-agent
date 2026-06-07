@@ -2,14 +2,16 @@
 
 High-level guide for agents working in this repository.
 
-**Detailed instructions** (seeding, setup, demos, agent runtime): [docs/agent-guide.md](docs/agent-guide.md).
+**Detailed instructions** (seeding, setup, demos, agent runtime, **terminology**): [docs/agent-guide.md](docs/agent-guide.md).
 
 ## 1. Core Working Principles
 
 - **Language:** Repository docs (`*.md`, `docs/`), docstrings, inline comments, and user-facing error messages are **English**. Skill prompts may stay language-neutral; do not add Japanese (or other locale) strings in Python unless there is an explicit i18n requirement.
 - **Authoring SSOT:** `ontology/schema.py` (Pydantic). The `ontology/` tree depends only on Pydantic and stdlib — no Neo4j, FastAPI, or agent imports.
 - **Published ontology SSOT:** `skills/bom-ontology/assets/ontology.json` (single generated file).
-- **Graph context contract:** `ontology/contract/graph_context.yaml` (cross-domain federation rules).
+- **Graph Contract:** `ontology/contract/graph_context.yaml` — [docs/graph-contract.md](docs/graph-contract.md).
+- **Graph context (Skill export):** `skills/bom-graph-explorer/assets/graph-context.json` — [docs/graph-context.md](docs/graph-context.md).
+- **Terminology** (Contract vs context vs `graph_view`): [docs/agent-guide.md#terminology](docs/agent-guide.md#terminology).
 - **All Agent Skills** live under `skills/` (`bom-ontology`, `bom-graph-explorer`).
 - Regenerate ontology and explorer assets: `uv run python scripts/sync_ontology.py`.
 - Workflow skills must not embed a second copy of `ontology.json`.
@@ -20,12 +22,12 @@ High-level guide for agents working in this repository.
 | Layer | Location | Role |
 |-------|----------|------|
 | Layout guide | [docs/project-layout.md](docs/project-layout.md) | Why `ontology/`, `domains/`, `app/` exist |
-| Ontology | `ontology/` | Platform-independent shared schema + graph context contract (Pydantic only) |
+| Ontology | `ontology/` | Platform-independent shared schema + Graph Contract (Pydantic only) |
 | Domains | `domains/` | Org-owned slices: bundle, pipeline, tools per `ebom` / `routing` / `sourcing` |
 | Pipeline | `pipeline/demo/` | Cross-domain demo seed orchestration |
 | Application | `app/` | Storage, federation facade, component master store, cross-domain tools, agent |
 | Ontology skill | `skills/bom-ontology/` | Distributable schema for agents (`skills/bom-ontology/assets/ontology.json`) |
-| Exploration skill | `skills/bom-graph-explorer/` | Cypher compose protocol + generated `graph-context.json`, `query-catalog.json`, `cypher-engine-profile.json` |
+| Exploration skill | `skills/bom-graph-explorer/` | Cypher compose protocol + generated graph context (`graph-context.json`), `query-catalog.json`, `cypher-engine-profile.json` |
 
 ## 3. Ontology vs validation vs exploration
 

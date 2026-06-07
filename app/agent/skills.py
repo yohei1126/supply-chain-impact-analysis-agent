@@ -96,7 +96,7 @@ def build_system_prompt(repo_root: Path) -> str:
         parts.extend(["", "## ontology.json (generated from schema.py)", ontology_json])
 
     for asset_name, heading in (
-        ("graph-context.json", "graph-context.json (domains + federation)"),
+        ("graph-context.json", "graph-context.json (graph context: domains + federation bridges)"),
         ("query-catalog.json", "query-catalog.json (named Cypher recipes)"),
         ("cypher-engine-profile.json", "cypher-engine-profile.json (neo4j dialect)"),
     ):

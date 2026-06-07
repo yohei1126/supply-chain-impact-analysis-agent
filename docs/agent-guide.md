@@ -1,10 +1,100 @@
 # Agent guide
 
-Detailed setup, seeding, demos, and autonomous agent runtime for coding agents and developers.
+Detailed setup, seeding, demos, autonomous agent runtime, and **repository terminology** for coding agents and developers.
 
 **Audience:** coding agents, contributors.
 
-**Related:** [AGENTS.md](../AGENTS.md) (principles and done criteria) · [development.md](development.md) · [local-demo-runbook.md](local-demo-runbook.md) · [testing-and-quality.md](testing-and-quality.md) · [project-layout.md](project-layout.md)
+**Related:** [AGENTS.md](../AGENTS.md) (principles and done criteria) · [development.md](development.md) · [demo-runbook.md](demo-runbook.md) · [graph-contract.md](graph-contract.md) · [graph-context.md](graph-context.md) · [testing-and-quality.md](testing-and-quality.md) · [project-layout.md](project-layout.md)
+
+---
+
+## Terminology
+
+**SSOT for names** used across docs, code comments, and PRs. Deep dives: [graph-contract.md](graph-contract.md) (Graph Contract design) · [graph-context.md](graph-context.md) (`graph-context.json` usage).
+
+### Quick rules
+
+| If you are talking about… | Say | Do not say |
+|---------------------------|-----|------------|
+| Federation **agreement** (Bridge Keys, who owns which edge, join rules, quality gates, SLA) | **Graph Contract** | graph context, federation contract |
+| Agent **prompt bundle** (domain scopes + bridges exported for Skills) | **graph context** | Graph Contract, contract file |
+| **Instance data** in Neo4j (`SUP-002`, `COMP-101`, …) | **graph data** / **domain graph** | graph context |
+| **UI/API subgraph** (`nodes[]`, `edges[]` for one run) | **`graph_view`** | graph context, Graph Contract |
+
+**Contract** talk → **Graph Contract**. **Context** talk → **graph context**. Do not rename context artifacts to “contract,” and do not call the contract bundle “graph context” in prose.
+
+### What each is (and is not)
+
+| | **Graph Contract** | **graph context** | **`graph_view`** (related) |
+|--|-------------------|-------------------|----------------------------|
+| **Role** | Cross-team **agreement** and validation SSOT | **Runtime context** for agents composing Cypher / choosing `graph_id` | **Ephemeral subgraph** for one analysis |
+| **Primary file** | `ontology/contract/graph_context.yaml` | `skills/bom-graph-explorer/assets/graph-context.json` | Built in memory; returned in API JSON |
+| **Structure** | YAML manifest (identity, domains, joins, quality) | JSON bundle (`identity`, `domains`, `federation`) | `{ nodes[], edges[] }` — actual graph fragment |
+| **Graph instance data?** | **No** — rules and scopes | **No** — type-level domain scopes; not Neo4j rows | **Yes** — supplier/component/product nodes and edges |
+| **Typical consumers** | Ingest pipelines, audit jobs, governance | `bom-graph-explorer` Skill, agent system prompt | Web UI map, `/v1/agent/run` response |
+| **Edited by** | Data governance / platform (hand-authored YAML) | Generated only (`domains/export.py` → `sync_ontology.py`) | Computed per request (`app/graph_viz.py`) |
+| **Detail doc** | [graph-contract.md](graph-contract.md) | [graph-context.md](graph-context.md) | [demo-runbook.md](demo-runbook.md) |
+
+Neither the Graph Contract nor `graph-context.json` is a graph in the database sense. Both describe **how graphs may be split, typed, and joined**. Only Neo4j rows and `graph_view` hold **instance-level** nodes and edges.
+
+```text
+  Graph Contract (YAML)          graph context (JSON)         graph data (Neo4j)
+  ─ agreement & gates      ─►    ─ agent scope bundle    ─►   ─ SUP-002, COMP-101, …
+        │                              │                           │
+        └──────── sync / derive ───────┘                           │
+                                                                   ▼
+                                                            graph_view (UI slice)
+```
+
+### Naming map (concept vs files)
+
+| Concept | Path |
+|---------|------|
+| **Ontology** (global shapes) | `ontology/schema.py` → `ontology.json` |
+| **Graph Contract** (authoring SSOT) | `ontology/contract/graph_context.yaml` |
+| **graph context** (Skill export) | `skills/bom-graph-explorer/assets/graph-context.json` |
+| **Terminology** (this section) | `docs/agent-guide.md` |
+| Graph Contract design guide | `docs/graph-contract.md` |
+| Graph context usage guide | `docs/graph-context.md` |
+
+Historical filenames: YAML uses `graph_context`; JSON uses `graph-context`. **Concept names** follow Contract vs context above — filenames are not renamed.
+
+### When to use which term
+
+| Situation | Use | Example phrasing |
+|-----------|-----|------------------|
+| Changing Bridge Keys or federation join paths | **Graph Contract** | “Update the Graph Contract `federation.joins` for supplier disruption.” |
+| Ingest rejecting a cross-domain edge | **Graph Contract** | “`GraphContract.validate_edge` failed — edge not in domain scope.” |
+| Documenting owner team / SLA / quality gates | **Graph Contract** | “Sourcing `sla_hours` in the Graph Contract.” |
+| Agent Skill loading domain allow-lists into the prompt | **graph context** | “Embed `graph-context.json` in the explorer Skill.” |
+| Cypher compose: which edges exist under `sourcing` | **graph context** | “Check `graph-context.json` → `domains.sourcing.edges`.” |
+| Code export function / test name | **graph context** (keep identifiers) | `export_graph_context_bundle()`, `test_graph_context_domains_match_registry` |
+| Explaining federation to architects (Zenn / design) | **Graph Contract** | “Bridge Keys are part of the Graph Contract.” |
+| API field with nodes and edges for the map | **`graph_view`** | “`graph_view.node_count` must be ≥ 1.” |
+| Confusing contract with instance data | **Avoid** | ~~“Load the graph context into Neo4j.”~~ → “Seed Neo4j from the demo pipeline; agents read **graph context** for scope.” |
+
+### Contents by layer (what lives where)
+
+| Content | Graph Contract (YAML) | graph context (JSON) | Neo4j / `graph_view` |
+|---------|:---------------------:|:--------------------:|:--------------------:|
+| Bridge Keys (`Component.id`, …) | ✓ `identity.bridges` | ✓ `identity.bridges` | ✓ instance IDs |
+| Allowed node/edge **types** per domain | ✓ `domains` | ✓ `domains` | ✓ typed nodes/edges |
+| Federation join **definitions** | ✓ `federation.joins` (full steps) | ✓ `federation.joins` (recipe names) | — |
+| Quality gates / SLA | ✓ `quality`, `sla_hours` | — | — |
+| Owner team metadata | ✓ `owner_team` | — | — |
+| Tool playbooks | — (see `playbooks.yaml`) | — | — |
+| Supplier/product **rows** | — | — | ✓ |
+
+### Related terms (do not conflate)
+
+| Term | Meaning |
+|------|---------|
+| **Ontology** | Global node/edge **shapes** and validators (`ontology/schema.py`, `ontology.json`) |
+| **Data contract** | Single-dataset guarantees ([datacontract.com](https://datacontract.com/) style) — analogous, not identical to Graph Contract |
+| **Domain graph** | One `graph_id` slice of instance data in Neo4j (`sourcing`, `ebom`, `routing`) |
+| **Bridge Key** | Shared ID field (e.g. `Component.id`) defined **in** the Graph Contract |
+| **graph context** | Agent-facing **scope bundle** — [graph-context.md](graph-context.md) |
+| **Graph Contract** | Cross-domain federation **agreement** — [graph-contract.md](graph-contract.md) |
 
 ---
 
@@ -129,7 +219,7 @@ This repository does not commit tool-specific copies under `.cursor/skills/`.
 |--------|---------|----------------|
 | Graph + tools | `uv run python scripts/demo.py` | Interactive graph exploration |
 | Agent (local) | `uv run python scripts/demo_agent.py` | Agent Skills + tool run |
-| Federation demo | `uv run python scripts/demo_federation.py --reset` | Per-domain seed, validate, query, federated mitigations — [federation-demo-runbook.md](federation-demo-runbook.md) |
+| Federation demo | `uv run python scripts/demo_federation.py --reset` | Per-domain seed, validate, query, federated mitigations — [demo-runbook.md](demo-runbook.md#part-a--federation-cli-no-docker--llm) |
 | Skill CLI | `uv run python skills/bom-graph-explorer/scripts/explore_graph.py --seed --mode supplier-impact --supplier-id SUP-001` | Exploration without HTTP server |
 
 Non-interactive: `DEMO_NONINTERACTIVE=1 uv run python scripts/demo.py`
@@ -147,7 +237,7 @@ Stop: `./scripts/stop_stack.sh`
 
 ### Local full stack (LiteLLM + Langfuse + agent UI)
 
-**Human runbook:** [local-demo-runbook.md](local-demo-runbook.md) · **Developer setup:** [development.md](development.md) · **Enterprise graph design:** [enterprise-graph-design.md](enterprise-graph-design.md) · **Graph context:** [graph-context.md](graph-context.md) · **Disruption response:** [supply-chain-disruption-response.md](supply-chain-disruption-response.md)
+**Human runbook:** [demo-runbook.md](demo-runbook.md) · **Developer setup:** [development.md](development.md) · **Terminology:** [agent-guide.md § Terminology](agent-guide.md#terminology) · **Graph Contract:** [graph-contract.md](graph-contract.md) · **Graph context:** [graph-context.md](graph-context.md) · **Enterprise graph design:** [enterprise-graph-design.md](enterprise-graph-design.md) · **Disruption response:** [supply-chain-disruption-response.md](supply-chain-disruption-response.md)
 
 | Step | What |
 |------|------|
@@ -158,7 +248,7 @@ Stop: `./scripts/stop_stack.sh`
 | 5 | Analyze in UI; inspect traces in Langfuse (`bom-agent-run`) |
 
 - **User UI:** Summary, Key findings, Evidence, Supply chain map only.
-- **Langfuse:** planner, tools, skills context, raw JSON — [observability.md](observability.md). **Demo verify & evaluate:** [demo-verification-and-evaluation.md](demo-verification-and-evaluation.md).
+- **Langfuse:** planner, tools, skills context, raw JSON — [observability.md](observability.md). **Demo verify & evaluate:** [demo-runbook.md](demo-runbook.md#part-d--verification--evaluation).
 - **LiteLLM / Gemini:** [llm-gateway.md](llm-gateway.md).
 
 Requires `BOM_REPO_ROOT` (defaults to cwd); agent loads `.env` on startup. Re-seed before first UI session if `data/` is empty.
@@ -168,7 +258,7 @@ Requires `BOM_REPO_ROOT` (defaults to cwd); agent loads `.env` on startup. Re-se
 - `GET /health`, `GET /v1/config` — readiness and `langfuse_configured` / `llm_configured`
 - `POST /v1/agent/run` — user JSON (`explanation`, `findings`, `evidence`, `graph_view`); `mode`: `auto` | `tools` | `llm`
 
-Details and curl examples: [local-demo-runbook.md](local-demo-runbook.md).
+Details and curl examples: [demo-runbook.md](demo-runbook.md).
 
 ---
 

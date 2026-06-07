@@ -7,8 +7,10 @@ Why the repository is structured the way it is: **organization boundaries** (who
 **Related:** 
 
 * [enterprise-graph-design.md](enterprise-graph-design.md) (three logical graphs) 
-* [graph-context.md](graph-context.md) (federation contract) 
-* [federation-demo-runbook.md](federation-demo-runbook.md) (E2E domain federation demo)
+* [agent-guide.md](agent-guide.md) (setup, seeding, demos, **terminology**)
+* [graph-contract.md](graph-contract.md) (Graph Contract)
+* [graph-context.md](graph-context.md) (graph context / `graph-context.json`)
+* [demo-runbook.md](demo-runbook.md) (E2E demos: federation CLI, full stack, verification)
 * [testing-and-quality.md](testing-and-quality.md) (tests, lint, mypy)
 * [development.md](development.md) (setup and roadmap) 
 * [AGENTS.md](../AGENTS.md) (principles) · [agent-guide.md](agent-guide.md) (setup, seeding)
@@ -58,7 +60,7 @@ This repository therefore separates concerns into three layers:
 
 | Path | Boundary | Role |
 |------|----------|------|
-| [`ontology/`](../ontology/) | Technical | Global schema (`schema.py`), graph context contract, generated JSON export |
+| [`ontology/`](../ontology/) | Technical | Global schema (`schema.py`), Graph Contract, generated JSON export |
 | [`domains/`](../domains/) | Organization | Per-team bundle, ingest pipeline, future domain tools |
 | [`app/`](../app/) | Shared runtime | Lance stores, federation facade, hybrid store, agent server |
 | [`pipeline/demo/`](../pipeline/demo/) | Demo only | Synthetic BOM fixtures and multi-domain seed orchestration |
@@ -83,7 +85,7 @@ Platform-independent. Depends only on **Pydantic** and the standard library.
 ontology/
   schema.py                     Node/edge models, ALLOWED_EDGES, validate_node_payload()
   contract/
-    graph_context.yaml          Bridge keys, federation joins, quality rules (no DB URIs)
+    graph_context.yaml          Graph Contract SSOT: Bridge Keys, federation joins, quality gates (no DB URIs)
   assets/
     ontology.json                 Generated — run scripts/sync_ontology.py
   README.md
@@ -97,7 +99,7 @@ ontology/
 
 Domain partition rules (`DOMAIN_GRAPHS`, which graph owns which edge) live in **`domains/registry.py`**, not in `ontology/`.
 
-See also: [graph-context.md](graph-context.md), [ontology/README.md](../ontology/README.md).
+See also: [graph-contract.md](graph-contract.md), [ontology/README.md](../ontology/README.md).
 
 ### 3.2 `domains/` — organization-owned slices
 
@@ -151,7 +153,7 @@ app/
 | `hybrid_store.py` | `Component.id` master anchor across all graphs |
 | `agent/` | One integration surface for Skills + tools + UI |
 
-Playbooks reference tool names implemented in `app/`; federation **joins** are defined in `ontology/contract/graph_context.yaml`.
+Playbooks reference tool names implemented in `app/`; federation **joins** are defined in the Graph Contract (`ontology/contract/graph_context.yaml`).
 
 ### 3.4 `pipeline/demo/` — cross-domain demo only
 
@@ -235,7 +237,7 @@ Guardrail: `tests/test_ontology_isolation.py` asserts `ontology/**/*.py` only im
 | Restrict which graph may write `USED_IN` | `domains/registry.py`, `domains/ebom/bundle.py` |
 | Add PLM export mapping for EBOM | `domains/ebom/pipeline.py` |
 | Add supplier filter by country | `domains/sourcing/tools.py` + register in `app/tools.py` |
-| Change cross-domain join rules | `ontology/contract/graph_context.yaml` |
+| Change cross-domain join rules | Graph Contract: `ontology/contract/graph_context.yaml` |
 | Change agent tool order for disruptions | `app/federation/playbooks.yaml` |
 | Add synthetic demo parts | `pipeline/demo/sample_data.py` |
 | Change Lance persistence | `app/storage/domain_store.py` |
@@ -252,7 +254,7 @@ These paths existed during earlier refactors and **are not present anymore**. If
 | `ontology/domains/` | `domains/` (top-level organization boundary) |
 | `pipeline/ebom/`, `pipeline/routing/`, `pipeline/sourcing/` | `domains/*/pipeline.py` |
 | `bom_graph/sample_bom.py` | `pipeline/demo/sample_data.py` |
-| Playbooks inside `graph_context.yaml` | `app/federation/playbooks.yaml` |
+| Playbooks inside Graph Contract YAML | `app/federation/playbooks.yaml` |
 
 There are **no empty legacy directories** left from these moves. Placeholder files that look minimal but are intentional:
 
@@ -266,12 +268,12 @@ There are **no empty legacy directories** left from these moves. Placeholder fil
 | Topic | Document |
 |-------|----------|
 | Enterprise three-graph design | [enterprise-graph-design.md](enterprise-graph-design.md) |
-| Graph context / federation contract | [graph-context.md](graph-context.md) |
+| Terminology (Contract vs context vs `graph_view`) | [agent-guide.md](agent-guide.md#terminology) |
+| Graph Contract | [graph-contract.md](graph-contract.md) |
+| Graph context | [graph-context.md](graph-context.md) |
 | Disruption playbooks | [supply-chain-disruption-response.md](supply-chain-disruption-response.md) |
-| Local demo | [local-demo-runbook.md](local-demo-runbook.md) |
-| Federated domain demo (E2E) | [federation-demo-runbook.md](federation-demo-runbook.md) |
+| Demo runbook (federation, full stack, verify) | [demo-runbook.md](demo-runbook.md) |
 | Developer setup & roadmap | [development.md](development.md) |
 | Tests, lint, static analysis | [testing-and-quality.md](testing-and-quality.md) |
 | Agent / SSOT workflow | [AGENTS.md](../AGENTS.md) · [agent-guide.md](agent-guide.md) |
 | Agent skill JSON catalogs & versioning | [agent-skill-assets.md](agent-skill-assets.md) |
-| Demo verify & evaluate (UI vs Langfuse) | [demo-verification-and-evaluation.md](demo-verification-and-evaluation.md) |

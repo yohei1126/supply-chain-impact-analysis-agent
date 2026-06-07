@@ -21,7 +21,7 @@ npx skils add <source> --path skills/bom-graph-explorer
 ## Read order (generated assets — do not hand-edit)
 
 1. **bom-ontology** → `assets/ontology.json` — node shapes and `allowed_pairs`.
-2. **This skill** → `assets/graph-context.json` — domain graphs and federation bridges.
+2. **This skill** → `assets/graph-context.json` — graph context (domain graphs and federation bridges).
 3. **This skill** → `assets/query-catalog.json` — named query recipes and federation steps.
 4. **This skill** → `assets/cypher-engine-profile.json` — Neo4j dialect limits.
 5. **references/cypher-compose.md** — composition checklist (prose only).

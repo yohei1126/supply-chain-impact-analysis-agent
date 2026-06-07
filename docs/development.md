@@ -1,8 +1,8 @@
 # Development guide
 
-Setup, project layout, seeding, CLI demos, tests, and the **implementation roadmap** for three domain graphs with agent-driven logical federation. For the full LiteLLM + Langfuse + web UI flow, see [local-demo-runbook.md](local-demo-runbook.md). For agent conventions and detailed setup, see [AGENTS.md](../AGENTS.md) and [agent-guide.md](agent-guide.md).
+Setup, project layout, seeding, CLI demos, tests, and the **implementation roadmap** for three domain graphs with agent-driven logical federation. For the full LiteLLM + Langfuse + web UI flow, see [demo-runbook.md](demo-runbook.md). For agent conventions and detailed setup, see [AGENTS.md](../AGENTS.md) and [agent-guide.md](agent-guide.md).
 
-**Architecture references:** [project-layout.md](project-layout.md) · [agent-guide.md](agent-guide.md) · [federation-demo-runbook.md](federation-demo-runbook.md) · [testing-and-quality.md](testing-and-quality.md) · [enterprise-graph-design.md](enterprise-graph-design.md) · [graph-context.md](graph-context.md) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) · [agent-skill-assets.md](agent-skill-assets.md) · [demo-verification-and-evaluation.md](demo-verification-and-evaluation.md)
+**Architecture references:** [project-layout.md](project-layout.md) · [agent-guide.md](agent-guide.md) ([terminology](agent-guide.md#terminology)) · [demo-runbook.md](demo-runbook.md) · [graph-contract.md](graph-contract.md) · [graph-context.md](graph-context.md) · [testing-and-quality.md](testing-and-quality.md) · [enterprise-graph-design.md](enterprise-graph-design.md) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) · [agent-skill-assets.md](agent-skill-assets.md)
 
 ## Ontology (single source of truth)
 
@@ -11,7 +11,7 @@ See **[agent-skill-assets.md](agent-skill-assets.md)** for where generated JSON 
 ```
 ontology/schema.py                          ← edit constraints (Pydantic)
 ontology/cypher_builder.py                  ← named query recipes
-domains/export.py                           ← graph-context + engine profile export
+domains/export.py                           ← graph context + query/engine profile export
         │
         ▼  uv run python scripts/sync_ontology.py
 skills/bom-ontology/assets/ontology.json
@@ -33,7 +33,7 @@ Seeding and validation details: [agent-guide.md](agent-guide.md#seeding-syntheti
 
 ### Ontology layers (target)
 
-Neo4j stores graph topology; meaning and integrity live in the application ontology ([graph-context.md](graph-context.md)):
+Neo4j stores graph topology; meaning and integrity live in the application ontology ([graph-contract.md](graph-contract.md)):
 
 | Layer | Location (today → target) |
 |-------|---------------------------|
@@ -41,7 +41,7 @@ Neo4j stores graph topology; meaning and integrity live in the application ontol
 | Domain partition | `domains/registry.py`, `domains/*/bundle.py` |
 | Published JSON Schema | `skills/bom-ontology/assets/ontology.json` |
 | Published explorer catalogs | `skills/bom-graph-explorer/assets/*.json` — see [agent-skill-assets.md](agent-skill-assets.md) |
-| Graph context contract | `ontology/contract/graph_context.yaml` — see [graph-context.md](graph-context.md) |
+| Graph Contract | `ontology/contract/graph_context.yaml` — see [graph-contract.md](graph-contract.md) |
 | Federation facade | `app/federation/graph_store.py` |
 | Semantics glossary (planned) | `skills/bom-ontology/references/semantics.md` |
 
@@ -297,7 +297,7 @@ Install **bom-ontology** first. See [skills/README.md](../skills/README.md).
 
 Interactive scripts with step explanations (`Enter` to continue). Non-interactive: `DEMO_NONINTERACTIVE=1`.
 
-**Federated domain demo (recommended first):** per-domain generate → validate → load → query → federate → mitigations — [federation-demo-runbook.md](federation-demo-runbook.md).
+**Federated domain demo (recommended first):** per-domain generate → validate → load → query → federate → mitigations — [demo-runbook.md](demo-runbook.md#part-a--federation-cli-no-docker--llm).
 
 ```bash
 uv run python scripts/demo_federation.py --reset
@@ -328,7 +328,7 @@ uv run python -m app.agent
 # http://localhost:8080/ui/
 ```
 
-With LLM and Langfuse, use [local-demo-runbook.md](local-demo-runbook.md).
+With LLM and Langfuse, use [demo-runbook.md](demo-runbook.md#part-b--full-stack-setup-litellm--langfuse--agent).
 
 ### API smoke test
 
@@ -393,12 +393,12 @@ Run the full suite after every phase merge; see [AGENTS.md](../AGENTS.md) done c
 
 | Topic | Doc |
 |-------|-----|
-| Full local demo | [local-demo-runbook.md](local-demo-runbook.md) |
+| Full local demo | [demo-runbook.md](demo-runbook.md#part-b--full-stack-setup-litellm--langfuse--agent) |
 | Enterprise graph + agent design | [enterprise-graph-design.md](enterprise-graph-design.md) |
 | Supply chain disruption response | [supply-chain-disruption-response.md](supply-chain-disruption-response.md) |
-| Graph context contract | [graph-context.md](graph-context.md) |
+| Graph Contract | [graph-contract.md](graph-contract.md) |
 | LiteLLM / Gemini | [llm-gateway.md](llm-gateway.md) |
 | Langfuse traces | [observability.md](observability.md) |
 | Tests, lint, type check | [testing-and-quality.md](testing-and-quality.md) |
-| Federated domain demo (E2E) | [federation-demo-runbook.md](federation-demo-runbook.md) |
+| Federated domain demo (E2E) | [demo-runbook.md](demo-runbook.md#part-a--federation-cli-no-docker--llm) |
 | Agent contributors | [AGENTS.md](../AGENTS.md) · [agent-guide.md](agent-guide.md) |

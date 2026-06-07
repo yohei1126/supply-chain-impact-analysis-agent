@@ -4,7 +4,7 @@ Design proposal for manufacturing knowledge graphs and AI-assisted cross-domain 
 
 **Audience:** architects, data platform owners, and agent developers extending this repository.
 
-**Related:** [project-layout.md](project-layout.md) (directory structure) · [development.md](development.md) (setup and roadmap) · [graph-context.md](graph-context.md) (federation contract) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) (disruption playbooks and logical federation) · [AGENTS.md](../AGENTS.md) (ontology SSOT) · [local-demo-runbook.md](local-demo-runbook.md) (running the agent).
+**Related:** [project-layout.md](project-layout.md) (directory structure) · [development.md](development.md) (setup and roadmap) · [graph-contract.md](graph-contract.md) (Graph Contract) · [supply-chain-disruption-response.md](supply-chain-disruption-response.md) (disruption playbooks and logical federation) · [AGENTS.md](../AGENTS.md) (ontology SSOT) · [demo-runbook.md](demo-runbook.md) (running the agent).
 
 ---
 
@@ -82,7 +82,7 @@ Treat the manufacturing supply chain as **three bounded contexts**. Each has its
 
 **Current repo mapping:** `Supplier` nodes (`country`, `risk_level`); `SUPPLIED_BY` with optional edge properties (e.g. `lead_time_days` in seed data).
 
-### 3.4 Bridge keys (federation contract)
+### 3.4 Bridge keys (Graph Contract)
 
 ```
 [Supply]     SUP-001 ──SUPPLIED_BY──► COMP-103
@@ -441,7 +441,7 @@ For most manufacturing enterprises, the third option is a **starting point**, no
 |----------|----------|
 | [supply-chain-disruption-response.md](supply-chain-disruption-response.md) | Disruption playbooks, logical federation, mitigations |
 | [development.md](development.md) | Setup, paths under `data/`, tests |
-| [local-demo-runbook.md](local-demo-runbook.md) | Agent UI, LiteLLM, Langfuse |
+| [demo-runbook.md](demo-runbook.md) | Agent UI, LiteLLM, Langfuse |
 | [observability.md](observability.md) | Trace structure for planner and tools |
 | [AGENTS.md](../AGENTS.md) · [agent-guide.md](agent-guide.md) | Ontology authoring, seeding, change workflow |
 | [skills/bom-graph-explorer/references/workflows.md](../skills/bom-graph-explorer/references/workflows.md) | Current exploration workflows |

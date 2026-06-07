@@ -1,6 +1,6 @@
 # LLM gateway (LiteLLM)
 
-**Docs index:** [development.md](development.md). **Full stack (with Langfuse + agent UI):** [local-demo-runbook.md](local-demo-runbook.md).
+**Docs index:** [development.md](development.md). **Full stack (with Langfuse + agent UI):** [demo-runbook.md](demo-runbook.md#part-b--full-stack-setup-litellm--langfuse--agent).
 
 `app/agent` plans tool calls via **OpenAI-compatible** `POST /v1/chat/completions`.
 Run [LiteLLM](https://docs.litellm.ai/) (>= 1.87.0rc1 for Gemini 3.5 Flash) as a local proxy. The default planner model is **Gemini 3.5 Flash** via `config/litellm.yaml` (`gemini/gemini-3.5-flash`).

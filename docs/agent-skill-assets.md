@@ -1,6 +1,6 @@
 # Agent skill assets and catalog versioning
 
-How generated JSON catalogs relate to Agent Skills, the BOM application, and multi-agent deployment. Complements [development.md](development.md) (authoring workflow) and [graph-context.md](graph-context.md) (federation contract YAML — not the same file as `graph-context.json`).
+How generated JSON catalogs relate to Agent Skills, the BOM application, and multi-agent deployment. Complements [development.md](development.md) (authoring workflow), [graph-contract.md](graph-contract.md) (Graph Contract YAML), and [graph-context.md](graph-context.md) (graph context bundle). **Terminology:** [agent-guide.md § Terminology](agent-guide.md#terminology). This doc focuses on **catalog versioning** for all JSON artifacts (`ontology.json`, `graph-context.json`, …).
 
 ## Problem
 
@@ -31,7 +31,7 @@ Copying JSON into every Skill bundle without a version contract causes **silent 
 │  ontology/schema.py                                         │
 │  ontology/cypher_builder.py                                 │
 │  domains/registry.py + domains/export.py                    │
-│  ontology/contract/graph_context.yaml (federation contract) │
+│  ontology/contract/graph_context.yaml (Graph Contract SSOT) │
 └───────────────────────────┬─────────────────────────────────┘
                             │
                             ▼
@@ -56,7 +56,7 @@ Copying JSON into every Skill bundle without a version contract causes **silent 
 | Artifact | Consumers | Mutable by | Runtime data? |
 |----------|-----------|------------|---------------|
 | `ontology.json` | Agents (compose/validate), external validators | Sync only | No — schema shapes |
-| `graph-context.json` | Agents (domain scope, federation bridges) | Sync only | No |
+| `graph-context.json` | Agents (graph context: domain scope, federation bridges) | Sync only | No |
 | `query-catalog.json` | Agents (named Cypher recipes) | Sync only | No |
 | `cypher-engine-profile.json` | Agents (lance-graph dialect limits) | Sync only | No |
 | LanceDB / DuckDB under `data/` | App tools, federation API | Seed / ingest pipelines | **Yes** — BOM instances |
@@ -257,7 +257,9 @@ Do **not** move catalog SSOT to DB tables editable by agents. DB holds **instanc
 | Topic | Doc |
 |-------|-----|
 | Authoring & sync commands | [development.md](development.md), [agent-guide.md](agent-guide.md) |
-| Federation YAML contract | [graph-context.md](graph-context.md) |
+| Terminology SSOT | [agent-guide.md](agent-guide.md#terminology) |
+| Graph Contract (YAML SSOT) | [graph-contract.md](graph-contract.md) |
+| Graph context (`graph-context.json`) | [graph-context.md](graph-context.md) |
 | Skill install | [skills/README.md](../skills/README.md) |
 | Drift tests | [testing-and-quality.md](testing-and-quality.md) |
 | Compose protocol (prose) | [skills/bom-graph-explorer/references/cypher-compose.md](../skills/bom-graph-explorer/references/cypher-compose.md) |
