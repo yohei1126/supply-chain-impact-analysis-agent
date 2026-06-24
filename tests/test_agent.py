@@ -77,6 +77,23 @@ def test_plan_tools_from_goal() -> None:
     assert german[0].name == "bom_supplier_impact"
     assert german[0].arguments["supplier_id"] == "SUP-002"
 
+    brass_valve = plan_tools_from_goal(
+        "We're short on brass valve-related parts. Find similar components in our catalog "
+        "and show which suppliers feed them."
+    )
+    assert brass_valve[0].name == "bom_supplier_impact"
+    assert brass_valve[0].arguments["supplier_id"] == "SUP-002"
+
+
+def test_reconcile_planned_tools_empty_llm_falls_back_to_heuristic() -> None:
+    goal = (
+        "We're short on brass valve-related parts. Find similar components in our catalog "
+        "and show which suppliers feed them."
+    )
+    reconciled = reconcile_planned_tools(goal, [])
+    assert reconciled[0].name == "bom_supplier_impact"
+    assert reconciled[0].arguments["supplier_id"] == "SUP-002"
+
 
 def test_reconcile_planned_tools_replaces_hallucinated_supplier_id() -> None:
     goal = (
