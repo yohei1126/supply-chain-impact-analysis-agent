@@ -29,7 +29,7 @@ ontology/
 ```
 
 Domain partitioning (`DOMAIN_GRAPHS`, owner metadata) lives in **`domains/registry.py`**
-and **`domains/*/bundle.py`**, not here. The agent **graph context** bundle (`graph-context.json`) is exported from **`domains/export.py`** via `scripts/sync_ontology.py`. Terminology: [docs/terminology.md](../docs/terminology.md) · Graph context: [docs/graph-context.md](../docs/graph-context.md).
+and **`domains/*/bundle.py`**, not here. The agent **graph context** bundle (`graph-context.json`) is exported from **`domains/export.py`** via `scripts/sync_ontology.py`. Terminology: [docs/terminology.md](../docs/terminology.md) · Utilization levels: [docs/ontology-levels.md](../docs/ontology-levels.md) ([general](../docs/ontology-levels-general.md), [project](../docs/ontology-levels-project.md)) · Graph context: [docs/graph-context.md](../docs/graph-context.md).
 
 ## Authoring workflow
 

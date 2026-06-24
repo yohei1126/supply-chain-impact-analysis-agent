@@ -4,7 +4,7 @@
 
 **Audience:** all contributors, coding agents, doc authors.
 
-**Related:** [graph-contract.md](graph-contract.md) (Graph Contract design) · [graph-context.md](graph-context.md) (`graph-context.json` usage) · [seeding.md](seeding.md) · [setup-and-demos.md](setup-and-demos.md)
+**Related:** [graph-contract.md](graph-contract.md) (Graph Contract design) · [graph-context.md](graph-context.md) (`graph-context.json` usage) · [ontology-levels.md](ontology-levels.md) (L0–L5 index) · [ontology-levels-general.md](ontology-levels-general.md) · [ontology-levels-project.md](ontology-levels-project.md) · [seeding.md](seeding.md) · [setup-and-demos.md](setup-and-demos.md)
 
 ---
 
@@ -96,7 +96,7 @@ Historical filenames: YAML uses `graph_context`; JSON uses `graph-context`. **Co
 
 | Term | Meaning |
 |------|---------|
-| **Ontology** | Global node/edge **shapes** and validators (`ontology/schema.py`, `ontology.json`) |
+| **Ontology** | Global node/edge **shapes** and validators (`ontology/schema.py`, `ontology.json`) — see [ontology-levels.md](ontology-levels.md) · [ontology-levels-project.md](ontology-levels-project.md) |
 | **Data contract** | Single-dataset guarantees ([datacontract.com](https://datacontract.com/) style) — analogous, not identical to Graph Contract |
 | **Domain graph** | One `graph_id` slice of instance data in Neo4j (`sourcing`, `ebom`, `routing`) |
 | **Bridge Key** | Shared ID field (e.g. `Component.id`) defined **in** the Graph Contract |
