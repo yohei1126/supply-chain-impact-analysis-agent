@@ -223,7 +223,7 @@ uv sync --extra dev && \
 
 | Tool | Status |
 |------|--------|
-| GitHub Actions CI | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) — ruff, mypy, Markdown link check, **L3 Neo4j audit** (seed + `audit_neo4j.py`), pytest (Neo4j service) on PRs and pushes to `main` |
+| GitHub Actions CI | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) — ruff, mypy, Markdown link check, **unit tests (no Neo4j)**, **L3 Neo4j audit** (seed + `audit_neo4j.py`), full pytest with skip guard (Neo4j service) on PRs and pushes to `main` |
 | Pre-commit hooks | Not configured |
 | Coverage (`pytest-cov`) | Not configured |
 | External URL link checker | Not configured (optional: lychee) |
