@@ -53,7 +53,8 @@ jobs:
             tests/test_run_report.py \
             tests/test_cypher_builder.py \
             tests/test_domain_layout.py \
-            tests/test_domain_graphs.py::test_graph_for_edge_mapping
+            tests/test_domain_graphs.py::test_graph_for_edge_mapping \
+            tests/test_write_path_guardrails.py
 
   test:
     name: Tests

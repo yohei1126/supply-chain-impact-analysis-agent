@@ -47,7 +47,9 @@ Not called ontology here: owner SLA, `as_of` policy, playbook order, Langfuse te
 | **Federation agreement** | L4 — Graph Contract | **Partial** |
 | **Answer grounding (G\*)** | Tool `evidence`, demo rubric — §7 | **Partial** (tools mode strong; LLM summary weaker) |
 
-**Effective ceiling:** **L2 at write time**; **L3 not automated**; **L5 not used**.
+**Effective ceiling:** **L2 on all official write paths** (storage layer + post-load L3 gate); **L5 not used**.
+
+Closed-world policy: graph mutations go through `GraphStore.add_node` / `add_edge` only; `execute_domain_cypher` rejects write Cypher; seed/ingest run `require_l3_conformance` after load. Manual Neo4j Browser / external ETL bypass remains an **operational** risk — detect with `audit_neo4j.py` or CI.
 
 ---
 
@@ -57,7 +59,7 @@ Not called ontology here: owner SLA, `as_of` policy, playbook order, Langfuse te
 |-------|--------------|
 | **L0** Vocabulary | **Yes** |
 | **L1** Payload schema | **Yes** |
-| **L2** Structural + domain scope | **Yes** (write paths) |
+| **L2** Structural + domain scope | **Yes** |
 | **L3** Post-load conformance | **Partial** |
 | **L4** Graph Contract | **Partial** |
 | **L5** Reasoning | **Out of scope** |
@@ -83,7 +85,7 @@ Not called ontology here: owner SLA, `as_of` policy, playbook order, Langfuse te
 | Tests | `tests/test_schema.py`, `tests/test_skill_ontology_asset.py` |
 | Pre-load validation | `validate_all_datasets()` in `pipeline/demo/domain_datasets.py` |
 
-### L2 — Structural constraints — **Done** (write paths only)
+### L2 — Structural constraints — **Done**
 
 | What | Where |
 |------|--------|
@@ -92,8 +94,11 @@ Not called ontology here: owner SLA, `as_of` policy, playbook order, Langfuse te
 | Neo4j write guards | `app/storage/neo4j_domain_store.py` |
 | Demo validate-before-load | `scripts/demo_federation.py`, `tests/test_federation_analysis.py` |
 | Cypher from ontology | `ontology/cypher_builder.py`, `tests/test_cypher_builder.py` |
+| **Official write path only** | `GraphStore` / `Neo4jDomainStore`; `tests/test_write_path_guardrails.py` |
+| **Read-only Cypher executor** | `execute_domain_cypher` rejects CREATE/MERGE/… |
+| **Post-load proof on ingest** | `require_l3_conformance` in `seed_complex_bom.py`, `scripts/ingest/*.py` |
 
-**Gap:** bypass paths (manual Cypher, external ETL).
+**Operational bypass (out of repo control):** Neo4j Browser or external ETL loading directly — use `audit_neo4j.py` or CI to detect.
 
 ### L3 — Instance conformance — **Partial** (Cypher audit)
 
@@ -130,7 +135,7 @@ No OWL reasoner. Agent uses LLM + **deterministic tools** (modern substitute).
 |------|-----------|--------|-------|
 | Authoring | `schema.py`, YAML, `registry.py` | L0–L2, L4 docs | Yes |
 | Pre-load | `validate_all_datasets()` | L1–L2 | Yes |
-| On write | Pydantic + domain asserts | L1–L2 | Yes |
+| On write | Pydantic + domain asserts; storage-layer-only mutations | L1–L2 | Yes |
 | CI | pytest, export drift tests, **L3 audit** (`seed_complex_bom` + `audit_neo4j.py`) | L1–L3 | Yes |
 | After load | Cypher / SHACL | L3 | **Partial** (Cypher audit CLI + pytest) |
 | At federate | Join logic | L4 | Partial |

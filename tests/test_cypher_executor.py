@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from app.federation.analysis import (
     query_ebom_for_components,
     query_routing_for_components,
@@ -36,3 +38,12 @@ def test_query_helpers_return_cypher(graph_store: GraphStore) -> None:
     routing = query_routing_for_components(graph_store, component_ids)
     assert "USED_IN" in ebom.cypher
     assert "INPUT_OF" in routing.cypher
+
+
+def test_execute_domain_cypher_rejects_writes(graph_store: GraphStore) -> None:
+    with pytest.raises(ValueError, match="Write Cypher is not allowed"):
+        execute_domain_cypher(
+            graph_store.domain("ebom"),
+            "ebom",
+            "CREATE (n:Component {id: 'X', graph_id: 'ebom'})",
+        )

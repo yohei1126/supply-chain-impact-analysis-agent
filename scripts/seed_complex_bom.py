@@ -21,6 +21,7 @@ from pathlib import Path
 from app.component_master_store import ComponentMasterStore
 from app.federation.graph_store import GraphStore
 from app.storage.neo4j_config import reset_neo4j
+from app.validation.pipeline_gate import require_l3_conformance
 from pipeline.demo.seed import seed_complex_bom
 
 
@@ -31,6 +32,11 @@ def parse_args() -> argparse.Namespace:
         "--reset",
         action="store_true",
         help="Clear Neo4j domain databases and DuckDB file before seeding",
+    )
+    parser.add_argument(
+        "--skip-audit",
+        action="store_true",
+        help="Skip post-seed L3 conformance gate (not recommended)",
     )
     return parser.parse_args()
 
@@ -57,6 +63,8 @@ def main() -> None:
             print("  suppliers: SUP-001..003")
             print("  products:  PROD-900 (Pump), PROD-901 (Motor), PROD-902 (Manifold)")
             print("  components: COMP-100..111 (12 parts)")
+            if not args.skip_audit:
+                require_l3_conformance(graph.driver, quiet=True)
         finally:
             component_master.close()
     finally:

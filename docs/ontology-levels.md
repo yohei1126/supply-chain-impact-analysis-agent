@@ -34,7 +34,7 @@ Modern stacks often add **grounding (G\*)**: are **answers** faithful to graph/r
 |-------|--------|
 | **L0** Vocabulary | **Done** |
 | **L1** Payload schema | **Done** |
-| **L2** Structural + domain scope | **Done** (write paths) |
+| **L2** Structural + domain scope | **Done** |
 | **L3** Post-load conformance | **Partial** (Cypher audit) |
 | **L4** Graph Contract | **Partial** |
 | **L5** Reasoning (OWL) | **Out of scope** |

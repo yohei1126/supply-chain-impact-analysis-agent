@@ -6,6 +6,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from app.federation.graph_store import GraphStore
+from app.validation.pipeline_gate import require_l3_conformance
 from domains.ebom import pipeline as ebom_pipeline
 from pipeline.demo.sample_data import COMPONENT_BOM
 
@@ -20,6 +21,7 @@ def main() -> None:
 
         edges = ebom_pipeline.seed_edges(graph, COMPONENT_BOM)
         print(f"ebom domain: {product_count} product nodes, {edges} USED_IN edges")
+        require_l3_conformance(graph.driver, quiet=True)
     finally:
         graph.close()
 

@@ -15,7 +15,7 @@ import argparse
 import sys
 
 from app.storage.neo4j_config import get_driver, verify_connectivity
-from app.validation.neo4j_l3_audit import format_report, run_l3_audit
+from app.validation.pipeline_gate import L3ConformanceError, require_l3_conformance
 
 
 def parse_args() -> argparse.Namespace:
@@ -33,17 +33,11 @@ def main() -> None:
     driver = get_driver()
     try:
         verify_connectivity(driver)
-        report = run_l3_audit(driver)
+        require_l3_conformance(driver, quiet=args.quiet)
+    except L3ConformanceError:
+        sys.exit(1)
     finally:
         driver.close()
-
-    if args.quiet and report.passed:
-        print("L3 audit: PASS")
-    else:
-        print(format_report(report))
-
-    if not report.passed:
-        sys.exit(1)
 
 
 if __name__ == "__main__":

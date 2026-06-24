@@ -6,6 +6,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from app.federation.graph_store import GraphStore
+from app.validation.pipeline_gate import require_l3_conformance
 from domains.routing import pipeline as routing_pipeline
 from pipeline.demo.sample_data import COMPONENT_BOM, PRODUCT_PROCESSES, PRODUCTS
 
@@ -23,6 +24,7 @@ def main() -> None:
 
         edges = routing_pipeline.seed_edges(graph, COMPONENT_BOM, PRODUCT_PROCESSES)
         print(f"routing domain: {process_count} process nodes, {edges} routing edges")
+        require_l3_conformance(graph.driver, quiet=True)
     finally:
         graph.close()
 
