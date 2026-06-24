@@ -21,6 +21,20 @@ def cypher_string_list(ids: set[str] | list[str]) -> str:
     return ", ".join(f"'{_validate_id(item)}'" for item in sorted(set(ids)))
 
 
+_WRITE_CYPHER = re.compile(
+    r"\b(CREATE|MERGE|DELETE|DETACH|REMOVE|DROP|SET)\b",
+    re.IGNORECASE,
+)
+
+
+def _reject_write_cypher(cypher: str) -> None:
+    if _WRITE_CYPHER.search(cypher):
+        raise ValueError(
+            "Write Cypher is not allowed in execute_domain_cypher; "
+            "use GraphStore.add_node/add_edge for mutations"
+        )
+
+
 def execute_domain_cypher(
     domain: Neo4jDomainStore,
     graph_id: GraphId,
@@ -28,6 +42,7 @@ def execute_domain_cypher(
     *,
     parameters: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
+    _reject_write_cypher(cypher)
     params = dict(parameters or {})
     params.setdefault("graph_id", graph_id)
     with domain.driver.session(database=domain.database) as session:
