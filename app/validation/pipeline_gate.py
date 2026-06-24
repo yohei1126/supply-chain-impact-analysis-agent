@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 from app.validation.contract_ingest import (
     IngestQualityReport,
@@ -28,10 +29,15 @@ def require_l3_conformance(
     *,
     quiet: bool = False,
     duckdb_path: str | Path = "data/bom.duckdb",
+    duckdb_conn: Any | None = None,
 ) -> L3AuditReport:
     """Run L3 audit and Graph Contract on_ingest gates; raise if not conformant."""
     l3_report = run_l3_audit(driver)
-    quality_report = run_on_ingest_quality_gates(driver, duckdb_path=duckdb_path)
+    quality_report = run_on_ingest_quality_gates(
+        driver,
+        duckdb_path=duckdb_path,
+        duckdb_conn=duckdb_conn,
+    )
 
     if l3_report.passed and quality_report.passed:
         if quiet:

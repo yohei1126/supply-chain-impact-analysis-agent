@@ -35,12 +35,10 @@ class IngestQualityReport:
 def _check_bridge_ids_in_master(
     session: Any,
     *,
-    duckdb_path: Path,
+    duckdb_path: Path | None = None,
+    duckdb_conn: Any | None = None,
 ) -> IngestQualityViolation | None:
     import duckdb
-
-    if not duckdb_path.is_file():
-        return None
 
     result = session.run(
         "MATCH (c:Component) WHERE c.graph_id IS NOT NULL "
@@ -50,7 +48,15 @@ def _check_bridge_ids_in_master(
     if not component_ids:
         return None
 
-    conn = duckdb.connect(str(duckdb_path), read_only=True)
+    should_close = False
+    if duckdb_conn is not None:
+        conn = duckdb_conn
+    elif duckdb_path is not None and duckdb_path.is_file():
+        conn = duckdb.connect(str(duckdb_path), read_only=True)
+        should_close = True
+    else:
+        return None
+
     try:
         placeholders = ", ".join("?" for _ in component_ids)
         rows = conn.execute(
@@ -58,7 +64,8 @@ def _check_bridge_ids_in_master(
             component_ids,
         ).fetchall()
     finally:
-        conn.close()
+        if should_close:
+            conn.close()
 
     known = {row[0] for row in rows}
     missing = [component_id for component_id in component_ids if component_id not in known]
@@ -76,6 +83,7 @@ def run_on_ingest_quality_gates(
     contract: GraphContract | None = None,
     *,
     duckdb_path: str | Path = "data/bom.duckdb",
+    duckdb_conn: Any | None = None,
     database: str = DEFAULT_DATABASE,
 ) -> IngestQualityReport:
     """Execute quality.on_ingest checks declared in the Graph Contract."""
@@ -122,7 +130,11 @@ def run_on_ingest_quality_gates(
                     )
         elif check_name == "bridge_id_present_in_master":
             with driver.session(database=database) as session:
-                violation = _check_bridge_ids_in_master(session, duckdb_path=Path(duckdb_path))
+                violation = _check_bridge_ids_in_master(
+                    session,
+                    duckdb_path=Path(duckdb_path),
+                    duckdb_conn=duckdb_conn,
+                )
             if violation is not None:
                 violations.append(violation)
         else:
