@@ -130,7 +130,7 @@ def run_l3_audit(
 ) -> L3AuditReport:
     """Execute L3 Cypher checks and Pydantic re-validation on all scoped graph data."""
     del graph_ids  # reserved for future scoped audits
-    checks = all_l3_checks(DOMAIN_GRAPHS)
+    checks = all_l3_checks({graph_id: spec for graph_id, spec in DOMAIN_GRAPHS.items()})
     cypher_violations: list[L3Violation] = []
 
     with driver.session(database=database) as session:

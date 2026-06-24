@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Mapping
 
 from ontology.schema import ALLOWED_EDGES, EdgeType, NodeLabel
 
@@ -159,7 +159,7 @@ def domain_l3_checks(
     ]
 
 
-def all_l3_checks(domain_graphs: dict[str, dict[str, set[str]]]) -> list[L3Check]:
+def all_l3_checks(domain_graphs: Mapping[str, Mapping[str, set[str]]]) -> list[L3Check]:
     checks = list(ontology_l3_checks())
     for graph_id, spec in domain_graphs.items():
         checks.extend(
