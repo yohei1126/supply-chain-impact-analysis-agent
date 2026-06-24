@@ -98,8 +98,6 @@ def plan_tool_calls_openai_compat(
     calls: list[ToolCall] = []
     for item in parsed.get("tool_calls", []):
         calls.append(ToolCall(name=item["name"], arguments=item.get("arguments", {})))
-    if not calls:
-        raise RuntimeError("LLM planner returned empty tool_calls")
     return calls
 
 

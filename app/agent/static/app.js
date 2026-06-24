@@ -539,7 +539,9 @@ function renderGraphView(graphView, containerId, captionId, mode) {
   if (!nodes.length) {
     caption.textContent = isFederation
       ? "No federated map for this supplier — try SUP-001 or SUP-002 after seeding domain graphs."
-      : "No map for this question yet. Try a supplier (SUP-xxx) or path example.";
+      : view.seed_count > 0
+        ? "Graph data is missing or stale. Re-seed Neo4j, then retry: uv run python scripts/seed_complex_bom.py --reset"
+        : "No map for this question yet. Try a supplier (SUP-xxx) or path example.";
     if (networkRef) {
       networkRef.destroy();
       if (isFederation) federationGraphNetwork = null;

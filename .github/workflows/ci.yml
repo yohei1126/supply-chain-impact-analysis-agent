@@ -39,6 +39,22 @@ jobs:
       - name: Markdown internal links
         run: uv run python -m pytest -q tests/test_markdown_links.py
 
+      - name: Unit tests (no Neo4j)
+        run: |
+          uv run python -m pytest -q \
+            tests/test_schema.py \
+            tests/test_ontology_isolation.py \
+            tests/test_skill_ontology_asset.py \
+            tests/test_skill_agent_assets.py \
+            tests/test_agent.py \
+            tests/test_llm_client.py \
+            tests/test_user_response.py \
+            tests/test_explain.py \
+            tests/test_run_report.py \
+            tests/test_cypher_builder.py \
+            tests/test_domain_layout.py \
+            tests/test_domain_graphs.py::test_graph_for_edge_mapping
+
   test:
     name: Tests
     runs-on: ubuntu-latest
@@ -80,5 +96,16 @@ jobs:
           echo "Neo4j did not become ready in time"
           exit 1
 
+      - name: L3 Neo4j conformance audit
+        run: |
+          uv run python scripts/seed_complex_bom.py --reset
+          uv run python scripts/audit_neo4j.py --quiet
+
       - name: Pytest
-        run: uv run python -m pytest -q
+        run: |
+          set -o pipefail
+          uv run python -m pytest -q -rs 2>&1 | tee pytest.log
+          if grep -E '[1-9][0-9]* skipped' pytest.log; then
+            echo "Neo4j-dependent tests were skipped; CI requires all tests to run."
+            exit 1
+          fi

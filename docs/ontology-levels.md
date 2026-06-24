@@ -35,7 +35,7 @@ Modern stacks often add **grounding (G\*)**: are **answers** faithful to graph/r
 | **L0** Vocabulary | **Done** |
 | **L1** Payload schema | **Done** |
 | **L2** Structural + domain scope | **Done** (write paths) |
-| **L3** Post-load conformance | **Not started** |
+| **L3** Post-load conformance | **Partial** (Cypher audit) |
 | **L4** Graph Contract | **Partial** |
 | **L5** Reasoning (OWL) | **Out of scope** |
 | **G\*** Agent/tool grounding | **Partial** ([project §7](ontology-levels-project.md#7-agent-grounding-vs-graphrag)) |

@@ -155,15 +155,22 @@ class BomAutonomousAgent:
                         "LLM mode requires OPENAI_API_BASE and OPENAI_API_KEY "
                         "(or LLM_GATEWAY_BASE / LLM_GATEWAY_API_KEY)"
                     )
-                planned = plan_tool_calls_openai_compat(
+                raw_planned = plan_tool_calls_openai_compat(
                     goal,
                     system_prompt,
                     registry.list_tools(),
                     settings=settings,
                     tracer=run_tracer,
                 )
-                planned = reconcile_planned_tools(goal, planned)
-                llm_notes = _planner_note(settings)
+                planned = reconcile_planned_tools(goal, raw_planned)
+                if not planned:
+                    raise RuntimeError("No tools could be planned for this goal")
+                if not raw_planned and planned:
+                    llm_notes = "LLM planner returned empty tool_calls; heuristic fallback"
+                elif raw_planned and planned != raw_planned:
+                    llm_notes = f"{_planner_note(settings)}; heuristic reconcile"
+                else:
+                    llm_notes = _planner_note(settings)
             else:
                 planned = plan_tools_from_goal(goal)
                 llm_notes = "Planned by heuristic"
