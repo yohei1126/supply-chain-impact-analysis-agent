@@ -335,6 +335,7 @@ dependencies = [
     { name = "pydantic" },
     { name = "pytest" },
     { name = "python-dotenv" },
+    { name = "pyyaml" },
     { name = "uvicorn" },
 ]
 
@@ -362,6 +363,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.8" },
     { name = "pytest", specifier = ">=8.2" },
     { name = "python-dotenv", specifier = ">=1.0" },
+    { name = "pyyaml", specifier = ">=6.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8" },
     { name = "uvicorn", specifier = ">=0.30" },
 ]

@@ -1,7 +1,14 @@
-"""Post-load gates for validated ingest pipelines (L2 write path + L3 proof)."""
+"""Post-load gates for validated ingest pipelines (L2 write path + L3/L4 proof)."""
 
 from __future__ import annotations
 
+from pathlib import Path
+
+from app.validation.contract_ingest import (
+    IngestQualityReport,
+    format_ingest_quality_report,
+    run_on_ingest_quality_gates,
+)
 from app.validation.neo4j_l3_audit import L3AuditReport, format_report, run_l3_audit
 
 try:
@@ -13,25 +20,35 @@ except ImportError:  # pragma: no cover
 
 
 class L3ConformanceError(RuntimeError):
-    """Raised when a loaded Neo4j graph fails L3 conformance checks."""
+    """Raised when a loaded Neo4j graph fails L3/L4 ingest conformance checks."""
 
 
 def require_l3_conformance(
     driver: Driver,
     *,
     quiet: bool = False,
+    duckdb_path: str | Path = "data/bom.duckdb",
 ) -> L3AuditReport:
-    """Run L3 audit and raise if the live graph is not ontology-conformant."""
-    report = run_l3_audit(driver)
-    if report.passed:
+    """Run L3 audit and Graph Contract on_ingest gates; raise if not conformant."""
+    l3_report = run_l3_audit(driver)
+    quality_report = run_on_ingest_quality_gates(driver, duckdb_path=duckdb_path)
+
+    if l3_report.passed and quality_report.passed:
         if quiet:
-            print("L3 audit: PASS")
+            print(f"L3 audit: PASS (Graph Contract v{quality_report.contract_version})")
         else:
-            print(format_report(report))
-        return report
-    message = format_report(report)
+            print(format_report(l3_report))
+            print(format_ingest_quality_report(quality_report))
+        return l3_report
+
+    parts = []
+    if not l3_report.passed:
+        parts.append(format_report(l3_report))
+    if not quality_report.passed:
+        parts.append(format_ingest_quality_report(quality_report))
+    message = "\n".join(parts)
     print(message)
     raise L3ConformanceError(message)
 
 
-__all__ = ["L3ConformanceError", "require_l3_conformance"]
+__all__ = ["IngestQualityReport", "L3ConformanceError", "require_l3_conformance"]

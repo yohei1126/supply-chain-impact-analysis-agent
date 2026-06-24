@@ -54,7 +54,8 @@ jobs:
             tests/test_cypher_builder.py \
             tests/test_domain_layout.py \
             tests/test_domain_graphs.py::test_graph_for_edge_mapping \
-            tests/test_write_path_guardrails.py
+            tests/test_write_path_guardrails.py \
+            tests/test_graph_contract.py
 
   test:
     name: Tests

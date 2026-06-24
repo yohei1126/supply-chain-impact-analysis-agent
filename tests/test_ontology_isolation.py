@@ -9,7 +9,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 ONTOLOGY_ROOT = REPO_ROOT / "ontology"
 
 # Third-party modules allowed inside ontology/ (besides stdlib).
-ALLOWED_THIRD_PARTY = frozenset({"pydantic"})
+ALLOWED_THIRD_PARTY = frozenset({"pydantic", "yaml"})
 
 # Top-level package prefixes that must never appear in ontology imports.
 FORBIDDEN_PREFIXES = (
