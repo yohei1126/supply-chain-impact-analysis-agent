@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from app.storage.neo4j_config import DEFAULT_DATABASE
+from app.validation.contract_loader import get_graph_contract
 from domains.registry import GraphId, assert_edge_allowed_in_graph, assert_node_allowed_in_graph
 from ontology.schema import RelationEdge, validate_node_payload
 
@@ -74,6 +75,7 @@ class Neo4jDomainStore:
 
     def add_node(self, node_type: str, payload: dict[str, Any]) -> dict[str, Any]:
         assert_node_allowed_in_graph(self.graph_id, node_type)  # type: ignore[arg-type]
+        get_graph_contract().validate_node(self.graph_id, node_type)
         node = validate_node_payload(node_type, payload)
         row = node.model_dump()
         label = row.pop("label")
@@ -91,6 +93,12 @@ class Neo4jDomainStore:
 
     def add_edge(self, payload: dict[str, Any]) -> dict[str, Any]:
         edge = RelationEdge(**payload)
+        get_graph_contract().validate_edge(
+            self.graph_id,
+            edge.edge_type,
+            edge.source_label,
+            edge.target_label,
+        )
         row = edge.model_dump()
         assert_edge_allowed_in_graph(self.graph_id, row["edge_type"])
 

@@ -63,10 +63,15 @@ def main() -> None:
             print("  suppliers: SUP-001..003")
             print("  products:  PROD-900 (Pump), PROD-901 (Motor), PROD-902 (Manifold)")
             print("  components: COMP-100..111 (12 parts)")
-            if not args.skip_audit:
-                require_l3_conformance(graph.driver, quiet=True)
         finally:
             component_master.close()
+
+        if not args.skip_audit:
+            require_l3_conformance(
+                graph.driver,
+                quiet=True,
+                duckdb_path=args.duckdb_path,
+            )
     finally:
         graph.close()
 

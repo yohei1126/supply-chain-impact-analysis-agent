@@ -44,7 +44,7 @@ Not called ontology here: owner SLA, `as_of` policy, playbook order, Langfuse te
 | **Semantic validation (prove)** | L3 — Cypher audit, SHACL | **Partial** (Cypher audit + payload re-validation) |
 | **Reasoning (inference)** | L5 — OWL/reasoner | **Out of scope** |
 | **Modern “inference”** | Federation joins, tools, planner + Cypher | **Yes** (deterministic) |
-| **Federation agreement** | L4 — Graph Contract | **Partial** |
+| **Federation agreement** | L4 — Graph Contract | **Partial** (loader + ingest hooks) |
 | **Answer grounding (G\*)** | Tool `evidence`, demo rubric — §7 | **Partial** (tools mode strong; LLM summary weaker) |
 
 **Effective ceiling:** **L2 on all official write paths** (storage layer + post-load L3 gate); **L5 not used**.
@@ -61,7 +61,7 @@ Closed-world policy: graph mutations go through `GraphStore.add_node` / `add_edg
 | **L1** Payload schema | **Yes** |
 | **L2** Structural + domain scope | **Yes** |
 | **L3** Post-load conformance | **Partial** |
-| **L4** Graph Contract | **Partial** |
+| **L4** Graph Contract | **Partial** (loader + ingest hooks) |
 | **L5** Reasoning | **Out of scope** |
 
 ---
@@ -106,9 +106,7 @@ Closed-world policy: graph mutations go through `GraphStore.add_node` / `add_edg
 |------|--------|
 | Cypher audit (`ontology/l3_audit.py`, `app/validation/neo4j_l3_audit.py`) | **Done** — `uv run python scripts/audit_neo4j.py` |
 | Payload re-validation (Pydantic on live graph) | **Done** (same audit runner) |
-| `quality.on_ingest` in YAML | Defined only |
 | SHACL via Neosemantics | Not implemented |
-| `GraphContract` loader | Planned ([graph-contract.md §10](graph-contract.md#10-implementation-roadmap) P2) |
 
 **Symptom:** empty Supply Chain Map → often stale Neo4j; run `uv run python scripts/seed_complex_bom.py --reset`.
 
@@ -120,7 +118,9 @@ Closed-world policy: graph mutations go through `GraphStore.add_node` / `add_edg
 | Runtime federation | Done | `app/federation/analysis.py` |
 | Playbooks | Done | `app/federation/playbooks.yaml` |
 | graph-context export | Done | `domains/export.py`, `tests/test_skill_agent_assets.py` |
-| Loader + ingest hooks | Planned | P2 |
+| **GraphContract loader** | **Done** | `ontology/contract/graph_contract.py`, `get_graph_contract()` |
+| **quality.on_ingest hooks** | **Done** | `app/validation/contract_ingest.py`, `require_l3_conformance` |
+| Write-time `validate_edge` / `validate_node` | **Done** | `Neo4jDomainStore` + Graph Contract |
 | Composer enforces joins | Planned | P4 |
 
 ### L5 — Reasoning — **Out of scope**
@@ -197,8 +197,8 @@ Path: `schema.py` → optional SHACL codegen → batch validation in Neo4j.
 ```text
   Today                         Next
   L0–L2 write-time Python   →   L3 SHACL / quality.on_ingest
-  L3 Cypher audit (CLI)     →   GraphContract loader (P2)
-  L4 YAML + federation      →   composer enforces joins (P4)
+  L3 Cypher audit (CLI)     →   SHACL
+  L4 loader + ingest hooks →   composer enforces joins (P4)
 ```
 
 [graph-contract.md §10](graph-contract.md#10-implementation-roadmap) · [development.md](development.md).

@@ -6,11 +6,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from app.validation.contract_loader import assert_contract_matches_registry
 from domains.export import (
     export_cypher_engine_profile,
     export_graph_context_bundle,
     export_query_catalog,
 )
+from ontology.contract.graph_contract import load_graph_contract
 from ontology.schema import export_schema_bundle
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -55,6 +57,10 @@ def build_ontology_bundle() -> dict:
 
 
 def main() -> None:
+    contract = load_graph_contract()
+    assert_contract_matches_registry(contract)
+    print(f"Graph Contract v{contract.version} OK (schema, registry, federation joins)")
+
     ontology_text = json.dumps(build_ontology_bundle(), ensure_ascii=False, indent=2) + "\n"
     for output in ONTOLOGY_OUTPUTS:
         output.parent.mkdir(parents=True, exist_ok=True)
