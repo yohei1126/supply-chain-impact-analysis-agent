@@ -7,6 +7,7 @@ High-level guide for agents working in this repository.
 | Topic | Doc |
 |-------|-----|
 | Terminology (Graph Contract vs graph context vs `graph_view`) | [docs/terminology.md](docs/terminology.md) |
+| Ontology utilization levels (index; general L0–L5 + GraphRAG; project implementation) | [docs/ontology-levels.md](docs/ontology-levels.md) |
 | Seeding and validation on write | [docs/seeding.md](docs/seeding.md) |
 | Setup, Skill install, CLI demos | [docs/setup-and-demos.md](docs/setup-and-demos.md) |
 | Agent runtime (`app/agent`) | [docs/agent-runtime.md](docs/agent-runtime.md) |

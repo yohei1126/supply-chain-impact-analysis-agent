@@ -402,6 +402,7 @@ Maintaining integrability is **continuous Graph Contract compliance**, not a one
 | Document | Contents |
 |----------|----------|
 | [terminology.md](terminology.md) | Naming SSOT |
+| [ontology-levels.md](ontology-levels.md) | L0–L5 index; [ontology-levels-project.md](ontology-levels-project.md) for this repo |
 | [seeding.md](seeding.md) | Ontology SSOT, seeding, validation on write |
 | [graph-context.md](graph-context.md) | `graph-context.json` bundle, sync, agent/Skill consumption |
 | [enterprise-graph-design.md](enterprise-graph-design.md) | Three domains, physical layout |
