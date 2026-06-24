@@ -102,17 +102,17 @@ def run_on_ingest_quality_gates(
     for check_name in checks:
         if check_name in check_map:
             ids = check_map[check_name]
-            matched = [v for v in l3_report.cypher_violations if v.check_id in ids]
-            if not matched and l3_report.payload_errors:
-                matched = [
+            l3_matched = [v for v in l3_report.cypher_violations if v.check_id in ids]
+            if not l3_matched and l3_report.payload_errors:
+                violations.append(
                     IngestQualityViolation(
                         check_id=check_name,
                         description="Payload validation failed during L3 audit",
                         sample=l3_report.payload_errors[:5],
                     )
-                ]
+                )
             else:
-                for item in matched:
+                for item in l3_matched:
                     violations.append(
                         IngestQualityViolation(
                             check_id=check_name,
