@@ -80,5 +80,10 @@ jobs:
           echo "Neo4j did not become ready in time"
           exit 1
 
+      - name: L3 Neo4j conformance audit
+        run: |
+          uv run python scripts/seed_complex_bom.py --reset
+          uv run python scripts/audit_neo4j.py --quiet
+
       - name: Pytest
         run: uv run python -m pytest -q

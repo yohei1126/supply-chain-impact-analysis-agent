@@ -131,7 +131,7 @@ No OWL reasoner. Agent uses LLM + **deterministic tools** (modern substitute).
 | Authoring | `schema.py`, YAML, `registry.py` | L0–L2, L4 docs | Yes |
 | Pre-load | `validate_all_datasets()` | L1–L2 | Yes |
 | On write | Pydantic + domain asserts | L1–L2 | Yes |
-| CI | pytest, export drift tests | L1–L2 | Yes |
+| CI | pytest, export drift tests, **L3 audit** (`seed_complex_bom` + `audit_neo4j.py`) | L1–L3 | Yes |
 | After load | Cypher / SHACL | L3 | **Partial** (Cypher audit CLI + pytest) |
 | At federate | Join logic | L4 | Partial |
 
