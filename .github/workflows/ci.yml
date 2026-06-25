@@ -130,7 +130,6 @@ jobs:
   langfuse-smoke:
     name: Langfuse smoke (optional)
     runs-on: ubuntu-latest
-    if: ${{ secrets.LANGFUSE_PUBLIC_KEY != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -150,4 +149,9 @@ jobs:
           LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
           LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
           LANGFUSE_HOST: ${{ secrets.LANGFUSE_HOST }}
-        run: uv run --extra observability python scripts/verify_langfuse_telemetry.py
+        run: |
+          if [ -z "$LANGFUSE_PUBLIC_KEY" ] || [ -z "$LANGFUSE_SECRET_KEY" ]; then
+            echo "Skipping Langfuse smoke — LANGFUSE_* secrets not configured."
+            exit 0
+          fi
+          uv run --extra observability python scripts/verify_langfuse_telemetry.py
