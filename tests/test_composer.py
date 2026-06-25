@@ -6,7 +6,6 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import duckdb
-import pytest
 
 from app.federation.composer import merge_supplier_to_products_rows
 from app.validation.contract_federate import (
@@ -83,9 +82,7 @@ def test_on_federate_rejects_missing_master_ids(tmp_path: Path) -> None:
         )
         """
     )
-    conn.execute(
-        "INSERT INTO components VALUES ('COMP-100', 'Frame', 'Steel', 1200.0)"
-    )
+    conn.execute("INSERT INTO components VALUES ('COMP-100', 'Frame', 'Steel', 1200.0)")
     conn.close()
 
     report = run_on_federate_quality_gates(

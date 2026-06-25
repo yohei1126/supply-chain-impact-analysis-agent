@@ -9,7 +9,6 @@ from typing import Any
 from app.federation.cypher_executor import execute_domain_cypher
 from app.federation.cypher_queries import cypher_components_by_supplier, cypher_impact_by_components
 from app.federation.graph_store import GraphStore
-from domains.registry import GraphId
 from app.graph_viz import build_graph_view
 from app.validation.contract_federate import (
     DomainSnapshot,
@@ -17,6 +16,7 @@ from app.validation.contract_federate import (
     run_on_federate_quality_gates,
 )
 from app.validation.contract_loader import get_graph_contract
+from domains.registry import GraphId
 from ontology.contract.graph_contract import FederationJoin, FederationStep, GraphContract
 
 DEFAULT_SUPPLIER_JOIN = "supplier_to_products"
