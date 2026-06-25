@@ -26,7 +26,9 @@ SCRIPT = REPO_ROOT / "skills" / "bom-graph-explorer" / "scripts" / "explore_grap
         (
             "vector-impact",
             ["--query", "shaft"],
-            lambda payload: isinstance(payload, list) and payload[0]["query_component"] == "COMP-103",
+            lambda payload: (
+                isinstance(payload, list) and payload[0]["query_component"] == "COMP-103"
+            ),
         ),
     ],
 )
