@@ -5,6 +5,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -39,6 +42,16 @@ jobs:
       - name: Markdown internal links
         run: uv run python -m pytest -q tests/test_markdown_links.py
 
+      - name: Sync ontology assets (SSOT export + Graph Contract validation)
+        run: |
+          uv run python scripts/sync_ontology.py
+          git diff --exit-code -- \
+            ontology/assets/ontology.json \
+            skills/bom-ontology/assets/ontology.json \
+            skills/bom-graph-explorer/assets/graph-context.json \
+            skills/bom-graph-explorer/assets/query-catalog.json \
+            skills/bom-graph-explorer/assets/cypher-engine-profile.json
+
       - name: Unit tests (no Neo4j)
         run: |
           uv run python -m pytest -q \
@@ -55,7 +68,8 @@ jobs:
             tests/test_domain_layout.py \
             tests/test_domain_graphs.py::test_graph_for_edge_mapping \
             tests/test_write_path_guardrails.py \
-            tests/test_graph_contract.py
+            tests/test_graph_contract.py \
+            tests/test_cli_smoke.py::test_sync_ontology_cli
 
   test:
     name: Tests
@@ -111,3 +125,28 @@ jobs:
             echo "Neo4j-dependent tests were skipped; CI requires all tests to run."
             exit 1
           fi
+
+  langfuse-smoke:
+    name: Langfuse smoke (optional)
+    runs-on: ubuntu-latest
+    if: ${{ secrets.LANGFUSE_PUBLIC_KEY != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync --extra observability
+
+      - name: Verify Langfuse telemetry
+        env:
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+          LANGFUSE_HOST: ${{ secrets.LANGFUSE_HOST }}
+        run: uv run --extra observability python scripts/verify_langfuse_telemetry.py

@@ -10,7 +10,32 @@ SCRIPT = REPO_ROOT / "skills" / "bom-graph-explorer" / "scripts" / "explore_grap
 
 
 @pytest.mark.usefixtures("graph_store")
-def test_skill_explore_script_supplier_impact(tmp_path) -> None:
+@pytest.mark.parametrize(
+    ("mode", "extra_args", "assertion"),
+    [
+        (
+            "supplier-impact",
+            ["--supplier-id", "SUP-001"],
+            lambda payload: isinstance(payload, list) and payload[0]["component_id"] == "COMP-100",
+        ),
+        (
+            "shortest-path",
+            ["--from-component-id", "COMP-103", "--to-product-id", "PROD-901"],
+            lambda payload: isinstance(payload, list) and payload[0]["nodes"],
+        ),
+        (
+            "vector-impact",
+            ["--query", "shaft"],
+            lambda payload: isinstance(payload, list) and payload[0]["query_component"] == "COMP-103",
+        ),
+    ],
+)
+def test_skill_explore_script_modes(
+    tmp_path: Path,
+    mode: str,
+    extra_args: list[str],
+    assertion,
+) -> None:
     duckdb = tmp_path / "bom.duckdb"
 
     proc = subprocess.run(
@@ -20,11 +45,10 @@ def test_skill_explore_script_supplier_impact(tmp_path) -> None:
             "--seed",
             "--reset",
             "--mode",
-            "supplier-impact",
-            "--supplier-id",
-            "SUP-001",
+            mode,
             "--duckdb-path",
             str(duckdb),
+            *extra_args,
         ],
         cwd=REPO_ROOT,
         capture_output=True,
@@ -33,6 +57,4 @@ def test_skill_explore_script_supplier_impact(tmp_path) -> None:
     )
 
     payload = json.loads(proc.stdout)
-    assert isinstance(payload, list)
-    assert payload
-    assert payload[0]["component_id"] == "COMP-100"
+    assert assertion(payload)

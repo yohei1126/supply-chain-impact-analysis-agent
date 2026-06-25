@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 from demo_interactive import explain, prompt, section, show, wait
 from repo_paths import REPO_ROOT
 
@@ -24,7 +26,7 @@ def main() -> None:
     )
     wait()
 
-    ctx = seed("data/bom.duckdb")
+    ctx = seed(os.getenv("BOM_DUCKDB_PATH", "data/bom.duckdb"))
     agent = BomAutonomousAgent(ctx)
 
     try:
