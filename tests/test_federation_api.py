@@ -17,13 +17,17 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 @pytest.fixture
 def federation_client(graph_store: GraphStore, tmp_path, monkeypatch):
     load_all_domains_separately(graph_store)
+    duckdb_path = tmp_path / "bom.duckdb"
+    from tests.conftest import populate_duckdb_master
+
+    populate_duckdb_master(graph_store, duckdb_path)
 
     monkeypatch.setenv("BOM_REPO_ROOT", str(REPO_ROOT))
-    monkeypatch.setenv("BOM_DUCKDB_PATH", str(tmp_path / "bom.duckdb"))
+    monkeypatch.setenv("BOM_DUCKDB_PATH", str(duckdb_path))
 
     ctx = server.BomAgentContext.create(
         repo_root=REPO_ROOT,
-        duckdb_path=str(tmp_path / "bom.duckdb"),
+        duckdb_path=str(duckdb_path),
         graph=graph_store,
     )
     server._context = ctx

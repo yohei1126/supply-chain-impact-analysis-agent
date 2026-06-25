@@ -44,7 +44,7 @@ Not called ontology here: owner SLA, `as_of` policy, playbook order, Langfuse te
 | **Semantic validation (prove)** | L3 — Cypher audit, SHACL | **Partial** (Cypher audit + payload re-validation) |
 | **Reasoning (inference)** | L5 — OWL/reasoner | **Out of scope** |
 | **Modern “inference”** | Federation joins, tools, planner + Cypher | **Yes** (deterministic) |
-| **Federation agreement** | L4 — Graph Contract | **Partial** (loader + ingest hooks) |
+| **Federation agreement** | L4 — Graph Contract | **Partial** (composer + on_federate) |
 | **Answer grounding (G\*)** | Tool `evidence`, demo rubric — §7 | **Partial** (tools mode strong; LLM summary weaker) |
 
 **Effective ceiling:** **L2 on all official write paths** (storage layer + post-load L3 gate); **L5 not used**.
@@ -61,7 +61,7 @@ Closed-world policy: graph mutations go through `GraphStore.add_node` / `add_edg
 | **L1** Payload schema | **Yes** |
 | **L2** Structural + domain scope | **Yes** |
 | **L3** Post-load conformance | **Partial** |
-| **L4** Graph Contract | **Partial** (loader + ingest hooks) |
+| **L4** Graph Contract | **Partial** (composer + on_federate) |
 | **L5** Reasoning | **Out of scope** |
 
 ---
@@ -120,8 +120,10 @@ Closed-world policy: graph mutations go through `GraphStore.add_node` / `add_edg
 | graph-context export | Done | `domains/export.py`, `tests/test_skill_agent_assets.py` |
 | **GraphContract loader** | **Done** | `ontology/contract/graph_contract.py`, `get_graph_contract()` |
 | **quality.on_ingest hooks** | **Done** | `app/validation/contract_ingest.py`, `require_l3_conformance` |
+| **Federation composer (P4)** | **Done** | `app/federation/composer.py` |
+| **quality.on_federate hooks** | **Done** | `app/validation/contract_federate.py` |
 | Write-time `validate_edge` / `validate_node` | **Done** | `Neo4jDomainStore` + Graph Contract |
-| Composer enforces joins | Planned | P4 |
+| Composer enforces joins | **Done** | `compose_join` reads `federation.joins` |
 
 ### L5 — Reasoning — **Out of scope**
 
@@ -138,7 +140,7 @@ No OWL reasoner. Agent uses LLM + **deterministic tools** (modern substitute).
 | On write | Pydantic + domain asserts; storage-layer-only mutations | L1–L2 | Yes |
 | CI | pytest, export drift tests, **L3 audit** (`seed_complex_bom` + `audit_neo4j.py`) | L1–L3 | Yes |
 | After load | Cypher / SHACL | L3 | **Partial** (Cypher audit CLI + pytest) |
-| At federate | Join logic | L4 | Partial |
+| At federate | Join logic + on_federate gates | L4 | **Partial** (composer + quality gates) |
 
 ---
 
@@ -196,9 +198,9 @@ Path: `schema.py` → optional SHACL codegen → batch validation in Neo4j.
 
 ```text
   Today                         Next
-  L0–L2 write-time Python   →   L3 SHACL / quality.on_ingest
+  L0–L2 write-time Python   →   L3 SHACL
   L3 Cypher audit (CLI)     →   SHACL
-  L4 loader + ingest hooks →   composer enforces joins (P4)
+  L4 composer + on_federate →   as_of metadata on ingest
 ```
 
 [graph-contract.md §10](graph-contract.md#10-implementation-roadmap) · [development.md](development.md).

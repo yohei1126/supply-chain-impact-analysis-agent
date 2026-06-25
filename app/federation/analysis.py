@@ -5,15 +5,16 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
+from app.federation.composer import compose_supplier_disruption
 from app.federation.cypher_executor import execute_domain_cypher
 from app.federation.cypher_queries import (
     cypher_components_by_supplier,
-    cypher_impact_by_components,
     cypher_processes_by_components,
     cypher_products_by_components,
     cypher_supplier_counts,
 )
 from app.federation.graph_store import GraphStore
+from app.validation.contract_federate import DomainSnapshot
 
 GraphId = Literal["sourcing", "ebom", "routing"]
 
@@ -52,6 +53,13 @@ class FederatedAnalysis:
     mitigations: list[MitigationAction] = field(default_factory=list)
     impact_score: float = 0.0
     federated_rows: list[dict[str, Any]] = field(default_factory=list)
+    graph_contract_version: str = ""
+    join_name: str = ""
+    domain_snapshots: list[DomainSnapshot] = field(default_factory=list)
+    join_plan: list[dict[str, Any]] = field(default_factory=list)
+    quality_warnings: list[str] = field(default_factory=list)
+    quality_passed: bool = True
+    graph_view: dict[str, Any] = field(default_factory=dict)
 
 
 def query_sourcing_for_supplier(store: GraphStore, supplier_id: str) -> DomainQueryResult:
@@ -299,47 +307,57 @@ def _impact_score(
 
 
 def federated_impact_rows(store: GraphStore, supplier_id: str) -> list[dict[str, Any]]:
-    """Join sourcing + ebom on Component.id using two Cypher queries."""
-    sourcing = query_sourcing_for_supplier(store, supplier_id)
-    component_ids = {row["component_id"] for row in sourcing.rows}
-    if not component_ids:
-        return []
-
-    cypher = cypher_impact_by_components(component_ids)
-    ebom_rows = execute_domain_cypher(store.domain("ebom"), "ebom", cypher)
-    sourcing_by_component = {row["component_id"]: row for row in sourcing.rows}
-
-    output: list[dict[str, Any]] = []
-    for row in ebom_rows:
-        source = sourcing_by_component.get(row["component_id"], {})
-        output.append(
-            {
-                "supplier_id": supplier_id,
-                "component_id": row["component_id"],
-                "component_name": row.get("component_name") or source.get("component_name"),
-                "product_id": row["product_id"],
-                "product_name": row.get("product_name"),
-                "component_cost": row.get("component_cost") or source.get("cost"),
-            }
-        )
-    return output
+    """Join sourcing + ebom on Component.id via the Graph Contract composer."""
+    return compose_supplier_disruption(store, supplier_id).federated_rows
 
 
-def analyze_supplier_disruption(store: GraphStore, supplier_id: str) -> FederatedAnalysis:
+def analyze_supplier_disruption(
+    store: GraphStore,
+    supplier_id: str,
+    *,
+    duckdb_path: str = "data/bom.duckdb",
+    duckdb_conn: Any | None = None,
+) -> FederatedAnalysis:
     """
     Federate sourcing → ebom → routing on Component.id for a supplier disruption scenario.
-    Each domain step runs Cypher via Neo4j; federation joins results in Python.
+    Cross-domain join steps are driven by Graph Contract federation.joins (P4 composer).
     """
-    sourcing = query_sourcing_for_supplier(store, supplier_id)
+    compose = compose_supplier_disruption(
+        store,
+        supplier_id,
+        duckdb_path=duckdb_path,
+        duckdb_conn=duckdb_conn,
+    )
+    sourcing = (
+        compose.domain_queries[0]
+        if compose.domain_queries
+        else query_sourcing_for_supplier(store, supplier_id)
+    )
     component_ids = {r["component_id"] for r in sourcing.rows}
-    ebom = query_ebom_for_components(store, component_ids)
+    ebom = (
+        compose.domain_queries[1]
+        if len(compose.domain_queries) > 1
+        else query_ebom_for_components(store, component_ids)
+    )
     routing = query_routing_for_components(store, component_ids)
     single_source = _single_source_components(store, component_ids)
 
-    federated_rows = federated_impact_rows(store, supplier_id)
+    federated_rows = compose.federated_rows
     problems = _build_problems(sourcing, ebom, routing, single_source, supplier_id)
+    if not compose.passed and compose.quality is not None:
+        for violation in compose.quality.violations:
+            problems.insert(
+                0,
+                ProblemFinding(
+                    severity="high",
+                    category="federate_quality",
+                    message=violation.message,
+                    evidence={"rule_id": violation.rule_id, "sample": violation.sample},
+                ),
+            )
     mitigations = _build_mitigations(sourcing, ebom, routing, single_source, supplier_id)
     score = _impact_score(sourcing, ebom, single_source)
+    quality_warnings = [w.message for w in (compose.quality.warnings if compose.quality else [])]
 
     return FederatedAnalysis(
         scenario=f"supplier_disruption:{supplier_id}",
@@ -349,4 +367,11 @@ def analyze_supplier_disruption(store: GraphStore, supplier_id: str) -> Federate
         mitigations=mitigations,
         impact_score=score,
         federated_rows=federated_rows,
+        graph_contract_version=compose.contract_version,
+        join_name=compose.join_name,
+        domain_snapshots=compose.domain_snapshots,
+        join_plan=compose.join_plan,
+        quality_warnings=quality_warnings,
+        quality_passed=compose.passed,
+        graph_view=compose.graph_view,
     )

@@ -54,6 +54,18 @@ def federated_analysis_to_dict(analysis: FederatedAnalysis) -> dict[str, Any]:
         "scenario": analysis.scenario,
         "supplier_id": analysis.supplier_id,
         "impact_score": analysis.impact_score,
+        "graph_contract_version": analysis.graph_contract_version,
+        "join_name": analysis.join_name,
+        "quality_passed": analysis.quality_passed,
+        "quality_warnings": analysis.quality_warnings,
+        "domain_snapshots": [
+            {
+                "graph_id": snapshot.graph_id,
+                "as_of": snapshot.as_of,
+                "row_count": snapshot.row_count,
+            }
+            for snapshot in analysis.domain_snapshots
+        ],
         "domain_queries": [domain_query_to_dict(q) for q in analysis.domain_queries],
         "federated_rows": analysis.federated_rows,
         "problems": [
@@ -74,31 +86,10 @@ def federated_analysis_to_dict(analysis: FederatedAnalysis) -> dict[str, Any]:
             }
             for m in analysis.mitigations
         ],
-        "join_plan": [
-            {
-                "step": 1,
-                "graph_id": "sourcing",
-                "edge": "SUPPLIED_BY",
-                "bridge": "component_id",
-                "description": "Components supplied by the disrupted supplier",
-            },
-            {
-                "step": 2,
-                "graph_id": "ebom",
-                "edge": "USED_IN",
-                "bridge": "component_id",
-                "description": "Finished goods that use those components",
-            },
-            {
-                "step": 3,
-                "graph_id": "routing",
-                "edge": "INPUT_OF",
-                "bridge": "component_id",
-                "description": "Manufacturing processes consuming those components",
-            },
-        ],
+        "join_plan": analysis.join_plan,
         "federation_note": (
             "Each step runs Cypher on its domain Neo4j database; "
-            "results are joined in Python on Component.id."
+            "join steps are executed by app/federation/composer.py from Graph Contract "
+            "federation.joins, then quality.on_federate gates are applied."
         ),
     }
