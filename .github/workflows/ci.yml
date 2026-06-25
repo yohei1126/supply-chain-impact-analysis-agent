@@ -69,6 +69,7 @@ jobs:
             tests/test_domain_graphs.py::test_graph_for_edge_mapping \
             tests/test_write_path_guardrails.py \
             tests/test_graph_contract.py \
+            tests/test_composer.py \
             tests/test_cli_smoke.py::test_sync_ontology_cli
 
   test:

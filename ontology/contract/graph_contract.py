@@ -112,6 +112,20 @@ class GraphContract(BaseModel):
         raw_joins = self.federation.get("joins", [])
         return [FederationJoin.model_validate(item) for item in raw_joins]
 
+    def join_plan(self, name: str) -> FederationJoin:
+        for join in self.federation_joins():
+            if join.name == name:
+                return join
+        raise ValueError(f"unknown federation join: {name}")
+
+    def on_federate_rules(self) -> dict[str, Any]:
+        """Flatten quality.on_federate list entries into one rule map."""
+        rules: dict[str, Any] = {}
+        for item in self.quality.on_federate:
+            if isinstance(item, dict):
+                rules.update(item)
+        return rules
+
     def on_ingest_checks(self) -> tuple[str, ...]:
         return tuple(self.quality.on_ingest)
 

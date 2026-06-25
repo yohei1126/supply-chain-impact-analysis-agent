@@ -249,9 +249,16 @@ def run_federation_analyze(body: FederationAnalyzeRequest) -> dict[str, Any]:
     if not supplier_id:
         raise HTTPException(status_code=400, detail="supplier_id is required")
 
-    analysis = analyze_supplier_disruption(ctx.graph, supplier_id)
+    analysis = analyze_supplier_disruption(
+        ctx.graph,
+        supplier_id,
+        duckdb_path=ctx.duckdb_path,
+        duckdb_conn=ctx.component_master.duck,
+    )
     payload = federated_analysis_to_dict(analysis)
-    payload["graph_view"] = _graph_view_for_federation(ctx, supplier_id, analysis.federated_rows)
+    payload["graph_view"] = analysis.graph_view or _graph_view_for_federation(
+        ctx, supplier_id, analysis.federated_rows
+    )
     return {"mode": "federation", **payload}
 
 

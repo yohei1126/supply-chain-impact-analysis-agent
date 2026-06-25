@@ -11,9 +11,13 @@ from pipeline.demo.load_domains import load_all_domains_separately
 
 
 @pytest.fixture
-def federated_graph(graph_store: GraphStore):
+def federated_graph(graph_store: GraphStore, tmp_path):
     load_all_domains_separately(graph_store)
-    return graph_store
+    duckdb_path = tmp_path / "bom.duckdb"
+    from tests.conftest import populate_duckdb_master
+
+    populate_duckdb_master(graph_store, duckdb_path)
+    return graph_store, duckdb_path
 
 
 def test_domain_datasets_validate_clean() -> None:
@@ -23,7 +27,8 @@ def test_domain_datasets_validate_clean() -> None:
 
 
 def test_analyze_supplier_disruption_sup001(federated_graph) -> None:
-    analysis = analyze_supplier_disruption(federated_graph, "SUP-001")
+    store, duckdb_path = federated_graph
+    analysis = analyze_supplier_disruption(store, "SUP-001", duckdb_path=str(duckdb_path))
     assert analysis.supplier_id == "SUP-001"
     assert len(analysis.domain_queries) == 3
     assert analysis.federated_rows
@@ -35,6 +40,7 @@ def test_analyze_supplier_disruption_sup001(federated_graph) -> None:
 
 
 def test_analyze_unknown_supplier_reports_no_supply(federated_graph) -> None:
-    analysis = analyze_supplier_disruption(federated_graph, "SUP-999")
+    store, duckdb_path = federated_graph
+    analysis = analyze_supplier_disruption(store, "SUP-999", duckdb_path=str(duckdb_path))
     assert not analysis.federated_rows
     assert any(p.category == "no_supply" for p in analysis.problems)

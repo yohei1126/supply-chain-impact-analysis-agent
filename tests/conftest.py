@@ -11,6 +11,61 @@ from app.storage.neo4j_config import (
 )
 
 
+def populate_duckdb_master(graph: GraphStore, duckdb_path: Path) -> None:
+    """Insert component rows from the graph into DuckDB without mutating Neo4j."""
+    import duckdb
+
+    conn = duckdb.connect(str(duckdb_path))
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS components (
+            id VARCHAR PRIMARY KEY,
+            name VARCHAR NOT NULL,
+            material VARCHAR NOT NULL,
+            cost DOUBLE NOT NULL
+        )
+        """
+    )
+    for node in graph._all_nodes():
+        if node["label"] != "Component":
+            continue
+        props = node["properties"]
+        conn.execute(
+            """
+            INSERT INTO components AS c (id, name, material, cost)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                name = excluded.name,
+                material = excluded.material,
+                cost = excluded.cost
+            """,
+            [
+                props["id"],
+                props["name"],
+                props["material"],
+                props["cost"],
+            ],
+        )
+    conn.close()
+
+
+def init_empty_duckdb(duckdb_path: Path) -> None:
+    import duckdb
+
+    conn = duckdb.connect(str(duckdb_path))
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS components (
+            id VARCHAR PRIMARY KEY,
+            name VARCHAR NOT NULL,
+            material VARCHAR NOT NULL,
+            cost DOUBLE NOT NULL
+        )
+        """
+    )
+    conn.close()
+
+
 @pytest.fixture(scope="session")
 def neo4j_driver():
     try:
