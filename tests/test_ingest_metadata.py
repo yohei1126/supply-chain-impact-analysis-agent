@@ -19,7 +19,8 @@ from pipeline.demo.load_domains import load_all_domains_separately
 
 
 def test_utc_as_of_iso_uses_z_suffix() -> None:
-    assert utc_as_of_iso(at=datetime(2026, 6, 1, 8, 0, tzinfo=timezone.utc)) == "2026-06-01T08:00:00Z"
+    moment = datetime(2026, 6, 1, 8, 0, tzinfo=timezone.utc)
+    assert utc_as_of_iso(at=moment) == "2026-06-01T08:00:00Z"
 
 
 def test_normalize_as_of_accepts_z_and_offset() -> None:
