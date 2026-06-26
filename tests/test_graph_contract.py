@@ -33,3 +33,10 @@ def test_validate_node_rejects_wrong_domain() -> None:
     contract = load_graph_contract()
     with pytest.raises(ValueError, match="Supplier.*not allowed in graph ebom"):
         contract.validate_node("ebom", "Supplier")
+
+
+def test_graph_contract_declares_on_ingest_audit_checks() -> None:
+    contract = load_graph_contract()
+    checks = contract.on_ingest_audit_checks()
+    assert "orphan_edge_endpoints" in checks
+    assert "bridge_id_present_in_master" in checks

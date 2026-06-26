@@ -65,6 +65,11 @@ quality:
     - intra_graph_endpoints_exist
     - domain_edge_allowed
     - bridge_id_present_in_master
+  on_ingest_audit:
+    - orphan_edge_endpoints
+    - ingest_metadata_complete
+    - bridge_id_present_in_master
+    - domain_edge_leakage
   on_federate:
     - warn_if_as_of_skew_hours: 48
     - reject_join_if_master_missing: true

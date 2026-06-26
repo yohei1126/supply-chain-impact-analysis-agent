@@ -19,7 +19,7 @@ Index for **ontology** in knowledge graphs: classical/modern definitions (L0–L
 
 ## Quick reference — two classical roles
 
-Ontology is used for **validation** and **reasoning** ([general §1](ontology-levels-general.md#1-the-two-roles-of-ontology-classical-view)). This repo implements validation fully through L3 (+ partial L4); reasoning (L5 OWL) is out of scope.
+Ontology is used for **validation** and **reasoning** ([general §1](ontology-levels-general.md#1-the-two-roles-of-ontology-classical-view)). This repo implements validation fully through L3 and L4; reasoning (L5 OWL) is out of scope.
 
 | Role | Question | Levels |
 |------|----------|--------|
@@ -40,7 +40,7 @@ Modern stacks often add **grounding (G\*)**: are **answers** faithful to graph/r
 | **L1** Payload schema | **Done** |
 | **L2** Structural + domain scope | **Done** |
 | **L3** Post-load conformance | **Done** (Cypher + SHACL + payload re-validation) |
-| **L4** Graph Contract | **Partial** (async on_ingest audit pipeline) |
+| **L4** Graph Contract | **Done** |
 | **L5** Reasoning (OWL) | **Out of scope** |
 | **G\*** Agent/tool grounding | **Partial** ([project §7](ontology-levels-project.md#7-agent-grounding-vs-graphrag)) |
 

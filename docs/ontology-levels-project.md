@@ -44,7 +44,7 @@ Not called ontology here: owner SLA, `as_of` policy, playbook order, Langfuse te
 | **Semantic validation (prove)** | L3 — Cypher audit, SHACL | **Done** (Cypher audit + Neosemantics SHACL + payload re-validation) |
 | **Reasoning (inference)** | L5 — OWL/reasoner | **Out of scope** |
 | **Modern “inference”** | Federation joins, tools, planner + Cypher | **Yes** (deterministic) |
-| **Federation agreement** | L4 — Graph Contract | **Partial** (P5 connectors done; async on_ingest audit pending) |
+| **Federation agreement** | L4 — Graph Contract | **Done** |
 | **Answer grounding (G\*)** | Tool `evidence`, demo rubric — §7 | **Partial** (tools mode strong; LLM summary weaker) |
 
 **Effective ceiling:** **L2 on all official write paths** (storage layer + post-load L3 gate); **L5 not used**.
@@ -61,7 +61,7 @@ Closed-world policy: graph mutations go through `GraphStore.add_node` / `add_edg
 | **L1** Payload schema | **Yes** |
 | **L2** Structural + domain scope | **Yes** |
 | **L3** Post-load conformance | **Done** |
-| **L4** Graph Contract | **Partial** (async on_ingest audit pipeline) |
+| **L4** Graph Contract | **Done** |
 | **L5** Reasoning | **Out of scope** |
 
 ---
@@ -110,7 +110,7 @@ Closed-world policy: graph mutations go through `GraphStore.add_node` / `add_edg
 
 **Symptom:** empty Supply Chain Map → often stale Neo4j; run `uv run python scripts/seed_complex_bom.py --reset`.
 
-### L4 — Graph Contract — **Partial**
+### L4 — Graph Contract — **Done**
 
 | What | Status | Where |
 |------|--------|--------|
@@ -126,6 +126,7 @@ Closed-world policy: graph mutations go through `GraphStore.add_node` / `add_edg
 | Composer enforces joins | **Done** | `compose_join` reads `federation.joins` |
 | **Ingest `as_of` metadata** | **Done** | `app/validation/ingest_metadata.py`, `Neo4jDomainStore.add_node` |
 | **Production connector ingest (P5)** | **Done** | `pipeline/connectors/registry.py`, `app/validation/connector_ingest.py`, `scripts/ingest/` |
+| **Async on_ingest audit pipeline** | **Done** | `app/validation/ingest_audit_pipeline.py`, `scripts/audit_ingest_pipeline.py` |
 
 ### L5 — Reasoning — **Out of scope**
 
@@ -156,9 +157,9 @@ Validation splits into two classical phases:
 | **Pre-load** | **Reject bad payloads early** before any graph mutation | In-memory demo/ingest datasets (`validate_all_datasets()` on dicts from `sample_data.py` or adapters) | Pydantic on dataset bundles | L1–L2 |
 | **On write** | **Block invalid rows at the storage boundary** (closed-world ingest) | Each official `GraphStore.add_node` / `add_edge`; domain allow-list; ingest metadata stamping | `validate_node_payload`, `RelationEdge`, `assert_*_allowed_in_graph`, Graph Contract write hooks | L1–L2 |
 | **After load (L3)** | **Prove** the live graph still matches ontology shapes and structure | All Neo4j nodes/edges with `graph_id`; bypass via Browser/ETL is out of repo control | Cypher audit (`ontology/l3_audit.py`), Pydantic re-validation, Neosemantics SHACL batch (`audit_neo4j.py`, `require_l3_conformance`) | L3 |
-| **After load (L4 ingest)** | **Prove** Graph Contract ingest quality (bridges, orphans, cross-store checks) | Same loaded graph + DuckDB component master | `run_on_ingest_quality_gates` in `contract_ingest.py` (part of `require_l3_conformance`) | L4 |
+| **After load (L4 ingest)** | **Prove** Graph Contract ingest quality (bridges, orphans, cross-store checks) | Same loaded graph + DuckDB component master | Sync: `run_on_ingest_quality_gates` in `require_l3_conformance`; async batch: `scripts/audit_ingest_pipeline.py` (`on_ingest_audit`) | L4 |
 | **At federate** | **Enforce** cross-domain join and federate rules on composed results | Federation tool outputs merged on Bridge Keys; not individual Neo4j writes | `composer.py`, `contract_federate.py` (`quality.on_federate`) | L4 |
-| **CI** | **Regression guard** — repeat define/prove checks on every change | Committed exports; CI Neo4j + n10s; pytest | Asset drift tests, seed + `audit_neo4j.py` (`BOM_L3_REQUIRE_SHACL=1`), full pytest | L1–L3 (+ L4 ingest in audit path) |
+| **CI** | **Regression guard** — repeat define/prove checks on every change | Committed exports; CI Neo4j + n10s; pytest | Asset drift tests, seed + `audit_neo4j.py` + `audit_ingest_pipeline.py` (`BOM_L3_REQUIRE_SHACL=1`), full pytest | L1–L4 |
 
 **Not validation (out of scope for this table):**
 
@@ -167,7 +168,7 @@ Validation splits into two classical phases:
 | **Reasoning (L5)** | Infer implicit types/edges from OWL semantics | **Out of scope** — no OWL reasoner |
 | **Answer grounding (G\*)** | Are agent **answers** faithful to tool/graph output? | Partial — `evidence[]`, demo rubric; see [§7](#7-agent-grounding-vs-graphrag) |
 
-Seeding walkthrough (write path): [seeding.md](seeding.md). Run post-load proof: `uv run python scripts/audit_neo4j.py`.
+Seeding walkthrough (write path): [seeding.md](seeding.md). Run post-load proof: `uv run python scripts/audit_neo4j.py` (L3); `uv run python scripts/audit_ingest_pipeline.py` (L4 batch).
 
 ---
 
@@ -226,9 +227,9 @@ Install the n10s plugin on Neo4j (`NEO4J_PLUGINS='["n10s"]'` in Docker). Set `BO
 ## 9. Roadmap
 
 ```text
-  Today                         Next
-  L0–L3 write-time + post-load  →   async on_ingest audit pipeline
-  L4 P5 connector metadata      →   bom-validate Skill (optional)
+  Today                         Next (optional)
+  L0–L4 validation + contract   →   bom-validate Skill (portable audit playbook)
+  G* partial                    →   LLM mode auto-eval
 ```
 
 [graph-contract.md §10](graph-contract.md#10-implementation-roadmap) · [development.md](development.md).
@@ -243,7 +244,7 @@ Install the n10s plugin on Neo4j (`NEO4J_PLUGINS='["n10s"]'` in Docker). Set `BO
 | Restrict type to `graph_id` | `domains/registry.py` + `graph_context.yaml` |
 | Federation join | `graph_context.yaml` + `playbooks.yaml` |
 | Agent-visible scope | `domains/export.py` → regenerate JSON |
-| Prove live Neo4j | `uv run python scripts/audit_neo4j.py` (L3 Cypher + SHACL); re-seed for empty demos |
+| Prove live Neo4j | `uv run python scripts/audit_neo4j.py` (L3); `uv run python scripts/audit_ingest_pipeline.py` (L4 batch) |
 | Agent grounding eval | [demo-runbook.md §D](demo-runbook.md#part-d--verification--evaluation) |
 
 ---

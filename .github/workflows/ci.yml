@@ -125,6 +125,7 @@ jobs:
         run: |
           uv run python scripts/seed_complex_bom.py --reset
           uv run python scripts/audit_neo4j.py --quiet
+          uv run python scripts/audit_ingest_pipeline.py --quiet
 
       - name: Pytest
         run: |

@@ -53,6 +53,7 @@ class FederationJoin(BaseModel):
 
 class QualitySpec(BaseModel):
     on_ingest: list[str] = Field(default_factory=list)
+    on_ingest_audit: list[str] = Field(default_factory=list)
     on_federate: list[dict[str, Any]] = Field(default_factory=list)
 
 
@@ -128,6 +129,9 @@ class GraphContract(BaseModel):
 
     def on_ingest_checks(self) -> tuple[str, ...]:
         return tuple(self.quality.on_ingest)
+
+    def on_ingest_audit_checks(self) -> tuple[str, ...]:
+        return tuple(self.quality.on_ingest_audit)
 
     def validate_node(self, graph_id: str, node_label: str) -> None:
         domain = self.domains.get(graph_id)
