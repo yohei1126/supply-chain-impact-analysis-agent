@@ -68,10 +68,7 @@ def main() -> None:
         if args.json:
             print(json.dumps(payload, ensure_ascii=False, indent=2))
         elif args.quiet and report.passed:
-            print(
-                f"on_ingest audit pipeline: PASS "
-                f"(Graph Contract v{report.contract_version})"
-            )
+            print(f"on_ingest audit pipeline: PASS (Graph Contract v{report.contract_version})")
         else:
             print(format_ingest_audit_pipeline_report(report))
 

@@ -37,11 +37,7 @@ class IngestAuditPipelineReport:
 
     @property
     def passed(self) -> bool:
-        return (
-            self.l3_report.passed
-            and self.ingest_quality.passed
-            and not self.audit_violations
-        )
+        return self.l3_report.passed and self.ingest_quality.passed and not self.audit_violations
 
 
 def run_ingest_audit_pipeline(
@@ -70,9 +66,10 @@ def run_ingest_audit_pipeline(
         database=database,
     )
     return IngestAuditPipelineReport(
-        generated_at=datetime.now(tz=timezone.utc).replace(microsecond=0).isoformat().replace(
-            "+00:00", "Z"
-        ),
+        generated_at=datetime.now(tz=timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z"),
         contract_version=contract.version,
         l3_report=l3_report,
         ingest_quality=ingest_quality,
