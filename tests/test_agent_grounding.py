@@ -130,6 +130,12 @@ def test_agent_benchmarks_are_grounded(agent_context: BomAgentContext, case: dic
     assert payload["passed"] is True
 
 
+def test_supplier_impact_reuses_open_duckdb_connection(agent_context: BomAgentContext) -> None:
+    """Regression: federate quality gates must not open a second DuckDB handle."""
+    result = agent_context.tools.invoke("bom_supplier_impact", supplier_id="SUP-002")
+    assert result.get("data")
+
+
 def test_runner_falls_back_when_llm_summary_is_ungrounded(
     agent_context: BomAgentContext,
     monkeypatch: pytest.MonkeyPatch,
