@@ -724,6 +724,8 @@ Details: [observability.md](observability.md).
 | Unit + integration | `uv run pytest -q` | Planner, federation API, user response, skills assets |
 | German brass planner | `uv run pytest -q tests/test_agent.py::test_plan_tools_from_goal` | SUP-002 routing for indirect goal |
 | Federation API | `uv run pytest -q tests/test_federation_api.py` | Domain query Cypher + analyze join |
+| Agent grounding benchmarks | `uv run pytest -q tests/test_agent_grounding.py` | G* evidence + narrative checks on seeded graph |
+| Agent grounding CLI | `uv run python scripts/eval_agent_grounding.py --quiet` | End-to-end steward benchmark after seed |
 | Langfuse smoke | `uv run --extra observability python scripts/verify_langfuse_telemetry.py` | Keys + recent `bom-agent-run` traces |
 
 ### D.5 Implementation map

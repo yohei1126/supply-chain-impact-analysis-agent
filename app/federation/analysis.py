@@ -306,9 +306,20 @@ def _impact_score(
     )
 
 
-def federated_impact_rows(store: GraphStore, supplier_id: str) -> list[dict[str, Any]]:
+def federated_impact_rows(
+    store: GraphStore,
+    supplier_id: str,
+    *,
+    duckdb_path: str = "data/bom.duckdb",
+    duckdb_conn: Any | None = None,
+) -> list[dict[str, Any]]:
     """Join sourcing + ebom on Component.id via the Graph Contract composer."""
-    return compose_supplier_disruption(store, supplier_id).federated_rows
+    return compose_supplier_disruption(
+        store,
+        supplier_id,
+        duckdb_path=duckdb_path,
+        duckdb_conn=duckdb_conn,
+    ).federated_rows
 
 
 def analyze_supplier_disruption(

@@ -45,7 +45,7 @@ Not called ontology here: owner SLA, `as_of` policy, playbook order, Langfuse te
 | **Reasoning (inference)** | L5 — OWL/reasoner | **Out of scope** |
 | **Modern “inference”** | Federation joins, tools, planner + Cypher | **Yes** (deterministic) |
 | **Federation agreement** | L4 — Graph Contract | **Done** |
-| **Answer grounding (G\*)** | Tool `evidence`, demo rubric — §7 | **Partial** (tools mode strong; LLM summary weaker) |
+| **Answer grounding (G\*)** | Tool `evidence`, grounding eval — §7 | **Done** (deterministic checks + benchmark suite) |
 
 **Effective ceiling:** **L2 on all official write paths** (storage layer + post-load L3 gate); **L5 not used**.
 
@@ -166,7 +166,7 @@ Validation splits into two classical phases:
 | Role | Purpose | In this repo |
 |------|---------|--------------|
 | **Reasoning (L5)** | Infer implicit types/edges from OWL semantics | **Out of scope** — no OWL reasoner |
-| **Answer grounding (G\*)** | Are agent **answers** faithful to tool/graph output? | Partial — `evidence[]`, demo rubric; see [§7](#7-agent-grounding-vs-graphrag) |
+| **Answer grounding (G\*)** | Are agent **answers** faithful to tool/graph output? | **Done** — `app/agent/grounding.py`, `tests/test_agent_grounding.py`, `scripts/eval_agent_grounding.py`; see [§7](#7-agent-grounding-vs-graphrag) |
 
 Seeding walkthrough (write path): [seeding.md](seeding.md). Run post-load proof: `uv run python scripts/audit_neo4j.py` (L3); `uv run python scripts/audit_ingest_pipeline.py` (L4 batch).
 
@@ -205,10 +205,11 @@ This repo does **not** use [GraphRAG](https://microsoft.github.io/graphrag/index
 | Planner picks correct tool/IDs | `tests/test_agent.py::test_plan_tools_from_goal` | G* (tool choice) |
 | Tool output matches seed ground truth | [demo-runbook.md](demo-runbook.md) playbooks (SUP-002, COMP-103, …) | L3-ish + G* |
 | User response has `evidence` | `tests/test_user_response.py` | G* |
-| LLM summary only uses tool JSON | `summarize_run_openai_compat` system prompt | G* (prompt constraint) |
+| LLM summary only uses tool JSON | `summarize_run_openai_compat` + `evaluate_grounding()` fallback | G* |
+| Automated benchmark eval | `tests/test_agent_grounding.py`, `scripts/eval_agent_grounding.py` | G* |
 | Full trace for audit | Langfuse `bom-agent-run` | Ops, not ontology |
 
-**Strong grounding path:** `mode=tools` — no LLM narrative drift. **`mode=auto`:** run demo-runbook rubric (pass/partial/fail) + Langfuse spans.
+**Strong grounding path:** `mode=tools` — deterministic planner + heuristic summary. **`mode=auto`:** LLM summarize is gated by `evaluate_grounding()`; ungrounded output falls back to heuristic. Automated benchmark suite: `uv run python scripts/eval_agent_grounding.py`.
 
 GraphRAG-style **G\*** eval (judge vs retrieved communities) does **not** apply directly unless you add an LLM-extracted layer. If you later index docs into GraphRAG, use general doc §6.3 **plus** L3 validation on the indexed graph against `schema.py` exports.
 
@@ -229,7 +230,7 @@ Install the n10s plugin on Neo4j (`NEO4J_PLUGINS='["n10s"]'` in Docker). Set `BO
 ```text
   Today                         Next (optional)
   L0–L4 validation + contract   →   bom-validate Skill (portable audit playbook)
-  G* partial                    →   LLM mode auto-eval
+  G* grounding eval             →   LLM planner auto-eval (beyond summarize gate)
 ```
 
 [graph-contract.md §10](graph-contract.md#10-implementation-roadmap) · [development.md](development.md).
@@ -245,7 +246,7 @@ Install the n10s plugin on Neo4j (`NEO4J_PLUGINS='["n10s"]'` in Docker). Set `BO
 | Federation join | `graph_context.yaml` + `playbooks.yaml` |
 | Agent-visible scope | `domains/export.py` → regenerate JSON |
 | Prove live Neo4j | `uv run python scripts/audit_neo4j.py` (L3); `uv run python scripts/audit_ingest_pipeline.py` (L4 batch) |
-| Agent grounding eval | [demo-runbook.md §D](demo-runbook.md#part-d--verification--evaluation) |
+| Agent grounding eval | `uv run python scripts/eval_agent_grounding.py`; `tests/test_agent_grounding.py` |
 
 ---
 

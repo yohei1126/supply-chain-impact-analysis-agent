@@ -39,8 +39,16 @@ class GraphExplorer:
     Agent Skill prose lives under skills/bom-graph-explorer/.
     """
 
-    def __init__(self, store: Any):
+    def __init__(
+        self,
+        store: Any,
+        *,
+        duckdb_path: str = "data/bom.duckdb",
+        duckdb_conn: Any | None = None,
+    ):
         self.store = store
+        self.duckdb_path = duckdb_path
+        self.duckdb_conn = duckdb_conn
 
     def supplier_impact(self, supplier_id: str) -> ExplorationResult:
         supplier_id = supplier_id.strip()
@@ -53,7 +61,12 @@ class GraphExplorer:
             impact_cypher = cypher_impact_by_components(component_ids)
             steps.append(CypherStep("ebom", "impact_products_by_components", impact_cypher))
 
-        rows = federated_impact_rows(self.store, supplier_id)
+        rows = federated_impact_rows(
+            self.store,
+            supplier_id,
+            duckdb_path=self.duckdb_path,
+            duckdb_conn=self.duckdb_conn,
+        )
         return ExplorationResult(
             operation="supplier_impact",
             summary=f"Downstream impact for supplier {supplier_id} (Cypher on sourcing → ebom)",

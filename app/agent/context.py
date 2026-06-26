@@ -34,7 +34,11 @@ class BomAgentContext:
         owned_graph = graph is None
         graph = graph or GraphStore(uri=neo4j_uri, auth=neo4j_auth)
         component_master = ComponentMasterStore(graph_store=graph, duckdb_path=duckdb_path)
-        explorer = GraphExplorer(graph)
+        explorer = GraphExplorer(
+            graph,
+            duckdb_path=duckdb_path,
+            duckdb_conn=component_master.duck,
+        )
         return cls(
             repo_root=root,
             duckdb_path=duckdb_path,
