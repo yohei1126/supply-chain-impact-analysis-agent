@@ -8,7 +8,7 @@ from typing import Any
 
 from app.storage.neo4j_config import DEFAULT_DATABASE
 from app.validation.contract_loader import get_graph_contract
-from app.validation.neo4j_l3_audit import run_l3_audit
+from app.validation.neo4j_l3_audit import L3AuditReport, run_l3_audit
 from ontology.contract.graph_contract import GraphContract
 
 try:
@@ -85,13 +85,15 @@ def run_on_ingest_quality_gates(
     duckdb_path: str | Path = "data/bom.duckdb",
     duckdb_conn: Any | None = None,
     database: str = DEFAULT_DATABASE,
+    l3_report: L3AuditReport | None = None,
 ) -> IngestQualityReport:
     """Execute quality.on_ingest checks declared in the Graph Contract."""
     contract = contract or get_graph_contract()
     checks = contract.on_ingest_checks()
     violations: list[IngestQualityViolation] = []
 
-    l3_report = run_l3_audit(driver, database=database)
+    if l3_report is None:
+        l3_report = run_l3_audit(driver, database=database)
     check_map = {
         "intra_graph_endpoints_exist": {
             "invalid_edge_endpoints",
