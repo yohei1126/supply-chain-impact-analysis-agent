@@ -19,10 +19,14 @@ Index for **ontology** in knowledge graphs: classical/modern definitions (L0–L
 
 ## Quick reference — two classical roles
 
-| Role | Question |
-|------|----------|
-| **Semantic validation** | Does the graph conform to the ontology? (L0–L3) |
-| **Reasoning** | What can be inferred from ontology semantics? (L5) |
+Ontology is used for **validation** and **reasoning** ([general §1](ontology-levels-general.md#1-the-two-roles-of-ontology-classical-view)). This repo implements validation fully through L3 (+ partial L4); reasoning (L5 OWL) is out of scope.
+
+| Role | Question | Levels |
+|------|----------|--------|
+| **Semantic validation** | Does the graph conform to the ontology? | L0–L3 (+ L4 quality gates) |
+| **Reasoning** | What can be inferred from ontology semantics? | L5 (not used here) |
+
+**When validation runs (purpose + scope):** [ontology-levels-project.md §5](ontology-levels-project.md#5-validation-timing-in-this-repo).
 
 Modern stacks often add **grounding (G\*)**: are **answers** faithful to graph/retrieval? — adjacent to ontology, not a substitute for L3. See [general §6](ontology-levels-general.md#6-graphrag-grounding--verification-and-ontology-levels).
 
@@ -35,10 +39,12 @@ Modern stacks often add **grounding (G\*)**: are **answers** faithful to graph/r
 | **L0** Vocabulary | **Done** |
 | **L1** Payload schema | **Done** |
 | **L2** Structural + domain scope | **Done** |
-| **L3** Post-load conformance | **Partial** (Cypher audit) |
-| **L4** Graph Contract | **Partial** (composer + on_federate) |
+| **L3** Post-load conformance | **Done** (Cypher + SHACL + payload re-validation) |
+| **L4** Graph Contract | **Partial** (production connector ingest metadata) |
 | **L5** Reasoning (OWL) | **Out of scope** |
 | **G\*** Agent/tool grounding | **Partial** ([project §7](ontology-levels-project.md#7-agent-grounding-vs-graphrag)) |
+
+Start the app: [setup-and-demos.md](setup-and-demos.md) · Run tests: [testing-and-quality.md](testing-and-quality.md)
 
 Details: [ontology-levels-project.md](ontology-levels-project.md).
 
@@ -52,4 +58,6 @@ Details: [ontology-levels-project.md](ontology-levels-project.md).
 | See W3C / Neo4j / GraphRAG citations | [ontology-levels-general.md §5](ontology-levels-general.md#5-external-references-classical-and-modern) |
 | Verify GraphRAG answer grounding | [ontology-levels-general.md §6](ontology-levels-general.md#6-graphrag-grounding--verification-and-ontology-levels) |
 | Know what this repo implements | [ontology-levels-project.md](ontology-levels-project.md) |
+| See when validation runs (pre-load, write, post-load) | [ontology-levels-project.md §5](ontology-levels-project.md#5-validation-timing-in-this-repo) |
+| Start the app or run tests | [setup-and-demos.md](setup-and-demos.md) · [testing-and-quality.md](testing-and-quality.md) |
 | Verify BOM agent demo output | [demo-runbook.md §D](demo-runbook.md#part-d--verification--evaluation) |

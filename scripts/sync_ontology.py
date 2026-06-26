@@ -14,6 +14,7 @@ from domains.export import (
 )
 from ontology.contract.graph_contract import load_graph_contract
 from ontology.schema import export_schema_bundle
+from ontology.shacl_codegen import export_shacl_ttl
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -21,6 +22,8 @@ ONTOLOGY_OUTPUTS = (
     REPO_ROOT / "ontology" / "assets" / "ontology.json",
     REPO_ROOT / "skills" / "bom-ontology" / "assets" / "ontology.json",
 )
+
+SHAPES_OUTPUT = REPO_ROOT / "ontology" / "assets" / "bom-shapes.ttl"
 
 EXPLORER_OUTPUTS: dict[Path, object] = {
     REPO_ROOT
@@ -66,6 +69,11 @@ def main() -> None:
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(ontology_text, encoding="utf-8")
         print(f"Wrote {output}")
+
+    SHAPES_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    shapes_text = export_shacl_ttl()
+    SHAPES_OUTPUT.write_text(shapes_text, encoding="utf-8")
+    print(f"Wrote {SHAPES_OUTPUT}")
 
     for output, builder in EXPLORER_OUTPUTS.items():
         output.parent.mkdir(parents=True, exist_ok=True)

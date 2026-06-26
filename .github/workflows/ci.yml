@@ -47,6 +47,7 @@ jobs:
           uv run python scripts/sync_ontology.py
           git diff --exit-code -- \
             ontology/assets/ontology.json \
+            ontology/assets/bom-shapes.ttl \
             skills/bom-ontology/assets/ontology.json \
             skills/bom-graph-explorer/assets/graph-context.json \
             skills/bom-graph-explorer/assets/query-catalog.json \
@@ -71,6 +72,7 @@ jobs:
             tests/test_graph_contract.py \
             tests/test_composer.py \
             tests/test_ingest_metadata.py \
+            tests/test_shacl_codegen.py \
             tests/test_cli_smoke.py::test_sync_ontology_cli
 
   test:
@@ -81,6 +83,8 @@ jobs:
         image: neo4j:5-community
         env:
           NEO4J_AUTH: neo4j/password
+          NEO4J_PLUGINS: '["n10s"]'
+          NEO4J_dbms_security_procedures_unrestricted: n10s.*
         ports:
           - 7687:7687
     env:
@@ -115,6 +119,8 @@ jobs:
           exit 1
 
       - name: L3 Neo4j conformance audit
+        env:
+          BOM_L3_REQUIRE_SHACL: "1"
         run: |
           uv run python scripts/seed_complex_bom.py --reset
           uv run python scripts/audit_neo4j.py --quiet

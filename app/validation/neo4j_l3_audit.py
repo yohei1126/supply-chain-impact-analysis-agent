@@ -7,6 +7,7 @@ from typing import Any
 
 from app.storage.neo4j_config import DEFAULT_DATABASE
 from app.validation.ingest_metadata import ontology_payload_from_stored_properties
+from app.validation.neo4j_shacl_audit import ShaclAuditReport, format_shacl_report, run_shacl_audit
 from domains.registry import DOMAIN_GRAPHS, GraphId, assert_edge_allowed_in_graph
 from ontology.l3_audit import L3Check, all_l3_checks
 from ontology.schema import RelationEdge, ValidationError, validate_node_payload
@@ -30,10 +31,12 @@ class L3AuditReport:
     passed: bool
     cypher_violations: list[L3Violation] = field(default_factory=list)
     payload_errors: list[dict[str, Any]] = field(default_factory=list)
+    shacl_report: ShaclAuditReport | None = None
 
     @property
     def violation_count(self) -> int:
-        return len(self.cypher_violations) + len(self.payload_errors)
+        shacl_count = 0 if self.shacl_report is None else len(self.shacl_report.violations)
+        return len(self.cypher_violations) + len(self.payload_errors) + shacl_count
 
 
 def _run_check(session: Any, check: L3Check) -> L3Violation | None:
@@ -128,8 +131,9 @@ def run_l3_audit(
     *,
     database: str = DEFAULT_DATABASE,
     graph_ids: tuple[GraphId, ...] | None = None,
+    run_shacl: bool = True,
 ) -> L3AuditReport:
-    """Execute L3 Cypher checks and Pydantic re-validation on all scoped graph data."""
+    """Execute L3 Cypher checks, Pydantic re-validation, and optional SHACL audit."""
     del graph_ids  # reserved for future scoped audits
     checks = all_l3_checks({graph_id: spec for graph_id, spec in DOMAIN_GRAPHS.items()})
     cypher_violations: list[L3Violation] = []
@@ -143,11 +147,14 @@ def run_l3_audit(
         payload_errors = _validate_node_payloads(session)
         payload_errors.extend(_validate_edge_payloads(session))
 
-    passed = not cypher_violations and not payload_errors
+    shacl_report = run_shacl_audit(driver, database=database) if run_shacl else None
+    shacl_failed = shacl_report is not None and not shacl_report.skipped and not shacl_report.passed
+    passed = not cypher_violations and not payload_errors and not shacl_failed
     return L3AuditReport(
         passed=passed,
         cypher_violations=cypher_violations,
         payload_errors=payload_errors,
+        shacl_report=shacl_report,
     )
 
 
@@ -155,6 +162,8 @@ def format_report(report: L3AuditReport) -> str:
     lines = ["L3 Neo4j conformance audit"]
     if report.passed:
         lines.append("  status: PASS")
+        if report.shacl_report is not None and not report.shacl_report.skipped:
+            lines.append("  shacl: PASS")
         return "\n".join(lines)
 
     lines.append("  status: FAIL")
@@ -168,6 +177,8 @@ def format_report(report: L3AuditReport) -> str:
         lines.append(f"  [payload] {kind} graph_id={graph_id}: {error['error']}")
     if len(report.payload_errors) > 10:
         lines.append(f"  ... {len(report.payload_errors) - 10} more payload errors")
+    if report.shacl_report is not None:
+        lines.append(format_shacl_report(report.shacl_report))
     return "\n".join(lines)
 
 

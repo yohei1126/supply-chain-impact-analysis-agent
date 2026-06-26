@@ -261,25 +261,29 @@ From the repository root:
 
 ```bash
 uv sync
-# Optional extras:
-#   uv sync --extra gateway        # LiteLLM CLI (local proxy without Docker)
-#   uv sync --extra observability  # Langfuse client for agent telemetry
-
-cp .env.example .env   # then edit keys (GEMINI_API_KEY, LANGFUSE_*, etc.)
+cp .env.example .env   # BOM_NEO4J_*, API keys for full stack
 
 uv run python scripts/sync_ontology.py      # after schema.py edits only
+```
+
+Start Neo4j, seed demo data, and run the agent — see **[setup-and-demos.md](setup-and-demos.md)** for paths (tools-only UI, full Docker stack, CLI demos).
+
+Minimal graph-backed flow:
+
+```bash
+docker compose --profile neo4j up -d   # or ./scripts/start_stack.sh
 uv run python scripts/seed_complex_bom.py --reset
+uv run python -m app.agent             # http://localhost:8080/ui/
 ```
 
 Default seeded BOM: **3 suppliers**, **3 products**, **4 processes**, **12 components** (`pipeline/demo/sample_data.py`).
 
 | Path | Role |
 |------|------|
-| `data/lancedb` | Vector table (`component_vectors`) |
-| `data/lancedb/ebom` | EBOM domain graph (`USED_IN`) |
-| `data/lancedb/routing` | Routing domain graph (`INPUT_OF`, `PRODUCED_BY`) |
-| `data/lancedb/sourcing` | Sourcing domain graph (`SUPPLIED_BY`) |
+| Neo4j (`bolt://localhost:7687`) | Domain graphs (`graph_id`: `ebom`, `routing`, `sourcing`) |
 | `data/bom.duckdb` | Component master (cross-graph ID anchor) |
+
+Seeding and L3 validation: [seeding.md](seeding.md) · [ontology-levels-project.md](ontology-levels-project.md).
 
 ## Install Agent Skills (external agents)
 
@@ -319,16 +323,17 @@ Script index: [scripts/README.md](../scripts/README.md).
 
 ## Agent server (without full Docker stack)
 
-Minimal agent + UI (heuristic planner only, no LiteLLM/Langfuse required):
+Minimal agent + UI (heuristic planner only, no LiteLLM/Langfuse required). **Neo4j must be running** — see [setup-and-demos.md §Path A](setup-and-demos.md#path-a--agent-ui-tools-mode-no-llm-no-docker-llm-stack).
 
 ```bash
+docker compose --profile neo4j up -d
 export BOM_REPO_ROOT=$(pwd)
 uv run python scripts/seed_complex_bom.py --reset
 uv run python -m app.agent
 # http://localhost:8080/ui/
 ```
 
-With LLM and Langfuse, use [demo-runbook.md](demo-runbook.md#part-b--full-stack-setup-litellm--langfuse--agent).
+With LLM and Langfuse, use [setup-and-demos.md §Path B](setup-and-demos.md#path-b--full-stack-neo4j--litellm--langfuse--agent-ui) or [demo-runbook.md §B](demo-runbook.md#part-b--full-stack-setup-litellm--langfuse--agent).
 
 ### API smoke test
 
@@ -362,32 +367,35 @@ Requires Docker (or Colima: `colima start`). See [observability.md](observabilit
 
 ## Tests
 
-See **[testing-and-quality.md](testing-and-quality.md)** for the full guide (pytest, ruff, mypy, PR checklist).
+See **[testing-and-quality.md](testing-and-quality.md)** for tiers (offline vs Neo4j integration), n10s/SHACL setup, lint, mypy, and CI.
 
 ```bash
-uv sync
-uv run pytest -q
+uv sync --extra dev
+uv run pytest -q              # offline OK; graph tests skip without Neo4j
+uv run pytest -q -rs          # show skips
 ```
 
-Targeted (P0):
+With Neo4j running (`docker compose --profile neo4j up -d`):
 
 ```bash
-uv run pytest -q tests/test_schema.py
-uv run pytest -q tests/test_lance_graph_store.py
-uv run pytest -q tests/test_hybrid_store.py
-uv run pytest -q tests/test_agent.py
+uv run python scripts/seed_complex_bom.py --reset
+uv run pytest -q tests/test_l3_audit.py tests/test_shacl_audit.py tests/test_federation.py
+BOM_L3_REQUIRE_SHACL=1 uv run python scripts/audit_neo4j.py --quiet
 ```
 
-Planned by phase:
+Before a PR:
 
-| Phase | Test module |
-|-------|-------------|
-| P1 | `tests/test_disruption_interpret.py`, `tests/test_playbook_registry.py` |
-| P2 | `tests/test_sourcing_tools.py` |
-| P3 | `tests/test_domain_traversal.py`, `tests/test_routing_tools.py` |
-| P4 | `tests/test_federation.py`, `tests/test_agent_multiround.py`, `tests/test_mitigations.py` |
+```bash
+uv run ruff check ontology domains pipeline app tests scripts
+uv run mypy ontology domains pipeline app
+uv run pytest -q -rs
+```
 
-Run the full suite after every phase merge; see [AGENTS.md](../AGENTS.md) done criteria.
+Targeted offline smoke:
+
+```bash
+uv run pytest -q tests/test_schema.py tests/test_shacl_codegen.py tests/test_agent.py tests/test_graph_contract.py
+```
 
 ## Related docs
 
@@ -400,6 +408,6 @@ Run the full suite after every phase merge; see [AGENTS.md](../AGENTS.md) done c
 | Graph Contract | [graph-contract.md](graph-contract.md) |
 | LiteLLM / Gemini | [llm-gateway.md](llm-gateway.md) |
 | Langfuse traces | [observability.md](observability.md) |
-| Tests, lint, type check | [testing-and-quality.md](testing-and-quality.md) |
+| Start app / run tests | [setup-and-demos.md](setup-and-demos.md) · [testing-and-quality.md](testing-and-quality.md) |
 | Federated domain demo (E2E) | [demo-runbook.md](demo-runbook.md#part-a--federation-cli-no-docker--llm) |
 | Agent contributors | [AGENTS.md](../AGENTS.md) · [seeding.md](seeding.md) · [setup-and-demos.md](setup-and-demos.md) · [agent-runtime.md](agent-runtime.md) |
