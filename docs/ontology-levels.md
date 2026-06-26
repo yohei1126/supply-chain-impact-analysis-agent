@@ -42,7 +42,7 @@ Modern stacks often add **grounding (G\*)**: are **answers** faithful to graph/r
 | **L3** Post-load conformance | **Done** (Cypher + SHACL + payload re-validation) |
 | **L4** Graph Contract | **Done** |
 | **L5** Reasoning (OWL) | **Out of scope** |
-| **G\*** Agent/tool grounding | **Partial** ([project §7](ontology-levels-project.md#7-agent-grounding-vs-graphrag)) |
+| **G\*** Agent/tool grounding | **Done** ([project §7](ontology-levels-project.md#7-agent-grounding-vs-graphrag)) |
 
 Start the app: [setup-and-demos.md](setup-and-demos.md) · Run tests: [testing-and-quality.md](testing-and-quality.md)
 

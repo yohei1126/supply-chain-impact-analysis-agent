@@ -5,6 +5,7 @@ from typing import Any, Literal
 
 from app.agent.context import BomAgentContext
 from app.agent.explain import explain_results_heuristic
+from app.agent.grounding import evaluate_grounding
 from app.agent.llm_client import plan_tool_calls_openai_compat, summarize_run_openai_compat
 from app.agent.llm_config import OpenAICompatLLMSettings, load_openai_compat_settings
 from app.agent.run_report import build_run_report
@@ -213,6 +214,18 @@ class BomAutonomousAgent:
                         if settings.gateway
                         else "Summary by LLM"
                     )
+                    grounding = evaluate_grounding(
+                        tool_calls=planned,
+                        results=results,
+                        explanation=explanation,
+                        evidence=evidence,
+                    )
+                    if not grounding.passed:
+                        explanation, evidence = explain_results_heuristic(goal, planned, results)
+                        summary_notes = (
+                            f"{summary_notes}; grounding fallback "
+                            f"({grounding.violations[0].check_id})"
+                        )
                 else:
                     explanation, evidence = explain_results_heuristic(goal, planned, results)
                     summary_notes = "Summary by heuristic (set OPENAI_* for LLM narrative)"
