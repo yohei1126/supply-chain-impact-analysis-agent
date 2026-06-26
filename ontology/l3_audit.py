@@ -160,8 +160,30 @@ def domain_l3_checks(
     ]
 
 
-def all_l3_checks(domain_graphs: Mapping[str, Mapping[str, set[str]]]) -> list[L3Check]:
+def contract_version_l3_check(graph_contract_version: str) -> L3Check:
+    return L3Check(
+        check_id="stale_graph_contract_version",
+        description="Node graph_contract_version differs from live Graph Contract version",
+        cypher=(
+            "MATCH (n) "
+            "WHERE n.graph_id IS NOT NULL AND n.graph_contract_version IS NOT NULL "
+            "AND n.graph_contract_version <> $current_version "
+            "RETURN labels(n)[0] AS label, n.id AS id, n.graph_id AS graph_id, "
+            "n.graph_contract_version AS stored_version "
+            "LIMIT $sample_limit"
+        ),
+        parameters={"current_version": graph_contract_version, "sample_limit": 50},
+    )
+
+
+def all_l3_checks(
+    domain_graphs: Mapping[str, Mapping[str, set[str]]],
+    *,
+    graph_contract_version: str | None = None,
+) -> list[L3Check]:
     checks = list(ontology_l3_checks())
+    if graph_contract_version is not None:
+        checks.append(contract_version_l3_check(graph_contract_version))
     for graph_id, spec in domain_graphs.items():
         checks.extend(
             domain_l3_checks(
@@ -176,6 +198,7 @@ def all_l3_checks(domain_graphs: Mapping[str, Mapping[str, set[str]]]) -> list[L
 __all__ = [
     "L3Check",
     "all_l3_checks",
+    "contract_version_l3_check",
     "domain_l3_checks",
     "ontology_l3_checks",
 ]

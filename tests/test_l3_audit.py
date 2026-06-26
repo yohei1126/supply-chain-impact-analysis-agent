@@ -18,10 +18,11 @@ def test_ontology_l3_checks_cover_allowed_edges() -> None:
 
 
 def test_all_l3_checks_include_domain_partitions() -> None:
-    checks = all_l3_checks(DOMAIN_GRAPHS)
+    checks = all_l3_checks(DOMAIN_GRAPHS, graph_contract_version="1.0.0")
     ids = {check.check_id for check in checks}
     assert "domain_node_ebom" in ids
     assert "domain_edge_sourcing" in ids
+    assert "stale_graph_contract_version" in ids
 
 
 def test_l3_audit_passes_after_domain_load(graph_store: GraphStore) -> None:

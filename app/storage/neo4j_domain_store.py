@@ -23,6 +23,7 @@ class Neo4jDomainStore:
         self.database = DEFAULT_DATABASE
         self._ingest_as_of: str | None = None
         self._ingest_source_system: str | None = None
+        self._ingest_graph_contract_version: str | None = None
         self._batch_as_of: str | None = None
 
     def configure_ingest(
@@ -30,10 +31,12 @@ class Neo4jDomainStore:
         *,
         as_of: str | None = None,
         source_system: str | None = None,
+        graph_contract_version: str | None = None,
     ) -> None:
         """Set ingest metadata applied to nodes written in this batch."""
         self._ingest_as_of = as_of
         self._ingest_source_system = source_system
+        self._ingest_graph_contract_version = graph_contract_version
         self._batch_as_of = None
 
     def _resolve_batch_as_of(self) -> str:
@@ -109,6 +112,7 @@ class Neo4jDomainStore:
             graph_id=self.graph_id,
             as_of=self._resolve_batch_as_of(),
             source_system=self._ingest_source_system,
+            graph_contract_version=self._ingest_graph_contract_version,
         )
 
         with self.driver.session(database=self.database) as session:

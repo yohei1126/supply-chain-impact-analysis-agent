@@ -44,7 +44,7 @@ Not called ontology here: owner SLA, `as_of` policy, playbook order, Langfuse te
 | **Semantic validation (prove)** | L3 — Cypher audit, SHACL | **Done** (Cypher audit + Neosemantics SHACL + payload re-validation) |
 | **Reasoning (inference)** | L5 — OWL/reasoner | **Out of scope** |
 | **Modern “inference”** | Federation joins, tools, planner + Cypher | **Yes** (deterministic) |
-| **Federation agreement** | L4 — Graph Contract | **Partial** (composer + on_federate; production connector metadata pending) |
+| **Federation agreement** | L4 — Graph Contract | **Partial** (P5 connectors done; async on_ingest audit pending) |
 | **Answer grounding (G\*)** | Tool `evidence`, demo rubric — §7 | **Partial** (tools mode strong; LLM summary weaker) |
 
 **Effective ceiling:** **L2 on all official write paths** (storage layer + post-load L3 gate); **L5 not used**.
@@ -61,7 +61,7 @@ Closed-world policy: graph mutations go through `GraphStore.add_node` / `add_edg
 | **L1** Payload schema | **Yes** |
 | **L2** Structural + domain scope | **Yes** |
 | **L3** Post-load conformance | **Done** |
-| **L4** Graph Contract | **Partial** (production connector ingest metadata) |
+| **L4** Graph Contract | **Partial** (async on_ingest audit pipeline) |
 | **L5** Reasoning | **Out of scope** |
 
 ---
@@ -125,6 +125,7 @@ Closed-world policy: graph mutations go through `GraphStore.add_node` / `add_edg
 | Write-time `validate_edge` / `validate_node` | **Done** | `Neo4jDomainStore` + Graph Contract |
 | Composer enforces joins | **Done** | `compose_join` reads `federation.joins` |
 | **Ingest `as_of` metadata** | **Done** | `app/validation/ingest_metadata.py`, `Neo4jDomainStore.add_node` |
+| **Production connector ingest (P5)** | **Done** | `pipeline/connectors/registry.py`, `app/validation/connector_ingest.py`, `scripts/ingest/` |
 
 ### L5 — Reasoning — **Out of scope**
 
@@ -226,8 +227,8 @@ Install the n10s plugin on Neo4j (`NEO4J_PLUGINS='["n10s"]'` in Docker). Set `BO
 
 ```text
   Today                         Next
-  L0–L3 write-time + post-load  →   production connector ingest metadata (L4 P5)
-  L4 composer + on_federate     →   async on_ingest audit pipeline
+  L0–L3 write-time + post-load  →   async on_ingest audit pipeline
+  L4 P5 connector metadata      →   bom-validate Skill (optional)
 ```
 
 [graph-contract.md §10](graph-contract.md#10-implementation-roadmap) · [development.md](development.md).

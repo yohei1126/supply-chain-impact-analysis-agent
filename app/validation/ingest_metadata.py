@@ -51,12 +51,13 @@ def stamp_node_properties(
     graph_id: GraphId,
     as_of: str,
     source_system: str | None = None,
+    graph_contract_version: str | None = None,
 ) -> dict[str, Any]:
     """Attach ingest metadata to validated ontology node properties."""
     stamped = dict(props)
     stamped["graph_id"] = graph_id
     stamped["as_of"] = normalize_as_of(as_of)
-    stamped["graph_contract_version"] = get_graph_contract().version
+    stamped["graph_contract_version"] = graph_contract_version or get_graph_contract().version
     if source_system:
         stamped["source_system"] = source_system
     return stamped

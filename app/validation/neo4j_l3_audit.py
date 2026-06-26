@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from app.storage.neo4j_config import DEFAULT_DATABASE
+from app.validation.contract_loader import get_graph_contract
 from app.validation.ingest_metadata import ontology_payload_from_stored_properties
 from app.validation.neo4j_shacl_audit import ShaclAuditReport, format_shacl_report, run_shacl_audit
 from domains.registry import DOMAIN_GRAPHS, GraphId, assert_edge_allowed_in_graph
@@ -135,7 +136,10 @@ def run_l3_audit(
 ) -> L3AuditReport:
     """Execute L3 Cypher checks, Pydantic re-validation, and optional SHACL audit."""
     del graph_ids  # reserved for future scoped audits
-    checks = all_l3_checks({graph_id: spec for graph_id, spec in DOMAIN_GRAPHS.items()})
+    checks = all_l3_checks(
+        {graph_id: spec for graph_id, spec in DOMAIN_GRAPHS.items()},
+        graph_contract_version=get_graph_contract().version,
+    )
     cypher_violations: list[L3Violation] = []
 
     with driver.session(database=database) as session:

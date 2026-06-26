@@ -52,8 +52,13 @@ class GraphStore:
         *,
         as_of: str | None = None,
         source_system: str | None = None,
+        graph_contract_version: str | None = None,
     ) -> None:
-        self.domains[graph_id].configure_ingest(as_of=as_of, source_system=source_system)
+        self.domains[graph_id].configure_ingest(
+            as_of=as_of,
+            source_system=source_system,
+            graph_contract_version=graph_contract_version,
+        )
 
     def add_node(self, node_type: str, payload: dict[str, Any]) -> dict[str, Any]:
         validate_node_payload(node_type, payload)
