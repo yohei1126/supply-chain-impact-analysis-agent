@@ -47,6 +47,24 @@ pipeline/demo/sample_data.py  (suppliers, products, processes, components, edges
 
 Invalid rows raise `pydantic.ValidationError` or `ValueError`; nothing is partially committed for that failed call. Fix `pipeline/demo/sample_data.py` (or your own loader that calls the same APIs), not the binary DB files.
 
+## Validation lifecycle (before / during / after load)
+
+Ontology **validation** (define + prove) runs at several stages; **reasoning (L5)** is not used. Full table with purpose and scope: [ontology-levels-project.md §5](ontology-levels-project.md#5-validation-timing-in-this-repo).
+
+| Stage | What runs | Goal |
+|-------|-----------|------|
+| **Pre-load** | `validate_all_datasets()` | Catch bad payloads in memory before Neo4j writes |
+| **On write** | Pydantic + domain allow-list on `add_node` / `add_edge` | Reject invalid rows at ingest |
+| **After load** | `require_l3_conformance` — L3 Cypher + SHACL + L4 `on_ingest` gates | Prove the loaded graph conforms |
+
+```bash
+# Seed runs on-write validation; ends with post-load proof:
+uv run python scripts/seed_complex_bom.py --reset
+
+# Manual post-load audit only:
+uv run python scripts/audit_neo4j.py
+```
+
 ## Seed commands (from repository root)
 
 ```bash

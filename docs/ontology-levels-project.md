@@ -134,14 +134,39 @@ No OWL reasoner. Agent uses LLM + **deterministic tools** (modern substitute).
 
 ## 5. Validation timing in this repo
 
-| When | Mechanism | Levels | Done? |
-|------|-----------|--------|-------|
-| Authoring | `schema.py`, YAML, `registry.py` | L0–L2, L4 docs | Yes |
-| Pre-load | `validate_all_datasets()` | L1–L2 | Yes |
-| On write | Pydantic + domain asserts; storage-layer-only mutations | L1–L2 | Yes |
-| CI | pytest, export drift tests, **L3 audit** (`seed_complex_bom` + `audit_neo4j.py`) | L1–L3 | Yes |
-| After load | Cypher / SHACL | L3 | **Done** (Cypher audit + Neosemantics SHACL + pytest) |
-| At federate | Join logic + on_federate gates | L4 | Yes |
+Classical ontology serves **validation** and **reasoning** ([general §1](ontology-levels-general.md#1-the-two-roles-of-ontology-classical-view)). **This section covers validation only** — define allowed patterns (L0–L2), prove loaded data conforms (L3), and Graph Contract quality (L4). **Reasoning (L5 OWL)** is out of scope here; see [§2](#2-two-classical-roles--this-repo) for how this repo substitutes inference with tools and federation.
+
+Validation splits into two classical phases:
+
+| Phase | Question | Levels in this repo |
+|-------|----------|---------------------|
+| **Define** | What may exist? | L0–L2 authoring; L4 contract docs |
+| **Prove** | Does the stored graph conform? | L3 post-load; L4 quality gates |
+
+```text
+  Authoring (define)     Pre-load ──► On write (reject) ──► After load (prove) ──► At federate (L4)
+  schema.py, YAML        datasets      GraphStore            Neo4j audit           composer
+  registry.py            in memory     add_node/add_edge     SHACL, on_ingest      on_federate
+```
+
+| When | Purpose | Scope | Mechanism | Levels |
+|------|---------|-------|-----------|--------|
+| **Authoring** | **Define** vocabulary, record shapes, edge rules, and federation policy | Source files only (`schema.py`, `graph_context.yaml`, `registry.py`); no Neo4j rows | Human edit + review; `sync_ontology.py` exports | L0–L2, L4 docs |
+| **Pre-load** | **Reject bad payloads early** before any graph mutation | In-memory demo/ingest datasets (`validate_all_datasets()` on dicts from `sample_data.py` or adapters) | Pydantic on dataset bundles | L1–L2 |
+| **On write** | **Block invalid rows at the storage boundary** (closed-world ingest) | Each official `GraphStore.add_node` / `add_edge`; domain allow-list; ingest metadata stamping | `validate_node_payload`, `RelationEdge`, `assert_*_allowed_in_graph`, Graph Contract write hooks | L1–L2 |
+| **After load (L3)** | **Prove** the live graph still matches ontology shapes and structure | All Neo4j nodes/edges with `graph_id`; bypass via Browser/ETL is out of repo control | Cypher audit (`ontology/l3_audit.py`), Pydantic re-validation, Neosemantics SHACL batch (`audit_neo4j.py`, `require_l3_conformance`) | L3 |
+| **After load (L4 ingest)** | **Prove** Graph Contract ingest quality (bridges, orphans, cross-store checks) | Same loaded graph + DuckDB component master | `run_on_ingest_quality_gates` in `contract_ingest.py` (part of `require_l3_conformance`) | L4 |
+| **At federate** | **Enforce** cross-domain join and federate rules on composed results | Federation tool outputs merged on Bridge Keys; not individual Neo4j writes | `composer.py`, `contract_federate.py` (`quality.on_federate`) | L4 |
+| **CI** | **Regression guard** — repeat define/prove checks on every change | Committed exports; CI Neo4j + n10s; pytest | Asset drift tests, seed + `audit_neo4j.py` (`BOM_L3_REQUIRE_SHACL=1`), full pytest | L1–L3 (+ L4 ingest in audit path) |
+
+**Not validation (out of scope for this table):**
+
+| Role | Purpose | In this repo |
+|------|---------|--------------|
+| **Reasoning (L5)** | Infer implicit types/edges from OWL semantics | **Out of scope** — no OWL reasoner |
+| **Answer grounding (G\*)** | Are agent **answers** faithful to tool/graph output? | Partial — `evidence[]`, demo rubric; see [§7](#7-agent-grounding-vs-graphrag) |
+
+Seeding walkthrough (write path): [seeding.md](seeding.md). Run post-load proof: `uv run python scripts/audit_neo4j.py`.
 
 ---
 
