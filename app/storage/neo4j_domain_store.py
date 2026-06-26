@@ -4,6 +4,7 @@ from typing import Any
 
 from app.storage.neo4j_config import DEFAULT_DATABASE
 from app.validation.contract_loader import get_graph_contract
+from app.validation.ingest_metadata import normalize_as_of, stamp_node_properties, utc_as_of_iso
 from domains.registry import GraphId, assert_edge_allowed_in_graph, assert_node_allowed_in_graph
 from ontology.schema import RelationEdge, validate_node_payload
 
@@ -20,6 +21,29 @@ class Neo4jDomainStore:
         self.graph_id = graph_id
         self.driver = driver
         self.database = DEFAULT_DATABASE
+        self._ingest_as_of: str | None = None
+        self._ingest_source_system: str | None = None
+        self._batch_as_of: str | None = None
+
+    def configure_ingest(
+        self,
+        *,
+        as_of: str | None = None,
+        source_system: str | None = None,
+    ) -> None:
+        """Set ingest metadata applied to nodes written in this batch."""
+        self._ingest_as_of = as_of
+        self._ingest_source_system = source_system
+        self._batch_as_of = None
+
+    def _resolve_batch_as_of(self) -> str:
+        if self._batch_as_of is None:
+            self._batch_as_of = (
+                utc_as_of_iso()
+                if self._ingest_as_of is None
+                else normalize_as_of(self._ingest_as_of)
+            )
+        return self._batch_as_of
 
     def all_nodes(self) -> list[dict[str, Any]]:
         with self.driver.session(database=self.database) as session:
@@ -80,7 +104,12 @@ class Neo4jDomainStore:
         row = node.model_dump()
         label = row.pop("label")
         node_id = row["id"]
-        row["graph_id"] = self.graph_id
+        row = stamp_node_properties(
+            row,
+            graph_id=self.graph_id,
+            as_of=self._resolve_batch_as_of(),
+            source_system=self._ingest_source_system,
+        )
 
         with self.driver.session(database=self.database) as session:
             session.run(

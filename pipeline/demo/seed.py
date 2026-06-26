@@ -9,6 +9,10 @@ from app.federation.graph_store import GraphStore
 from domains.ebom import pipeline as ebom_pipeline
 from domains.routing import pipeline as routing_pipeline
 from domains.sourcing import pipeline as sourcing_pipeline
+from pipeline.demo.ingest_as_of import (
+    configure_all_demo_domain_ingest,
+    configure_demo_domain_ingest,
+)
 from pipeline.demo.sample_data import (
     COMPONENT_BOM,
     PROCESSES,
@@ -27,6 +31,7 @@ def seed_complex_bom(
 
     Order: domain nodes → shared components (master + graph replication) → domain edges.
     """
+    configure_all_demo_domain_ingest(graph)
     sourcing_pipeline.seed_nodes(graph)
     ebom_pipeline.seed_nodes(graph)
     routing_pipeline.seed_nodes(graph)
@@ -57,6 +62,7 @@ def seed_domain_only(
 ) -> dict[str, int]:
     """Run a single domain pipeline (for ingest scripts and tests)."""
     rows = component_bom if component_bom is not None else COMPONENT_BOM
+    configure_demo_domain_ingest(graph, graph_id)  # type: ignore[arg-type]
     if graph_id == "sourcing":
         nodes = sourcing_pipeline.seed_nodes(graph)
         edges = sourcing_pipeline.seed_edges(graph, rows)

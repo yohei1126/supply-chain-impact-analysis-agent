@@ -124,6 +124,7 @@ Closed-world policy: graph mutations go through `GraphStore.add_node` / `add_edg
 | **quality.on_federate hooks** | **Done** | `app/validation/contract_federate.py` |
 | Write-time `validate_edge` / `validate_node` | **Done** | `Neo4jDomainStore` + Graph Contract |
 | Composer enforces joins | **Done** | `compose_join` reads `federation.joins` |
+| **Ingest `as_of` metadata** | **Done** | `app/validation/ingest_metadata.py`, `Neo4jDomainStore.add_node` |
 
 ### L5 — Reasoning — **Out of scope**
 
@@ -140,7 +141,7 @@ No OWL reasoner. Agent uses LLM + **deterministic tools** (modern substitute).
 | On write | Pydantic + domain asserts; storage-layer-only mutations | L1–L2 | Yes |
 | CI | pytest, export drift tests, **L3 audit** (`seed_complex_bom` + `audit_neo4j.py`) | L1–L3 | Yes |
 | After load | Cypher / SHACL | L3 | **Partial** (Cypher audit CLI + pytest) |
-| At federate | Join logic + on_federate gates | L4 | **Partial** (composer + quality gates) |
+| At federate | Join logic + on_federate gates | L4 | Yes |
 
 ---
 
@@ -200,7 +201,7 @@ Path: `schema.py` → optional SHACL codegen → batch validation in Neo4j.
   Today                         Next
   L0–L2 write-time Python   →   L3 SHACL
   L3 Cypher audit (CLI)     →   SHACL
-  L4 composer + on_federate →   as_of metadata on ingest
+  L4 composer + on_federate →   production connector ingest metadata
 ```
 
 [graph-contract.md §10](graph-contract.md#10-implementation-roadmap) · [development.md](development.md).

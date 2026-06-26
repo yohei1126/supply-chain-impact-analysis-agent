@@ -8,6 +8,7 @@ from pathlib import Path
 from app.federation.graph_store import GraphStore
 from app.validation.pipeline_gate import require_l3_conformance
 from domains.ebom import pipeline as ebom_pipeline
+from pipeline.demo.ingest_as_of import configure_demo_domain_ingest
 from pipeline.demo.sample_data import COMPONENT_BOM
 
 
@@ -15,6 +16,7 @@ def main() -> None:
     Path("data").mkdir(parents=True, exist_ok=True)
     graph = GraphStore()
     try:
+        configure_demo_domain_ingest(graph, "ebom")
         product_count = ebom_pipeline.seed_nodes(graph)
         for row in COMPONENT_BOM:
             graph.add_node("Component", row["component"])

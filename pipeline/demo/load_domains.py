@@ -9,6 +9,7 @@ from app.federation.graph_store import GraphStore
 from app.storage.neo4j_config import reset_neo4j
 from domains.registry import GraphId
 from pipeline.demo.domain_datasets import DomainDataset, build_all_domain_datasets
+from pipeline.demo.ingest_as_of import configure_demo_domain_ingest
 
 try:
     from neo4j import Driver
@@ -32,6 +33,7 @@ def reset_lancedb(lancedb_path: str | Path) -> None:
 
 def load_domain_dataset(graph: GraphStore, dataset: DomainDataset) -> dict[str, int]:
     """Write one domain dataset into its Neo4j database (ontology-validated rows only)."""
+    configure_demo_domain_ingest(graph, dataset.graph_id)
     store = graph.domain(dataset.graph_id)
     for node in dataset.nodes:
         store.add_node(node.label, node.payload)
