@@ -58,3 +58,19 @@ def test_load_domains_stamps_as_of_on_nodes(graph_store) -> None:
     load_all_domains_separately(graph_store)
     for graph_id, expected in DEMO_DOMAIN_AS_OF.items():
         assert read_domain_as_of(graph_store, graph_id) == expected
+
+
+@pytest.mark.usefixtures("graph_store")
+def test_load_domains_stamps_production_source_systems(graph_store) -> None:
+    from pipeline.connectors.registry import connector_for_graph
+
+    load_all_domains_separately(graph_store)
+    for graph_id in DEMO_DOMAIN_AS_OF:
+        expected_source = connector_for_graph(graph_id).source_system
+        with graph_store.driver.session() as session:
+            record = session.run(
+                "MATCH (n {graph_id: $graph_id}) RETURN n.source_system AS source_system LIMIT 1",
+                graph_id=graph_id,
+            ).single()
+        assert record is not None
+        assert record["source_system"] == expected_source

@@ -393,7 +393,7 @@ Maintaining integrability is **continuous Graph Contract compliance**, not a one
 | P2 | `GraphContract` loader (YAML) + ingest validation hooks | P2–P3 |
 | P3 | Domain bundles generated from SSOT | P3 |
 | P4 | Federation composer enforces `joins` | P4 |
-| P5 | Per-connector `graph_contract_version` in ingest metadata | P5 |
+| P5 | Per-connector `graph_contract_version` in ingest metadata | **Done** — `pipeline/connectors/registry.py`, `ConnectorIngestContext` |
 
 ---
 

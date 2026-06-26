@@ -72,6 +72,7 @@ jobs:
             tests/test_graph_contract.py \
             tests/test_composer.py \
             tests/test_ingest_metadata.py \
+            tests/test_connector_ingest.py \
             tests/test_shacl_codegen.py \
             tests/test_cli_smoke.py::test_sync_ontology_cli
 
