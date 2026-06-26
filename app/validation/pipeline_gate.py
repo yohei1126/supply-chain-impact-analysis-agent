@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
@@ -30,14 +31,26 @@ def require_l3_conformance(
     quiet: bool = False,
     duckdb_path: str | Path = "data/bom.duckdb",
     duckdb_conn: Any | None = None,
+    require_shacl: bool | None = None,
 ) -> L3AuditReport:
     """Run L3 audit and Graph Contract on_ingest gates; raise if not conformant."""
+    if require_shacl is None:
+        require_shacl = os.getenv("BOM_L3_REQUIRE_SHACL", "0") == "1"
+
     l3_report = run_l3_audit(driver)
     quality_report = run_on_ingest_quality_gates(
         driver,
         duckdb_path=duckdb_path,
         duckdb_conn=duckdb_conn,
     )
+
+    shacl_skipped = l3_report.shacl_report is not None and l3_report.shacl_report.skipped
+    if require_shacl and shacl_skipped:
+        message = format_report(l3_report)
+        print(message)
+        raise L3ConformanceError(
+            "Neosemantics SHACL validation is required but the n10s plugin is not available."
+        )
 
     if l3_report.passed and quality_report.passed:
         if quiet:

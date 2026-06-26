@@ -35,10 +35,12 @@ Modern stacks often add **grounding (G\*)**: are **answers** faithful to graph/r
 | **L0** Vocabulary | **Done** |
 | **L1** Payload schema | **Done** |
 | **L2** Structural + domain scope | **Done** |
-| **L3** Post-load conformance | **Partial** (Cypher audit) |
-| **L4** Graph Contract | **Partial** (composer + on_federate) |
+| **L3** Post-load conformance | **Done** (Cypher + SHACL + payload re-validation) |
+| **L4** Graph Contract | **Partial** (production connector ingest metadata) |
 | **L5** Reasoning (OWL) | **Out of scope** |
 | **G\*** Agent/tool grounding | **Partial** ([project §7](ontology-levels-project.md#7-agent-grounding-vs-graphrag)) |
+
+Start the app: [setup-and-demos.md](setup-and-demos.md) · Run tests: [testing-and-quality.md](testing-and-quality.md)
 
 Details: [ontology-levels-project.md](ontology-levels-project.md).
 
@@ -52,4 +54,5 @@ Details: [ontology-levels-project.md](ontology-levels-project.md).
 | See W3C / Neo4j / GraphRAG citations | [ontology-levels-general.md §5](ontology-levels-general.md#5-external-references-classical-and-modern) |
 | Verify GraphRAG answer grounding | [ontology-levels-general.md §6](ontology-levels-general.md#6-graphrag-grounding--verification-and-ontology-levels) |
 | Know what this repo implements | [ontology-levels-project.md](ontology-levels-project.md) |
+| Start the app or run tests | [setup-and-demos.md](setup-and-demos.md) · [testing-and-quality.md](testing-and-quality.md) |
 | Verify BOM agent demo output | [demo-runbook.md §D](demo-runbook.md#part-d--verification--evaluation) |

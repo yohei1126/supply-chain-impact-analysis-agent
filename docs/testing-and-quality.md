@@ -1,10 +1,10 @@
 # Testing, lint, and static analysis
 
-How to verify changes in this repository: unit tests, optional linters, and architectural guardrails.
+How to verify changes: unit tests, Neo4j integration tests, lint, and type checking.
 
 **Audience:** developers and coding agents.
 
-**Related:** [development.md](development.md) (setup) · [project-layout.md](project-layout.md) (layer boundaries) · [AGENTS.md](../AGENTS.md) (principles) · [seeding.md](seeding.md) · [setup-and-demos.md](setup-and-demos.md)
+**Related:** [setup-and-demos.md](setup-and-demos.md) (start app) · [development.md](development.md) · [seeding.md](seeding.md) · [AGENTS.md](../AGENTS.md)
 
 ---
 
@@ -13,190 +13,226 @@ How to verify changes in this repository: unit tests, optional linters, and arch
 From the repository root:
 
 ```bash
-uv sync
+uv sync --extra dev    # pytest + ruff + mypy
 ```
 
-Python **3.10+** is required (`requires-python` in [`pyproject.toml`](../pyproject.toml)).
+Python **3.10+** (`requires-python` in [`pyproject.toml`](../pyproject.toml)).
 
-Optional extras (not needed for the default test suite):
+Optional extras:
 
 ```bash
 uv sync --extra gateway          # LiteLLM CLI
 uv sync --extra observability    # Langfuse client
-uv sync --extra dev              # ruff + mypy (lint / type check)
 ```
 
 ---
 
-## 2. Unit tests (pytest)
+## 2. Test tiers
 
-**Test runner:** [pytest](https://docs.pytest.org/) (declared in project dependencies).
+| Tier | Neo4j required | n10s plugin | Typical use |
+|------|----------------|-------------|-------------|
+| **Offline** | No | No | Fast feedback; CI static-analysis job |
+| **Integration** | Yes | Yes (for SHACL tests) | L3 audit, federation, graph store |
+| **Full suite** | Yes (no skips) | Yes | Pre-push; matches CI `test` job |
 
-### 2.1 Run the full suite
+Without Neo4j, graph-dependent tests **skip** automatically (`pytest -rs` lists them).
+
+---
+
+## 3. Start Neo4j for local integration tests
+
+### Docker Compose (matches CI)
+
+```bash
+colima start    # macOS, if Docker is not running
+docker compose --profile neo4j up -d
+```
+
+The repo `neo4j` service sets `NEO4J_PLUGINS='["n10s"]'` for L3 SHACL validation.
+
+Or use the full stack script (Neo4j + LiteLLM + Langfuse):
+
+```bash
+./scripts/start_stack.sh
+```
+
+Default env (same as `.env.example`):
+
+```bash
+export BOM_NEO4J_URI=bolt://localhost:7687
+export BOM_NEO4J_USER=neo4j
+export BOM_NEO4J_PASSWORD=password
+```
+
+Verify connectivity:
+
+```bash
+uv run python -c "from app.storage.neo4j_config import get_driver, verify_connectivity; d=get_driver(); verify_connectivity(d); d.close(); print('OK')"
+```
+
+Verify n10s SHACL procedures:
+
+```bash
+uv run python -c "
+from app.storage.neo4j_config import get_driver
+from app.validation.neo4j_shacl_audit import neosemantics_shacl_available
+d = get_driver()
+with d.session() as s:
+    print('n10s SHACL:', neosemantics_shacl_available(s))
+d.close()
+"
+```
+
+Seed before integration tests or UI work:
+
+```bash
+uv run python scripts/seed_complex_bom.py --reset
+```
+
+L3 conformance audit (Cypher + Pydantic + SHACL):
+
+```bash
+BOM_L3_REQUIRE_SHACL=1 uv run python scripts/audit_neo4j.py
+```
+
+---
+
+## 4. Run tests (pytest)
+
+**Test runner:** [pytest](https://docs.pytest.org/) (project dependency).
+
+### 4.1 Full suite
 
 ```bash
 uv run pytest -q
 ```
 
-Expected: all tests pass (currently **54** tests under `tests/`). A passing run is the minimum **done criteria** in [AGENTS.md](../AGENTS.md).
+Show skips (recommended locally):
 
-Verbose output:
+```bash
+uv run pytest -q -rs
+```
+
+Currently **~104** tests collected; **~40+** may skip without Neo4j. CI fails if any test skips in the Neo4j job.
+
+Verbose / stop on first failure:
 
 ```bash
 uv run pytest -v
-```
-
-Stop on first failure:
-
-```bash
 uv run pytest -x
 ```
 
-### 2.2 Run a single file or test
+### 4.2 Offline smoke (no Neo4j)
 
-```bash
-uv run pytest -q tests/test_schema.py
-uv run pytest -q tests/test_lance_graph_store.py::test_supplier_impact
-```
-
-### 2.3 Tests by layer
-
-| Layer / concern | Test modules |
-|-----------------|--------------|
-| Ontology (schema) | `tests/test_schema.py`, `tests/test_skill_ontology_asset.py`, `tests/test_ontology_isolation.py` |
-| Domain partition | `tests/test_domain_graphs.py`, `tests/test_domain_layout.py` |
-| Graph store | `tests/test_lance_graph_store.py`, `tests/test_exploration.py`, `tests/test_graph_viz.py` |
-| Federation analysis | `tests/test_federation_analysis.py` |
-| Hybrid (vector + RDB + graph) | `tests/test_hybrid_store.py` |
-| Agent / API | `tests/test_agent.py`, `tests/test_llm_client.py`, `tests/test_explain.py`, `tests/test_user_response.py`, `tests/test_run_report.py` |
-| Skills CLI | `tests/test_skill_script.py` |
-
-Quick smoke after ontology or store changes:
+Same subset as CI `static-analysis` job:
 
 ```bash
 uv run pytest -q \
   tests/test_schema.py \
   tests/test_ontology_isolation.py \
+  tests/test_skill_ontology_asset.py \
+  tests/test_skill_agent_assets.py \
+  tests/test_agent.py \
+  tests/test_llm_client.py \
+  tests/test_user_response.py \
+  tests/test_explain.py \
+  tests/test_run_report.py \
+  tests/test_cypher_builder.py \
   tests/test_domain_layout.py \
-  tests/test_lance_graph_store.py \
-  tests/test_hybrid_store.py
+  tests/test_domain_graphs.py::test_graph_for_edge_mapping \
+  tests/test_write_path_guardrails.py \
+  tests/test_graph_contract.py \
+  tests/test_composer.py \
+  tests/test_ingest_metadata.py \
+  tests/test_shacl_codegen.py \
+  tests/test_cli_smoke.py::test_sync_ontology_cli \
+  tests/test_markdown_links.py
 ```
 
-After `ontology/schema.py` or `cypher_builder.py` edits, also run sync + asset drift check:
+### 4.3 Neo4j integration
+
+Requires running Neo4j (and n10s for SHACL modules):
+
+```bash
+uv run pytest -q tests/test_l3_audit.py tests/test_shacl_audit.py
+uv run pytest -q tests/test_federation.py tests/test_federation_analysis.py
+uv run pytest -q tests/test_graph_store.py tests/test_exploration.py
+```
+
+Single file or test:
+
+```bash
+uv run pytest -q tests/test_schema.py
+uv run pytest -q tests/test_shacl_audit.py::test_shacl_audit_passes_after_domain_load
+```
+
+### 4.4 Tests by layer
+
+| Layer / concern | Test modules |
+|-----------------|--------------|
+| Ontology (schema) | `tests/test_schema.py`, `tests/test_skill_ontology_asset.py`, `tests/test_ontology_isolation.py` |
+| SHACL codegen | `tests/test_shacl_codegen.py` |
+| L3 / SHACL audit | `tests/test_l3_audit.py`, `tests/test_shacl_audit.py` |
+| Graph Contract / composer | `tests/test_graph_contract.py`, `tests/test_composer.py` |
+| Ingest metadata | `tests/test_ingest_metadata.py` |
+| Domain partition | `tests/test_domain_graphs.py`, `tests/test_domain_layout.py` |
+| Graph store / exploration | `tests/test_graph_store.py`, `tests/test_exploration.py`, `tests/test_graph_viz.py` |
+| Federation | `tests/test_federation.py`, `tests/test_federation_analysis.py` |
+| Hybrid (vector + RDB + graph) | `tests/test_hybrid_store.py` |
+| Agent / API | `tests/test_agent.py`, `tests/test_llm_client.py`, `tests/test_user_response.py`, … |
+| Write-path guardrails | `tests/test_write_path_guardrails.py` |
+| Skills CLI | `tests/test_skill_script.py` |
+| Markdown links | `tests/test_markdown_links.py` |
+
+After `ontology/schema.py` edits:
 
 ```bash
 uv run python scripts/sync_ontology.py
-uv run pytest -q tests/test_skill_ontology_asset.py tests/test_skill_agent_assets.py
+uv run pytest -q tests/test_skill_ontology_asset.py tests/test_shacl_codegen.py tests/test_skill_agent_assets.py
+git add ontology/assets/ ontology.json skills/bom-ontology/assets/ontology.json skills/bom-graph-explorer/assets/
 ```
 
-See [agent-skill-assets.md](agent-skill-assets.md) for catalog locations, ownership, and multi-agent versioning.
+### 4.5 Tests and `.env`
 
-### 2.4 Tests and local `.env`
-
-Most tests do **not** read `.env`. Exceptions:
+Most tests do **not** read `.env`. Agent tests use FastAPI `TestClient` and run **offline** (no LiteLLM/Langfuse required).
 
 | Test | Note |
 |------|------|
-| `tests/test_llm_client.py` | Uses `monkeypatch` for env vars; clears `OPENAI_MODEL` so local `.env` does not override `LLM_MODEL` |
-
-Agent integration tests use FastAPI `TestClient` and run **offline** (no LiteLLM/Langfuse required).
-
-### 2.5 Planned tests (roadmap)
-
-Not implemented yet — see [development.md](development.md) roadmap:
-
-| Phase | Future module |
-|-------|----------------|
-| P1 | `tests/test_disruption_interpret.py`, `tests/test_playbook_registry.py` |
-| P2 | `tests/test_sourcing_tools.py` |
-| P3 | `tests/test_domain_traversal.py`, `tests/test_routing_tools.py` |
-| P4 | `tests/test_federation.py`, `tests/test_agent_multiround.py`, `tests/test_mitigations.py` |
+| `tests/test_llm_client.py` | Uses `monkeypatch` for env; clears `OPENAI_MODEL` so local `.env` does not override |
 
 ---
 
-## 3. Architectural static check (in-repo)
+## 5. Lint and format (ruff)
 
-`tests/test_ontology_isolation.py` parses `ontology/**/*.py` with AST and asserts:
-
-- No imports from `app`, `pipeline`, `domains`, LanceDB, FastAPI, etc.
-- Only **Pydantic** (+ stdlib) as third-party imports
-
-This enforces the platform-independent boundary described in [ontology/README.md](../ontology/README.md).
-
-```bash
-uv run pytest -q tests/test_ontology_isolation.py
-```
-
----
-
-## 4. Lint (ruff)
-
-[Ruff](https://docs.astral.sh/ruff/) is the recommended linter. Install via the optional **`dev`** extra:
-
-```bash
-uv sync --extra dev
-```
-
-### 4.1 Check
+Install via **`dev`** extra (included above).
 
 ```bash
 uv run ruff check ontology domains pipeline app tests scripts
-```
-
-Auto-fix safe issues:
-
-```bash
 uv run ruff check --fix ontology domains pipeline app tests scripts
-```
-
-### 4.2 Format
-
-Ruff can also format Python (optional):
-
-```bash
 uv run ruff format ontology domains pipeline app tests scripts
 uv run ruff format --check ontology domains pipeline app tests scripts
 ```
 
-Configuration lives in [`pyproject.toml`](../pyproject.toml) under `[tool.ruff]`.
-
-Ruff is **not enforced in CI** yet. A first run may report import-order (`I`) issues; many are auto-fixable with `--fix`. Style-only findings do not block merging unless your team adopts ruff as a gate.
+Config: [`pyproject.toml`](../pyproject.toml) `[tool.ruff]`.
 
 ---
 
-## 5. Static type checking (mypy)
-
-[Mypy](https://mypy.readthedocs.io/) is optional and included in the **`dev`** extra.
+## 6. Static type checking (mypy)
 
 ```bash
-uv sync --extra dev
 uv run mypy ontology domains pipeline app
 ```
 
-Settings in [`pyproject.toml`](../pyproject.toml) under `[tool.mypy]`. The codebase adopts typing gradually — mypy is advisory until CI enforces it.
-
-Skip tests and scripts initially:
-
-```bash
-uv run mypy ontology domains app/federation app/storage
-```
+Config: [`pyproject.toml`](../pyproject.toml) `[tool.mypy]`.
 
 ---
 
-## 6. Recommended workflows
+## 7. Recommended workflows
 
 ### Before every commit (minimal)
 
 ```bash
-uv run pytest -q
-```
-
-### After ontology or schema changes
-
-```bash
-uv run python scripts/sync_ontology.py
-uv run pytest -q tests/test_schema.py tests/test_skill_ontology_asset.py tests/test_ontology_isolation.py
-git add ontology/assets/ontology.json skills/bom-ontology/assets/ontology.json
+uv run pytest -q tests/test_schema.py tests/test_shacl_codegen.py tests/test_agent.py
 ```
 
 ### Before opening a PR (full local gate)
@@ -204,8 +240,11 @@ git add ontology/assets/ontology.json skills/bom-ontology/assets/ontology.json
 ```bash
 uv sync --extra dev
 uv run ruff check ontology domains pipeline app tests scripts
+uv run ruff format --check ontology domains pipeline app tests scripts
 uv run mypy ontology domains pipeline app
-uv run pytest -q
+uv run python scripts/sync_ontology.py
+git diff --exit-code -- ontology/assets/ skills/bom-ontology/assets/ontology.json skills/bom-graph-explorer/assets/
+uv run pytest -q -rs
 ```
 
 One-liner:
@@ -214,47 +253,72 @@ One-liner:
 uv sync --extra dev && \
   uv run ruff check ontology domains pipeline app tests scripts && \
   uv run mypy ontology domains pipeline app && \
-  uv run pytest -q
+  uv run pytest -q -rs
 ```
 
----
-
-## 7. What is not covered yet
-
-| Tool | Status |
-|------|--------|
-| GitHub Actions CI | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) — ruff, mypy, Markdown link check, **unit tests (no Neo4j)**, **L3 Neo4j audit** (seed + `audit_neo4j.py`), full pytest with skip guard (Neo4j service) on PRs and pushes to `main` |
-| Pre-commit hooks | Not configured |
-| Coverage (`pytest-cov`) | Not configured |
-| External URL link checker | Not configured (optional: lychee) |
-
-### Markdown internal links
-
-Relative links in `docs/` and `*.md` must target existing files or directories under the repo. CI runs [`tests/test_markdown_links.py`](../tests/test_markdown_links.py) in the static-analysis job; it is also included in `uv run pytest -q`.
+With Neo4j running, also:
 
 ```bash
-uv run pytest -q tests/test_markdown_links.py
+uv run python scripts/seed_complex_bom.py --reset
+BOM_L3_REQUIRE_SHACL=1 uv run python scripts/audit_neo4j.py --quiet
 ```
-
-Roadmap items mentioned inline in prose (e.g. `app/federation/composer.py`) are intentional **planned** paths — only relative markdown hyperlinks are checked.
 
 ---
 
-## 8. Troubleshooting
+## 8. CI (GitHub Actions)
+
+[`.github/workflows/ci.yml`](../.github/workflows/ci.yml):
+
+| Job | What it runs |
+|-----|----------------|
+| **static-analysis** | ruff, mypy, markdown links, ontology/SHACL asset drift, offline pytest subset |
+| **test** | Neo4j 5 + n10s service → seed + L3 audit (`BOM_L3_REQUIRE_SHACL=1`) → full pytest (skips forbidden) |
+| **langfuse-smoke** | Optional; skips if secrets missing |
+
+---
+
+## 9. Architectural static check
+
+`tests/test_ontology_isolation.py` ensures `ontology/` imports only Pydantic + stdlib.
+
+```bash
+uv run pytest -q tests/test_ontology_isolation.py
+```
+
+---
+
+## 10. Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| `test_llm_client` model mismatch | `.env` sets `OPENAI_MODEL` | Test clears env; ensure you run via `uv run pytest`, not a shell with stale exports |
-| Lance tests fail on stale data | Old `data/lancedb` | `uv run python scripts/seed_complex_bom.py --reset` |
-| `test_skill_ontology_asset` fails | Edited `schema.py` without sync | `uv run python scripts/sync_ontology.py` |
-| Import errors after layout change | Editable install stale | `uv sync` |
+| Many tests skipped | Neo4j not running | `docker compose --profile neo4j up -d` or `./scripts/start_stack.sh` |
+| `Connection refused` on `:7687` | Colima/Docker stopped | `colima start`; wait for Neo4j healthy |
+| SHACL audit fails: n10s missing | Plain Neo4j without plugin | Use repo `docker-compose.yml` neo4j profile or `NEO4J_PLUGINS='["n10s"]'` |
+| `UriNamespaceHasNoAssociatedPrefix` | Stale `bom-shapes.ttl` | `uv run python scripts/sync_ontology.py` |
+| `test_skill_ontology_asset` / `test_shacl_codegen` fails | Edited `schema.py` without sync | `uv run python scripts/sync_ontology.py` |
+| Empty Supply Chain Map in UI | Stale or empty Neo4j | `uv run python scripts/seed_complex_bom.py --reset` |
+| `test_llm_client` model mismatch | `.env` sets `OPENAI_MODEL` | Run via `uv run pytest`; test clears env |
+| Seed fails mid-pipeline | Partial graph from crashed run | `seed_complex_bom.py --reset` |
+| Import errors after layout change | Stale editable install | `uv sync` |
 
 ---
 
-## 9. Related documentation
+## 11. Not configured yet
+
+| Tool | Status |
+|------|--------|
+| Pre-commit hooks | Not configured |
+| Coverage (`pytest-cov`) | Not configured |
+| External URL link checker | Not configured |
+
+---
+
+## 12. Related documentation
 
 | Topic | Doc |
 |-------|-----|
-| Project layout | [project-layout.md](project-layout.md) |
+| Start app / demos | [setup-and-demos.md](setup-and-demos.md) |
 | Developer setup | [development.md](development.md) |
-| Agent change workflow | [AGENTS.md](../AGENTS.md) · [seeding.md](seeding.md) · [setup-and-demos.md](setup-and-demos.md) |
+| Seeding | [seeding.md](seeding.md) |
+| L3 / SHACL levels | [ontology-levels-project.md](ontology-levels-project.md) |
+| Agent change workflow | [AGENTS.md](../AGENTS.md) |

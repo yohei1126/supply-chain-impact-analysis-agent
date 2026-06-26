@@ -187,6 +187,8 @@ services:
       - "${NEO4J_BOLT_PORT:-7687}:7687"
     environment:
       NEO4J_AUTH: ${NEO4J_AUTH:-neo4j/password}
+      NEO4J_PLUGINS: '["n10s"]'
+      NEO4J_dbms_security_procedures_unrestricted: n10s.*
       NEO4J_server_memory_heap_initial__size: 512m
       NEO4J_server_memory_heap_max__size: 512m
     volumes:

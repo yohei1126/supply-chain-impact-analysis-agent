@@ -41,10 +41,10 @@ Not called ontology here: owner SLA, `as_of` policy, playbook order, Langfuse te
 | Classical role | In this project | Implemented? |
 |----------------|-----------------|--------------|
 | **Semantic validation (define)** | L0–L2 — `schema.py`, registry, write-time validators | **Yes** (Python write paths) |
-| **Semantic validation (prove)** | L3 — Cypher audit, SHACL | **Partial** (Cypher audit + payload re-validation) |
+| **Semantic validation (prove)** | L3 — Cypher audit, SHACL | **Done** (Cypher audit + Neosemantics SHACL + payload re-validation) |
 | **Reasoning (inference)** | L5 — OWL/reasoner | **Out of scope** |
 | **Modern “inference”** | Federation joins, tools, planner + Cypher | **Yes** (deterministic) |
-| **Federation agreement** | L4 — Graph Contract | **Partial** (composer + on_federate) |
+| **Federation agreement** | L4 — Graph Contract | **Partial** (composer + on_federate; production connector metadata pending) |
 | **Answer grounding (G\*)** | Tool `evidence`, demo rubric — §7 | **Partial** (tools mode strong; LLM summary weaker) |
 
 **Effective ceiling:** **L2 on all official write paths** (storage layer + post-load L3 gate); **L5 not used**.
@@ -60,8 +60,8 @@ Closed-world policy: graph mutations go through `GraphStore.add_node` / `add_edg
 | **L0** Vocabulary | **Yes** |
 | **L1** Payload schema | **Yes** |
 | **L2** Structural + domain scope | **Yes** |
-| **L3** Post-load conformance | **Partial** |
-| **L4** Graph Contract | **Partial** (composer + on_federate) |
+| **L3** Post-load conformance | **Done** |
+| **L4** Graph Contract | **Partial** (production connector ingest metadata) |
 | **L5** Reasoning | **Out of scope** |
 
 ---
@@ -100,13 +100,13 @@ Closed-world policy: graph mutations go through `GraphStore.add_node` / `add_edg
 
 **Operational bypass (out of repo control):** Neo4j Browser or external ETL loading directly — use `audit_neo4j.py` or CI to detect.
 
-### L3 — Instance conformance — **Partial** (Cypher audit)
+### L3 — Instance conformance — **Done**
 
 | Item | Status |
 |------|--------|
 | Cypher audit (`ontology/l3_audit.py`, `app/validation/neo4j_l3_audit.py`) | **Done** — `uv run python scripts/audit_neo4j.py` |
 | Payload re-validation (Pydantic on live graph) | **Done** (same audit runner) |
-| SHACL via Neosemantics | Not implemented |
+| SHACL via Neosemantics | **Done** — `ontology/shacl_codegen.py` → `ontology/assets/bom-shapes.ttl`; batch validation in `app/validation/neo4j_shacl_audit.py` (requires n10s plugin; CI sets `BOM_L3_REQUIRE_SHACL=1`) |
 
 **Symptom:** empty Supply Chain Map → often stale Neo4j; run `uv run python scripts/seed_complex_bom.py --reset`.
 
@@ -140,7 +140,7 @@ No OWL reasoner. Agent uses LLM + **deterministic tools** (modern substitute).
 | Pre-load | `validate_all_datasets()` | L1–L2 | Yes |
 | On write | Pydantic + domain asserts; storage-layer-only mutations | L1–L2 | Yes |
 | CI | pytest, export drift tests, **L3 audit** (`seed_complex_bom` + `audit_neo4j.py`) | L1–L3 | Yes |
-| After load | Cypher / SHACL | L3 | **Partial** (Cypher audit CLI + pytest) |
+| After load | Cypher / SHACL | L3 | **Done** (Cypher audit + Neosemantics SHACL + pytest) |
 | At federate | Join logic + on_federate gates | L4 | Yes |
 
 ---
@@ -187,11 +187,13 @@ GraphRAG-style **G\*** eval (judge vs retrieved communities) does **not** apply 
 
 ---
 
-## 8. SHACL (future L3)
+## 8. SHACL (L3)
 
 [Neosemantics SHACL](https://neo4j.com/labs/neosemantics/5.14/validation/) validates an **existing** graph — semantic validation, not reasoning. Does not replace L1–L2 SSOT or L4 Contract.
 
-Path: `schema.py` → optional SHACL codegen → batch validation in Neo4j.
+Path: `schema.py` → `ontology/shacl_codegen.py` → `ontology/assets/bom-shapes.ttl` (via `scripts/sync_ontology.py`) → batch validation with `n10s.validation.shacl.validateSet` in `app/validation/neo4j_shacl_audit.py`.
+
+Install the n10s plugin on Neo4j (`NEO4J_PLUGINS='["n10s"]'` in Docker). Set `BOM_L3_REQUIRE_SHACL=1` to fail audits when the plugin is missing.
 
 ---
 
@@ -199,9 +201,8 @@ Path: `schema.py` → optional SHACL codegen → batch validation in Neo4j.
 
 ```text
   Today                         Next
-  L0–L2 write-time Python   →   L3 SHACL
-  L3 Cypher audit (CLI)     →   SHACL
-  L4 composer + on_federate →   production connector ingest metadata
+  L0–L3 write-time + post-load  →   production connector ingest metadata (L4 P5)
+  L4 composer + on_federate     →   async on_ingest audit pipeline
 ```
 
 [graph-contract.md §10](graph-contract.md#10-implementation-roadmap) · [development.md](development.md).
@@ -216,7 +217,7 @@ Path: `schema.py` → optional SHACL codegen → batch validation in Neo4j.
 | Restrict type to `graph_id` | `domains/registry.py` + `graph_context.yaml` |
 | Federation join | `graph_context.yaml` + `playbooks.yaml` |
 | Agent-visible scope | `domains/export.py` → regenerate JSON |
-| Prove live Neo4j | `uv run python scripts/audit_neo4j.py` (L3); re-seed for empty demos |
+| Prove live Neo4j | `uv run python scripts/audit_neo4j.py` (L3 Cypher + SHACL); re-seed for empty demos |
 | Agent grounding eval | [demo-runbook.md §D](demo-runbook.md#part-d--verification--evaluation) |
 
 ---

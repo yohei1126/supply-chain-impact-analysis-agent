@@ -2,7 +2,8 @@
 """L3 post-load conformance audit for Neo4j domain graphs.
 
 Runs Cypher probes derived from ontology/schema.py and domains/registry.py,
-then re-validates node and edge payloads with Pydantic.
+re-validates node and edge payloads with Pydantic, and batch-validates scoped
+nodes with Neosemantics SHACL (n10s plugin required when BOM_L3_REQUIRE_SHACL=1).
 
 Usage:
   uv run python scripts/audit_neo4j.py
