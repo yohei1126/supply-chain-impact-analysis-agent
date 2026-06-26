@@ -43,6 +43,9 @@ def test_analyze_supplier_disruption_uses_composer(federated_graph) -> None:
     assert analysis.federated_rows
     assert len(analysis.join_plan) == 2
     assert analysis.domain_snapshots
+    snapshots = {item.graph_id: item.as_of for item in analysis.domain_snapshots}
+    assert snapshots["sourcing"] == "2026-06-01T06:00:00Z"
+    assert snapshots["ebom"] == "2026-06-01T07:00:00Z"
 
 
 def test_compose_rejects_when_master_missing_ids(graph_store: GraphStore, tmp_path: Path) -> None:

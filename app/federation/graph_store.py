@@ -46,6 +46,15 @@ class GraphStore:
     def domain(self, graph_id: GraphId) -> Neo4jDomainStore:
         return self.domains[graph_id]
 
+    def configure_domain_ingest(
+        self,
+        graph_id: GraphId,
+        *,
+        as_of: str | None = None,
+        source_system: str | None = None,
+    ) -> None:
+        self.domains[graph_id].configure_ingest(as_of=as_of, source_system=source_system)
+
     def add_node(self, node_type: str, payload: dict[str, Any]) -> dict[str, Any]:
         validate_node_payload(node_type, payload)
         target_graphs = graphs_for_node(node_type)  # type: ignore[arg-type]

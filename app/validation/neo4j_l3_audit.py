@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from app.storage.neo4j_config import DEFAULT_DATABASE
+from app.validation.ingest_metadata import ontology_payload_from_stored_properties
 from domains.registry import DOMAIN_GRAPHS, GraphId, assert_edge_allowed_in_graph
 from ontology.l3_audit import L3Check, all_l3_checks
 from ontology.schema import RelationEdge, ValidationError, validate_node_payload
@@ -59,7 +60,7 @@ def _validate_node_payloads(session: Any) -> list[dict[str, Any]]:
         label = record["label"]
         props = dict(record["props"])
         graph_id = props.get("graph_id")
-        payload = {k: v for k, v in props.items() if k != "graph_id"}
+        payload = ontology_payload_from_stored_properties(props)
         try:
             validate_node_payload(label, payload)
         except (ValidationError, ValueError) as exc:
