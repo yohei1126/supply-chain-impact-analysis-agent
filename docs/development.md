@@ -41,7 +41,7 @@ Neo4j stores graph topology; meaning and integrity live in the application ontol
 | Domain partition | `domains/registry.py`, `domains/*/bundle.py` |
 | Published JSON Schema | `skills/bom-ontology/assets/ontology.json` |
 | Published explorer catalogs | `skills/bom-graph-explorer/assets/*.json` — see [agent-skill-assets.md](agent-skill-assets.md) |
-| Graph Contract | `ontology/contract/graph_context.yaml` — see [graph-contract.md](graph-contract.md) |
+| Graph Contract | `ontology/contract/graph_contract.yaml` — see [graph-contract.md](graph-contract.md) |
 | Federation facade | `app/federation/graph_store.py` |
 | Semantics glossary (planned) | `skills/bom-ontology/references/semantics.md` |
 

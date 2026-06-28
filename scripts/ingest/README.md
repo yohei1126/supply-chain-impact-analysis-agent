@@ -11,7 +11,7 @@ and `source_system` metadata stamped on every node.
 | `sourcing.py` | `srm-sourcing` | Supply and sourcing | SRM |
 
 Shared schema: `ontology/schema.py`. Domain bundles: `domains/*/bundle.py`.  
-Graph Contract: `ontology/contract/graph_context.yaml`.
+Graph Contract: `ontology/contract/graph_contract.yaml`.
 
 For the full cross-domain demo, prefer:
 

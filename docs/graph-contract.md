@@ -67,7 +67,7 @@ ontology/schema.py
 ontology.json ──────────────┐
         │                   │
         ▼                   ▼
-domain-bundles (per graph_id)     graph_context.yaml (Graph Contract SSOT)
+domain-bundles (per graph_id)     graph_contract.yaml (Graph Contract SSOT)
         │                   │
         │                   ├── sync ──► graph-context.json (graph context for agents)
         │                   │
@@ -96,7 +96,7 @@ domain-bundles (per graph_id)     graph_context.yaml (Graph Contract SSOT)
 
 Single file or split bundle under `skills/bom-ontology/assets/` (proposed). Human-edited federation and ops; schema sections generated from `schema.py`.
 
-### 4.1 Illustrative `graph_context.yaml`
+### 4.1 Illustrative `graph_contract.yaml`
 
 ```yaml
 version: "1.0.0"
@@ -187,7 +187,7 @@ The demo binds `master_entity` / `master_key` to DuckDB at `app/component_master
 
 ### 4.2 Versioning and compatibility
 
-- **Semver** on `ontology/contract/graph_context.yaml` (federation/join changes = minor or major).
+- **Semver** on `ontology/contract/graph_contract.yaml` (federation/join changes = minor or major).
 - Ingest and agent log contract version in Langfuse / row metadata (`graph_contract_version`; legacy field name `graph_context_version`).
 - Breaking Bridge Key change = major bump + migration plan for IDs.
 
@@ -202,15 +202,15 @@ The demo binds `master_entity` / `master_key` to DuckDB at `app/component_master
 | Node/edge shapes | `ontology/schema.py` | — |
 | `ontology.json` | `scripts/sync_ontology.py` | Yes |
 | Domain allow-lists | `domains/registry.py`, `domains/*/bundle.py` | No |
-| Federation joins | `ontology/contract/graph_context.yaml` | No (hand-authored) |
+| Federation joins | `ontology/contract/graph_contract.yaml` | No (hand-authored) |
 | Agent playbooks | `app/federation/playbooks.yaml` | No (runtime) |
 | Semantics glossary | `skills/bom-ontology/references/semantics.md` | No |
 
-Extend `sync_ontology.py` to emit `domain-bundles.json` and validate `graph_context.yaml` edge names against `ALLOWED_EDGES`.
+Extend `sync_ontology.py` to emit `domain-bundles.json` and validate `graph_contract.yaml` edge names against `ALLOWED_EDGES`.
 
 ### 5.2 Runtime loaders
 
-**Graph Contract (YAML)** — proposed loader for `ontology/contract/graph_context.yaml`:
+**Graph Contract (YAML)** — proposed loader for `ontology/contract/graph_contract.yaml`:
 
 ```python
 # Responsibilities (conceptual)
@@ -389,7 +389,7 @@ Maintaining integrability is **continuous Graph Contract compliance**, not a one
 | Phase | Graph Contract deliverable | See |
 |-------|------------------------------|-----|
 | P0 | Implicit contract in `schema.py` + docs | Now |
-| P1 | `graph_context.yaml` draft + playbook refs in `app/federation/playbooks.yaml` | [development.md](development.md) P1 |
+| P1 | `graph_contract.yaml` draft + playbook refs in `app/federation/playbooks.yaml` | [development.md](development.md) P1 |
 | P2 | `GraphContract` loader (YAML) + ingest validation hooks | P2–P3 |
 | P3 | Domain bundles generated from SSOT | P3 |
 | P4 | Federation composer enforces `joins` | P4 |

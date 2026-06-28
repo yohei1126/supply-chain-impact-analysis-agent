@@ -88,7 +88,7 @@ Platform-independent. Depends only on **Pydantic** and the standard library.
 ontology/
   schema.py                     Node/edge models, ALLOWED_EDGES, validate_node_payload()
   contract/
-    graph_context.yaml          Graph Contract SSOT: Bridge Keys, federation joins, quality gates (no DB URIs)
+    graph_contract.yaml          Graph Contract SSOT: Bridge Keys, federation joins, quality gates (no DB URIs)
   assets/
     ontology.json                 Generated — run scripts/sync_ontology.py
   README.md
@@ -156,7 +156,7 @@ app/
 | `hybrid_store.py` | `Component.id` master anchor across all graphs |
 | `agent/` | One integration surface for Skills + tools + UI |
 
-Playbooks reference tool names implemented in `app/`; federation **joins** are defined in the Graph Contract (`ontology/contract/graph_context.yaml`).
+Playbooks reference tool names implemented in `app/`; federation **joins** are defined in the Graph Contract (`ontology/contract/graph_contract.yaml`).
 
 ### 3.4 `pipeline/demo/` — cross-domain demo only
 
@@ -240,7 +240,7 @@ Guardrail: `tests/test_ontology_isolation.py` asserts `ontology/**/*.py` only im
 | Restrict which graph may write `USED_IN` | `domains/registry.py`, `domains/ebom/bundle.py` |
 | Add PLM export mapping for EBOM | `domains/ebom/pipeline.py` |
 | Add supplier filter by country | `domains/sourcing/tools.py` + register in `app/tools.py` |
-| Change cross-domain join rules | Graph Contract: `ontology/contract/graph_context.yaml` |
+| Change cross-domain join rules | Graph Contract: `ontology/contract/graph_contract.yaml` |
 | Change agent tool order for disruptions | `app/federation/playbooks.yaml` |
 | Add synthetic demo parts | `pipeline/demo/sample_data.py` |
 | Change Lance persistence | `app/storage/domain_store.py` |

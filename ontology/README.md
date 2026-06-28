@@ -23,7 +23,7 @@ It must not import those layers back.
 ontology/
   schema.py                 SSOT: node/edge Pydantic models, ALLOWED_EDGES, validators
   contract/
-    graph_context.yaml      Graph Contract SSOT: identity bindings, joins, quality gates (storage-agnostic)
+    graph_contract.yaml      Graph Contract SSOT: identity bindings, joins, quality gates (storage-agnostic)
   assets/
     ontology.json             generated JSON Schema export (run scripts/sync_ontology.py)
 ```

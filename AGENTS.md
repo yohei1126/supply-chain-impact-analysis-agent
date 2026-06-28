@@ -21,7 +21,7 @@ High-level guide for agents working in this repository.
 - **Language:** Repository docs (`*.md`, `docs/`), docstrings, inline comments, and user-facing error messages are **English**. Skill prompts may stay language-neutral; do not add Japanese (or other locale) strings in Python unless there is an explicit i18n requirement.
 - **Authoring SSOT:** `ontology/schema.py` (Pydantic). The `ontology/` tree depends only on Pydantic and stdlib — no Neo4j, FastAPI, or agent imports.
 - **Published ontology SSOT:** `skills/bom-ontology/assets/ontology.json` (single generated file).
-- **Graph Contract:** `ontology/contract/graph_context.yaml` — [docs/graph-contract.md](docs/graph-contract.md).
+- **Graph Contract:** `ontology/contract/graph_contract.yaml` — [docs/graph-contract.md](docs/graph-contract.md).
 - **Graph context (Skill export):** `skills/bom-graph-explorer/assets/graph-context.json` — [docs/graph-context.md](docs/graph-context.md).
 - **All Agent Skills** live under `skills/` (`bom-ontology`, `bom-graph-explorer`).
 - Regenerate ontology and explorer assets: `uv run python scripts/sync_ontology.py`.

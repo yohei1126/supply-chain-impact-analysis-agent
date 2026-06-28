@@ -1,4 +1,4 @@
-"""Graph Contract models and loader (YAML SSOT: graph_context.yaml)."""
+"""Graph Contract models and loader (YAML SSOT: graph_contract.yaml)."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from ontology.schema import ALLOWED_EDGES
 
-CONTRACT_PATH = Path(__file__).resolve().parent / "graph_context.yaml"
+CONTRACT_PATH = Path(__file__).resolve().parent / "graph_contract.yaml"
 
 
 class EdgeSpec(BaseModel):
