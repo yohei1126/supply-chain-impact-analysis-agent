@@ -29,7 +29,7 @@ Graph Contract (YAML)     domains/registry.py + schema.py
 
 | Layer | Doc | File |
 |-------|-----|------|
-| **Graph Contract** (agreement) | [graph-contract.md](graph-contract.md) | `ontology/contract/graph_context.yaml` |
+| **Graph Contract** (agreement) | [graph-contract.md](graph-contract.md) | `ontology/contract/graph_contract.yaml` |
 | **Graph context** (this doc) | here | `skills/bom-graph-explorer/assets/graph-context.json` |
 | **Instance data** | [demo-runbook.md](demo-runbook.md), [seeding.md](seeding.md) | Neo4j + DuckDB |
 | **UI subgraph** | [demo-runbook.md](demo-runbook.md#d3-ui-vs-langfuse) | `graph_view` in API responses |
@@ -133,7 +133,7 @@ See [terminology.md](terminology.md) for the full naming rules. Short version:
 
 | Say **graph context** | Say **Graph Contract** instead |
 |-----------------------|--------------------------------|
-| `graph-context.json`, `export_graph_context_bundle()` | `graph_context.yaml`, ingest validation, quality gates |
+| `graph-context.json`, `export_graph_context_bundle()` | `graph_contract.yaml`, ingest validation, quality gates |
 | “Which edges exist under sourcing?” in a Skill prompt | “Who may write `USED_IN`?” or “SLA for ebom refresh” |
 | Agent Cypher compose allow-list | Cross-team federation agreement changes |
 | `test_graph_context_domains_match_registry` | `GraphContract.validate_edge` (planned) |

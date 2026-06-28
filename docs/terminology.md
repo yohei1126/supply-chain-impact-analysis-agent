@@ -26,7 +26,7 @@
 | | **Graph Contract** | **graph context** | **`graph_view`** (related) |
 |--|-------------------|-------------------|----------------------------|
 | **Role** | Cross-team **agreement** and validation SSOT | **Runtime context** for agents composing Cypher / choosing `graph_id` | **Ephemeral subgraph** for one analysis |
-| **Primary file** | `ontology/contract/graph_context.yaml` | `skills/bom-graph-explorer/assets/graph-context.json` | Built in memory; returned in API JSON |
+| **Primary file** | `ontology/contract/graph_contract.yaml` | `skills/bom-graph-explorer/assets/graph-context.json` | Built in memory; returned in API JSON |
 | **Structure** | YAML manifest (identity, domains, joins, quality) | JSON bundle (`identity`, `domains`, `federation`) | `{ nodes[], edges[] }` — actual graph fragment |
 | **Graph instance data?** | **No** — rules and scopes | **No** — type-level domain scopes; not Neo4j rows | **Yes** — supplier/component/product nodes and edges |
 | **Typical consumers** | Ingest pipelines, audit jobs, governance | `bom-graph-explorer` Skill, agent system prompt | Web UI map, `/v1/agent/run` response |
@@ -52,13 +52,13 @@ Neither the Graph Contract nor `graph-context.json` is a graph in the database s
 |---------|------|
 | **Terminology** (this doc) | `docs/terminology.md` |
 | **Ontology** (global shapes) | `ontology/schema.py` → `ontology.json` |
-| **Graph Contract** (authoring SSOT) | `ontology/contract/graph_context.yaml` |
+| **Graph Contract** (authoring SSOT) | `ontology/contract/graph_contract.yaml` |
 | **graph context** (Skill export) | `skills/bom-graph-explorer/assets/graph-context.json` |
 | Graph Contract design guide | `docs/graph-contract.md` |
 | Graph context usage guide | `docs/graph-context.md` |
 | Agent setup and seeding | `docs/seeding.md`, `docs/setup-and-demos.md` |
 
-Historical filenames: YAML uses `graph_context`; JSON uses `graph-context`. **Concept names** follow Contract vs context above — filenames are not renamed.
+Filenames: Graph Contract SSOT is `graph_contract.yaml`; agent Skill export remains `graph-context.json`. **Concept names** follow Contract vs context above — do not call the JSON bundle “Graph Contract” in prose.
 
 ---
 

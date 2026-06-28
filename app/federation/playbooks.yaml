@@ -1,6 +1,6 @@
 # Agent/runtime playbooks — not part of the platform-independent ontology contract.
 # Maps disruption scenarios to ordered tool names implemented in app/exploration.py.
-# See docs/supply-chain-disruption-response.md and ontology/contract/graph_context.yaml (joins).
+# See docs/supply-chain-disruption-response.md and ontology/contract/graph_contract.yaml (joins).
 
 version: "1.0.0"
 

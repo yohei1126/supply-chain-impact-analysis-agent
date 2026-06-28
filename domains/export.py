@@ -91,7 +91,7 @@ def export_graph_context_bundle() -> dict[str, Any]:
             "format": "bom-graph-context-bundle",
             "version": 1,
             "source": "domains/registry.py + ontology/schema.py",
-            "contract": "ontology/contract/graph_context.yaml",
+            "contract": "ontology/contract/graph_contract.yaml",
             "note": "Generated file. Do not edit by hand; run scripts/sync_ontology.py",
         },
     }

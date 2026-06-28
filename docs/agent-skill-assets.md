@@ -31,7 +31,7 @@ Copying JSON into every Skill bundle without a version contract causes **silent 
 │  ontology/schema.py                                         │
 │  ontology/cypher_builder.py                                 │
 │  domains/registry.py + domains/export.py                    │
-│  ontology/contract/graph_context.yaml (Graph Contract SSOT) │
+│  ontology/contract/graph_contract.yaml (Graph Contract SSOT) │
 └───────────────────────────┬─────────────────────────────────┘
                             │
                             ▼

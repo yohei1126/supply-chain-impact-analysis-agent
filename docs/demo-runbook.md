@@ -173,7 +173,7 @@ neo4j (bolt://localhost:7687)
   graph_id=routing    INPUT_OF, PRODUCED_BY, Process, Product, Component
 ```
 
-Bridge key: **`Component.id`**. Graph Contract: [ontology/contract/graph_context.yaml](../ontology/contract/graph_context.yaml) — see [graph-contract.md](graph-contract.md).
+Bridge key: **`Component.id`**. Graph Contract: [ontology/contract/graph_contract.yaml](../ontology/contract/graph_contract.yaml) — see [graph-contract.md](graph-contract.md).
 
 ### A.5 Step-by-step (manual / programmatic)
 

@@ -20,7 +20,7 @@ This repository follows the **modern lightweight** pattern: **semantic validatio
 | **Published schema** | `skills/bom-ontology/assets/ontology.json` | L1 | Generated for Skills |
 | **Cypher recipes** | `ontology/cypher_builder.py` | L2 (derived) | Query patterns from edge semantics |
 | **Domain partition** | `domains/registry.py`, `domains/*/bundle.py` | L2 | Per-`graph_id` allow-list |
-| **Graph Contract** | `ontology/contract/graph_context.yaml` | L4 | Bridges, joins, quality gate names |
+| **Graph Contract** | `ontology/contract/graph_contract.yaml` | L4 | Bridges, joins, quality gate names |
 | **graph context** | `skills/.../graph-context.json` | L4 (derived) | Agent scope bundle |
 | **query catalog** | `skills/.../query-catalog.json` | Usage | Named Cypher specs |
 
@@ -114,7 +114,7 @@ Closed-world policy: graph mutations go through `GraphStore.add_node` / `add_edg
 
 | What | Status | Where |
 |------|--------|--------|
-| YAML SSOT | Done | `ontology/contract/graph_context.yaml` |
+| YAML SSOT | Done | `ontology/contract/graph_contract.yaml` |
 | Runtime federation | Done | `app/federation/analysis.py` |
 | Playbooks | Done | `app/federation/playbooks.yaml` |
 | graph-context export | Done | `domains/export.py`, `tests/test_skill_agent_assets.py` |
@@ -153,7 +153,7 @@ Validation splits into two classical phases:
 
 | When | Purpose | Scope | Mechanism | Levels |
 |------|---------|-------|-----------|--------|
-| **Authoring** | **Define** vocabulary, record shapes, edge rules, and federation policy | Source files only (`schema.py`, `graph_context.yaml`, `registry.py`); no Neo4j rows | Human edit + review; `sync_ontology.py` exports | L0–L2, L4 docs |
+| **Authoring** | **Define** vocabulary, record shapes, edge rules, and federation policy | Source files only (`schema.py`, `graph_contract.yaml`, `registry.py`); no Neo4j rows | Human edit + review; `sync_ontology.py` exports | L0–L2, L4 docs |
 | **Pre-load** | **Reject bad payloads early** before any graph mutation | In-memory demo/ingest datasets (`validate_all_datasets()` on dicts from `sample_data.py` or adapters) | Pydantic on dataset bundles | L1–L2 |
 | **On write** | **Block invalid rows at the storage boundary** (closed-world ingest) | Each official `GraphStore.add_node` / `add_edge`; domain allow-list; ingest metadata stamping | `validate_node_payload`, `RelationEdge`, `assert_*_allowed_in_graph`, Graph Contract write hooks | L1–L2 |
 | **After load (L3)** | **Prove** the live graph still matches ontology shapes and structure | All Neo4j nodes/edges with `graph_id`; bypass via Browser/ETL is out of repo control | Cypher audit (`ontology/l3_audit.py`), Pydantic re-validation, Neosemantics SHACL batch (`audit_neo4j.py`, `require_l3_conformance`) | L3 |
@@ -242,8 +242,8 @@ Install the n10s plugin on Neo4j (`NEO4J_PLUGINS='["n10s"]'` in Docker). Set `BO
 | Task | Edit |
 |------|------|
 | New node field or edge type | `ontology/schema.py` → `sync_ontology.py` → pytest |
-| Restrict type to `graph_id` | `domains/registry.py` + `graph_context.yaml` |
-| Federation join | `graph_context.yaml` + `playbooks.yaml` |
+| Restrict type to `graph_id` | `domains/registry.py` + `graph_contract.yaml` |
+| Federation join | `graph_contract.yaml` + `playbooks.yaml` |
 | Agent-visible scope | `domains/export.py` → regenerate JSON |
 | Prove live Neo4j | `uv run python scripts/audit_neo4j.py` (L3); `uv run python scripts/audit_ingest_pipeline.py` (L4 batch) |
 | Agent grounding eval | `uv run python scripts/eval_agent_grounding.py`; `tests/test_agent_grounding.py` |
